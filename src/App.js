@@ -10,9 +10,9 @@ class App extends Component {
       <Router>
          <Switch>
           <Route exact path="/" exact component={GeneralScreen}  />
-          <Route exact path="/A" component={GeneralScreen}  />
-          <Route exact path="/B" component={GeneralScreen}  />
-          <Route exact path="/C" component={GeneralScreen}  />
+          <Route exact path="/A/:screenName" component={GeneralScreen}  />
+          <Route exact path="/B/:screenName" component={GeneralScreen}  />
+          <Route exact path="/C/:screenName" component={GeneralScreen}  />
         </Switch> 
       </Router>
     );
