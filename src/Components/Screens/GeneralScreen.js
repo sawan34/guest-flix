@@ -11,14 +11,13 @@ const GeneralScreen = (props) => {
 
     return (<div>
         <header className="App-header">
-            <h1 className="App-title">Screen Name <span>{props.match.params.screenName}</span></h1>
+            <h1 className="App-title">Screen Name <span>{props.routerData.match.params.screenName}</span></h1>
         </header>
         <p className="App-intro"></p>
-        {props.history.location.key && <a onClick={() => props.history.goBack()} > Back</a>}
-        {!props.history.location.key && <div> <NavLink activeStyle={selectedLink} to="/A/screenA" >Screen A</NavLink> 
-                                             <NavLink activeStyle={selectedLink} to="/B/screenB">Screen B </NavLink> </div>}
+        {props.routerData.history.location.key && <a onClick={() => props.routerData.history.goBack()} > Back</a>}
+        {!props.routerData.history.location.key && <div> <NavLink activeStyle={selectedLink} to="/screenA" >Screen A</NavLink> 
+                                             <NavLink activeStyle={selectedLink} to="/screenB">Screen B </NavLink> </div>}
 
-        {props.location.pathname === "/A/screenA" && <NavLink activeStyle={selectedLink} to="/C/screenC" >Screen C </NavLink>}
 
     </div>);
 };
