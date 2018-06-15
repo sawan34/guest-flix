@@ -36,3 +36,10 @@ h1 {
 h1 > span {
   color: #d80546;
 }
+.selectedAtt {
+  font-weight: bold;
+  color:red;
+}
+.selectedAtt > a{
+  color:red;
+}

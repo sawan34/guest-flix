@@ -3,6 +3,7 @@ import GeneralScreen from '../Components/Screens/GeneralScreen'
 import ScreenA from '../Components/Screens/ScreenA'
 import ScreenB from '../Components/Screens/ScreenB'
 import ScreenC from '../Components/Screens/ScreenC'
+import keyCode from '../common/KeyMap'
 import { withRouter } from "react-router-dom";
 
 class ScreenManager extends Component {
@@ -10,20 +11,23 @@ class ScreenManager extends Component {
     constructor(props){
         super(props)
         this.handleBack=  this.handleBack.bind(this);
+        this.state =  {
+            keyPressCode : 0
+        }
     } 
     componentWillMount(){
-        alert("Application Loaded")
+        document.addEventListener("keydown", this._handleKeyDown.bind(this));
     }
 
     componentDidMount() {
-        console.log(this.props)
+      //  console.log(this.props)
     }
 
     componentDidUpdate(prevProps) {
         const nextScreen = this.props.match.params.screenName===undefined?"Home":this.props.match.params.screenName;
         const previousScreen = prevProps.match.params.screenName===undefined?"Home":prevProps.match.params.screenName;
-        alert("Current Screen " + previousScreen);      
-        alert('Next Screen:'+ nextScreen);
+        console.log("Current Screen " + previousScreen);      
+        console.log('Next Screen:'+ nextScreen);
     }
 
     componentWillReceiveProps() {
@@ -31,44 +35,48 @@ class ScreenManager extends Component {
     }
 
     componentWillUnmount() {
-       // alert("Screen Getting Umount")
+       // console.log("Screen Getting Umount")
     }
 
-    shouldComponentUpdate() {
-        return true;
-    }
-
+    
     componentDidCatch() {
 
     }
 
     handleBack(){
-        alert("Going to Back Screen")
+        console.log("Going to Back Screen")
         this.props.history.goBack()
     }
 
     screenManagerKeyListen = (data)=>{
-        alert("Screen Manager : " + data);
+        console.log("Screen Manager : " + data);
+    }
+
+
+    _handleKeyDown (event) {
+        console.log(event.keyCode);
+        if(event.keyCode ===keyCode.VK_BACK){
+            this.handleBack();
+        }
+      this.setState({keyPressCode:event.keyCode})
     }
 
     render() {
-        let Screen = <GeneralScreen routerData={this.props} />;
-        const BackButton = this.props.history.location.key && <a onClick={ this.handleBack} > Back</a>;
-
-        
-        debugger;
+        let Screen = <GeneralScreen routerData={this.props} keyPressCode = {this.state.keyPressCode} />;
+        const BackButton = this.props.history.location.key && <a   onClick={ this.handleBack} > Back</a>;
+      
         if( this.props.match.params.screenName){
             const ScreenName = this.props.match.params.screenName.toLowerCase();
-           
+            console.log(ScreenName);
             switch (ScreenName) {
                 case 'screena':
-                    Screen = <ScreenA routerData={this.props} keyListen = {this.screenManagerKeyListen} > {BackButton} </ScreenA>
+                    Screen = <ScreenA routerData={this.props} keyListen = {this.screenManagerKeyListen} keyPressCode = {this.state.keyPressCode} > {BackButton} </ScreenA>
                     break;
                 case 'screenb':
-                    Screen = <ScreenB routerData={this.props} > {BackButton} </ScreenB>
+                    Screen = <ScreenB routerData={this.props} keyPressCode = {this.state.keyPressCode} > {BackButton} </ScreenB>
                     break;
                 case 'screenc':
-                    Screen = <ScreenC routerData={this.props} > {BackButton} </ScreenC>
+                    Screen = <ScreenC routerData={this.props}  keyPressCode = {this.state.keyPressCode} > {BackButton} </ScreenC>
                     break;
             }
         }

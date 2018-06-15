@@ -3,7 +3,6 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 
 const GeneralScreen = (props) => {
-    console.log(props)
     const selectedLink = {
         fontWeight: 'bold',
         color: 'red'
@@ -15,8 +14,8 @@ const GeneralScreen = (props) => {
         </header>
         <p className="App-intro"></p>
         {props.routerData.history.location.key && <a onClick={() => props.routerData.history.goBack()} > Back</a>}
-        {!props.routerData.history.location.key && <div> <NavLink activeStyle={selectedLink} to="/screenA" >Screen A</NavLink> 
-                                             <NavLink activeStyle={selectedLink} to="/screenB">Screen B </NavLink> </div>}
+        {!props.routerData.history.location.key && <div> <NavLink tabIndex="0" activeStyle={selectedLink} to="/screenA" >Screen A</NavLink> 
+                                             <NavLink  activeStyle={selectedLink} to="/screenB">Screen B </NavLink> </div>}
 
 
     </div>);
