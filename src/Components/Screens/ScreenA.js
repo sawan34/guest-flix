@@ -53,10 +53,7 @@ onScreenAction = ()=>{
         alert("On Screen Action")
     }   
 
-handleBack(){
-        alert("ppp")
-       // this.props.history.goBack()
-    }
+
 
 handleClick = ()=>{
     alert("Screen Indivisuial : Screen C");
