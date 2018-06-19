@@ -62,8 +62,9 @@ class ScreenManager extends Component {
     }
 
     render() {
+        console.log(this.props);
         let Screen = <GeneralScreen routerData={this.props} keyPressCode = {this.state.keyPressCode} />;
-        const BackButton = this.props.history.location.key && <a   onClick={ this.handleBack} > Back</a>;
+        const BackButton = this.props.location.pathname !=="/" && <a   onClick={ this.handleBack} > Back</a>;
       
         if( this.props.match.params.screenName){
             const ScreenName = this.props.match.params.screenName.toLowerCase();
