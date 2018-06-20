@@ -3,7 +3,7 @@ import GeneralScreen from '../Components/Screens/GeneralScreen'
 import ScreenA from '../Components/Screens/ScreenA'
 import ScreenB from '../Components/Screens/ScreenB'
 import ScreenC from '../Components/Screens/ScreenC'
-import keyCode from '../common/KeyMap'
+import keyCode from '../constants/KeyMap'
 import { withRouter } from "react-router-dom";
 
 class ScreenManager extends Component {

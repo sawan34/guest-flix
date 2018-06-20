@@ -1,9 +1,11 @@
 
 import React , { PureComponent } from 'react';
 import { NavLink } from 'react-router-dom';
-import keyCode from '../../common/KeyMap'
+import keyCode from '../../constants/KeyMap'
 
- 
+import VODSERVICE from '../../services/VODServices' 
+
+let vodService = new VODSERVICE(window.BASE_URL);
 
 class ScreenA extends PureComponent {
    
@@ -11,8 +13,20 @@ constructor(props){
     super(props)
     this.onScreenAction =  this.onScreenAction.bind(this);
     this.state ={
-        nav:0
+        nav:0,
+        videoData: []
     }
+}
+
+componentDidMount() {
+    vodService.getData()
+    .then(videoData =>
+        {
+        this.setState({
+            videoData
+        })
+    }
+    );
 }
 
 componentDidUpdate(prevProps, prevState, snapshot){

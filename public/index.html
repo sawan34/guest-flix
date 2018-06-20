@@ -20,6 +20,19 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>React App</title>
+    <script>
+      var BASE_URL = "";
+      var LOGOUT_CONFIRM_NAVIGATION = false;
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function () {
+          if (this.readyState == 4 && this.status == 200) {
+              var res = JSON.parse(this.responseText);
+              BASE_URL = res["BASE_URL"];
+          }
+      };
+      xmlhttp.open("GET", "config/apiConfig.json", false);
+      xmlhttp.send();
+  </script>
   </head>
   <body>
     <noscript>
