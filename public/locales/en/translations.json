@@ -1,0 +1,16 @@
+{
+  "title": "Welcome to react using react-i18next",
+  "screen_name":"Screen Name",
+  "group_title":"Group Title",
+  "test":"I am at HOME press back to go back to loading screen",
+  "loading":"I am at screen Loading press enter to go to Home Screen",
+  "description": {
+    "part1": "To get started, edit <1>src/App.js</1> and save to reload.",
+    "part2": "Switch language between english and german using buttons above."
+  },
+  "actors":"Actors",
+  "director":"Director",
+  "purchase":"Purchase",
+  "related_titles":"Related Titles",
+  "go_back":"Go Back"
+}

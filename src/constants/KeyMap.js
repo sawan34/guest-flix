@@ -1,13 +1,5 @@
 //*****************************************************************************
-//   LCD TV LABORATORY, LG ELECTRONICS INC., SEOUL, KOREA
-//   Copyright(c) 2009 by LG Electronics Inc.
-//
-//   All rights reserved. No part of this work may be reproduced, stored in a
-//   retrieval system, or transmitted by any means without prior written
-//   permission of LG Electronics Inc.
-//
-//   Following key definitions and value assignments are for Netcast Browser.
-//   
+//  Contains keys maps   
 //*****************************************************************************
 
 const KeyCode  = 
@@ -19,6 +11,7 @@ const KeyCode  =
  VK_UP : 38,
  VK_RIGHT : 39,
  VK_DOWN : 40,
+ VK_INSERT:45,
  VK_0 : 48,
  VK_1 : 49,
  VK_2 : 50,

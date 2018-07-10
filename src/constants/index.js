@@ -8,6 +8,6 @@
 export * from './alert.constant';
 export * from './uri.constant';
 export * from './error.constant';
-export * from './KeyMap.js';
+export * from './keymap.js';
 //export * from './language.constants';
 //export * from './action-type.constants';
