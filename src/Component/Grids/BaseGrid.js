@@ -101,7 +101,7 @@ class BaseGrid extends Component {
     setScrollViewPosition = () => {
         for (var i = 0; i < this.getScrollIndex(); i++) {
             this.state.activeIndex = this.state.activeIndex + 1
-            this.scrollX = this.scrollX - (this.state.itemWidth + 20)
+            this.scrollX = this.scrollX - (250 + 20)
         }
         this.setState({ activeIndex: this.state.activeIndex, scrollX: this.scrollX })
     }
@@ -111,8 +111,9 @@ class BaseGrid extends Component {
      * activeEvent is mandatory either true or false
      */
     keyEvent = (event) => {
-        if (this.props.activeEvent) {
+        if (this.props.activeEvent && event ) {
             this.handleKeyPress(event);
+            this.focusChange();
         }
     }
 
