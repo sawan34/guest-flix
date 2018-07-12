@@ -68,7 +68,7 @@ class BaseScreen extends Component {
 
         //To be decided if we should call it via screen manager or not.
         this.props.routerData.history.push({
-            pathname: screenId,
+            pathname: '/'+screenId,
             state: { prevPath: this.props.routerData.location.pathname }
         });
     }

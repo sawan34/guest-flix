@@ -4,7 +4,7 @@
 * @author Akash Sharma
 * @date  05.07.2018
 */
-import GroupingService from '../services/GroupingService'
+import GroupingService from '../services/service.groupings';
 import {ACTION} from '../constants/action.constant';
 
 /**

@@ -9,6 +9,7 @@ import React, { Component } from 'react';
 import Home from './Screens/Home';
 import LoadingScreen from './Screens/LoadingScreen';
 import ProgramDetails from './Screens/ProgramDetails';
+import  {Player} from '../Component/Player/Player'
 import { withRouter } from "react-router-dom";
 import {SCREENS} from '../constants/screens.constant';
 
@@ -48,6 +49,9 @@ class ScreenManager extends Component {
                     break;
                 case SCREENS.programdetails:
                     Screen = <ProgramDetails routerData={this.props}  />;
+                    break;
+                case SCREENS.player:
+                    Screen = <Player routerData={this.props} />;
                     break;
                 default:
                    Screen = <LoadingScreen routerData={this.props}   />;

@@ -6,36 +6,33 @@
 * @date  22.06.2018
 */
 import React, { Component } from 'react';
+import Utility from '../../commonUtilities';
 
 class BaseGrid extends Component {
 
     constructor(props) {
         super(props);
         this.dataSource = [];
-        this.itemlist = [];
         this.scrollX = 0;
         this.gridId = this.props.id;
+        this.itemWidth = 250;
+        this.itemPadding = 20;
         this.state = {
             activeIndex: 0,
-            scrollX: 0,
-            focusItemPosition: 0,
             focusLostItemPosition: -1,
-            itemWidth: 0,
         }
         this.initData();
     }
 
     /** 
-     * initialize values after Constructor calling
+     * initialize Grid values after Constructor calling
     */
     initData = () => {
         this.setDataSource();
     }
 
     /**
-    *   calling the Child method give two information , Focus Lost Item and Current focus Item
-    * 1.  Focus Lost Item
-    * 2.  Current focus Item
+    *  call by Left and right key Event 
     */
     focusChange = () => {
         this.onFocusChange(this.state.focusLostItemPosition, this.state.activeIndex)
@@ -50,8 +47,7 @@ class BaseGrid extends Component {
     }
 
     /**
-     *  calling the onItemSelected function of the child overriden 
-     *  Selected Item position
+     * Give the selected item position 
      */
     itemSelected = () => {
         this.onItemSelected(this.state.activeIndex)
@@ -68,8 +64,8 @@ class BaseGrid extends Component {
      * Return the Default Focus Position from Props if not given then default focus Position will be 0  
      */
     getScrollIndex = () => {
-        if (this.props.defaultSelectedPosition !== undefined)
-            return this.props.defaultSelectedPosition;
+        if (!Utility.isEmpty(this.props.defaultSelectedPosition))
+            return parseInt(this.props.defaultSelectedPosition);
         else
             return 0;
     }
@@ -78,32 +74,31 @@ class BaseGrid extends Component {
      * Assign the dataSource in BaseGrid property variable from props
      */
     setDataSource() {
-        if (this.props.dataSource !== undefined)
+        if (!Utility.isEmpty(this.props.dataSource))
             this.dataSource = this.props.dataSource;
     }
 
     /**
      *  Return the Maximum Visible item from props
-     *  if DataSource length is less than Maximum visible Item ,return the Data source lenth
+     *  if DataSource length is less than Maximum visible Item , default max visible will be datasource length
      */
     getMaxVisibleItem = () => {
-        if (this.props.maxVisibleItem !== undefined) {
-            if (this.dataSource.length >= this.props.maxVisibleItem)
-                return this.props.maxVisibleItem;
-            else
-                return this.dataSource.length;
-        }
+        if (!Utility.isEmpty(this.props.maxVisibleItem) && (this.dataSource.length >= this.props.maxVisibleItem))
+            return parseInt(this.props.maxVisibleItem);
+        else
+            return this.dataSource.length;
     }
 
     /**
-     * Set the focus position in state
+     * Set the focus position 
+     * @param {*} scrollIndex  
      */
-    setScrollViewPosition = () => {
-        for (var i = 0; i < this.getScrollIndex(); i++) {
+    setScrollViewPosition = (scrollIndex) => {
+        for (var i = 0; i < scrollIndex; i++) {
             this.state.activeIndex = this.state.activeIndex + 1
-            this.scrollX = this.scrollX - (250 + 20)
+            this.scrollX = this.scrollX - (this.itemWidth + this.itemPadding)
         }
-        this.setState({ activeIndex: this.state.activeIndex, scrollX: this.scrollX })
+        this.setState({ activeIndex: this.state.activeIndex })
     }
 
     /**
@@ -111,14 +106,13 @@ class BaseGrid extends Component {
      * activeEvent is mandatory either true or false
      */
     keyEvent = (event) => {
-        if (this.props.activeEvent && event ) {
+        if (this.props.activeEvent && event) {
             this.handleKeyPress(event);
-            this.focusChange();
         }
     }
 
     /**
-     * return default Rendering
+     * return one default Render Item
      */
     getView = (position, activeIndex, dataObject) => {
         return (<h1>Welcome React Grid</h1>)
@@ -128,18 +122,17 @@ class BaseGrid extends Component {
      * Listening event from Screen 
      */
     componentDidUpdate(prevProps, prevState) {
-        if (prevState.focusItemPosition === this.state.focusItemPosition) {
+        if (prevState.activeIndex === this.state.activeIndex) {
             this.keyEvent(this.props.keyEvent);
         }
     }
 
     /**
-     * Return the Rendered View Items
-     * if the active event true will pass the active Index for focus, otherwise grid will be not focus
+     * Return the Rendered View Items based on activeEvent props
      */
     renderItem = () => {
         return (
-            this.itemlist = this.dataSource.map((item, i) => {
+            this.dataSource.map((item, i) => {
                 if (i < this.getMaxVisibleItem())
                     if (this.props.activeEvent) {
                         return this.getView(i, this.state.activeIndex, item);
@@ -151,12 +144,12 @@ class BaseGrid extends Component {
     }
 
     /**
-     * Return the dynamic style for Slider 
+     * Return the style for Slider 
      */
     sliderStyle() {
         var style = {
-            transform: "translate3d(" + this.state.scrollX + "px,0,0)",
-            width: ((parseInt(this.getMaxVisibleItem())) * (250 + 20) + 'px'),
+            transform: "translate3d(" + this.scrollX + "px,0,0)",
+            width: ((parseInt(this.getMaxVisibleItem())) * (this.itemWidth + this.itemPadding) + 'px'),
         }
         return style;
     }
@@ -176,11 +169,10 @@ class BaseGrid extends Component {
     }
 
     /**
-     * Life cycle method of component class
-     * Read document after rendering and set states
+     * set default Scroll Position
      */
     componentDidMount() {
-        this.setScrollViewPosition();
+        this.setScrollViewPosition(this.getScrollIndex());
     }
 }
 export default BaseGrid;

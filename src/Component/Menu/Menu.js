@@ -1,8 +1,6 @@
 import React, {Component} from 'react';
-import Method from '../../services/services';
-import API_INTERFACE from '../../constants/uri.constant';
-import {responseActions} from '../../actions/response.actions';
-import KeyMap from '../../constants/keymap'
+import { connect } from "react-redux";
+import KeyMap from '../../constants/keymap.constant';
 
 
 class Menu extends Component {
@@ -21,6 +19,7 @@ class Menu extends Component {
 	 * @param {object} metaData: contains the information about menu items 
 	 */
 	createMenuFromMode = (metaData) => {
+		let modeMenu = [];
 		if (metaData.modes && metaData.modes.length > 0) {
 			let modesNo = this.uiConfigData.modes ? this.uiConfigData.modes.length : 0;
 			let availableModeNo = metaData.modes.length;
@@ -28,12 +27,14 @@ class Menu extends Component {
 				for (var i = 0; i < modesNo; i++) {
 					for (var j = 0; j < availableModeNo; j++) {
 						if (this.uiConfigData.modes[i].id === metaData.modes[j]) {
-							this.setState({
-								menuItems: [...this.state.menuItems, this.uiConfigData.modes[i].name]
-							});
+							modeMenu.push(this.uiConfigData.modes[i].name)
 						}
 					}
 				}
+				// rendering mode related menu
+				this.setState({
+					menuItems: [...this.state.menuItems, ...modeMenu]
+				});
 			}
 		}
 	}
@@ -43,24 +44,23 @@ class Menu extends Component {
 	 * @param {object} metaData: contains the information about menu items 
 	 */
 	createMenuFromGroup = (metaData) => {
-		if (metaData.groupings) {
-			let menuGroupings = metaData.groupings;
-			this.menuItems = [];
-			var count = menuGroupings.length;
-			for (let i = 0; i < count; i++) {
-				Method.get(API_INTERFACE.GROUPINGS + "/" + menuGroupings[i], "").then(
-					response => {
-						if (response && response.data && response.data.label) {
-							if (this.state && this.state.menuItems) {
-								this.setState({
-									menuItems: [...this.state.menuItems, response.data.label]
-								})
-							}
+		if (metaData.groupings && metaData.groupings.length > 0) {
+			let groupNo = (this.props && this.props.getGroupings && this.props.getGroupings.message) ? this.props.getGroupings.message.data.length : 0;
+			let availableGroupNo = metaData.groupings.length;
+			var groupmenu = [];
+			if (groupNo > 0) {
+				for (var i = 0; i < groupNo; i++) {
+					for (var j = 0; j < availableGroupNo; j++) {
+						if (this.props.getGroupings.message.data[i].id === metaData.groupings[j]) {
+							groupmenu.push(this.props.getGroupings.message.data[i].label);
 						}
 					}
-				)
+				}
+				// rendering grouping related menu
+				this.setState({
+					menuItems: [...this.state.menuItems, ...groupmenu]
+				});
 			}
-
 		}
 	}
 
@@ -109,20 +109,12 @@ class Menu extends Component {
 	 * @param {none} : 
 	 */
     getMenuMetaData = () => {
-    	Method.get(API_INTERFACE.UI_CONFIG, "").then(
-    		response => {
-    			let getResponse = responseActions.response(response);
-    			if (getResponse && getResponse.message && getResponse.message.data) {
-    				var menuMetadata = getResponse.message.data.leftMenu;
-    				this.uiConfigData = getResponse.message.data;
-    				this.createMenuItem.call(this, menuMetadata);
-    				return getResponse;
-    			}
-    		}
-		)
-		/**
-		 @to do: reducer state need to handle instead of making server call
-		 **/
+    	let getResponse = this.props.getUiConfig;
+    	if (getResponse && getResponse.message && getResponse.message.data) {
+    		var menuMetadata = getResponse.message.data.leftMenu;
+    		this.uiConfigData = getResponse.message.data;
+    		this.createMenuItem(menuMetadata);
+    	}
     }
 
 	/**
@@ -190,15 +182,10 @@ class Menu extends Component {
 	 */
     componentDidMount(){
         //fetching the menu items
-		this.getMenuMetaData();
-		document.addEventListener("keydown", this.onKeyDown);
-	}
-
-	componentDidUpdate(){
-	}
-	
-	componentWillUnmount(){
-		document.removeEventListener("keydown", this.onKeyDown);
+		setTimeout(() => {
+			this.getMenuMetaData();
+		}, 0);
+		document.addEventListener("keydown", this.onKeyDown.bind(this));
 	}
 
 	/**
@@ -209,7 +196,7 @@ class Menu extends Component {
 		var submenuShow = {
 			display:'none'
 		}
-		if(this.state.activeMenu.toLowerCase() !== "exit menu"){
+		if(this.state.activeMenu && this.state.activeMenu.toLowerCase() !== "exit menu"){
 			submenuShow.display = 'block';
 		}
         return(
@@ -219,7 +206,7 @@ class Menu extends Component {
 				<nav>
 					<ul>
 						{this.state.menuItems.map((item)=>{
-							return (<li key={Math.random()+"id"} className={(item === this.state.activeMenu)?"active":""}><a href="#">{item}<i className={(item.toLowerCase() === "exit menu")?"fa fa-caret-left":"fa fa-caret-right"} aria-hidden="true"></i></a></li>)
+							return (<li key={item+"id"} className={(item === this.state.activeMenu)?"active":""}><a href="#">{item}<i className={(item && item.toLowerCase() === "exit menu")?"fa fa-caret-left":"fa fa-caret-right"} aria-hidden="true"></i></a></li>)
 						})}
 					</ul>
 				</nav>
@@ -234,4 +221,13 @@ class Menu extends Component {
         )
     }
 }
-export default  Menu;
+//export default  Menu;
+
+const mapStateToProps = state => ({
+	getUiConfig:state.getUiConfig,
+	getGroupings:state.getGroupings
+  });
+  
+
+
+export default connect(mapStateToProps)(Menu);

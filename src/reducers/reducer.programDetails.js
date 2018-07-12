@@ -13,7 +13,7 @@ import { ACTION } from '../constants/action.constant';
     */
 export default function (state = [], action) {
     switch (action.type) {
-        case ACTION.ProgramDetails:
+        case ACTION.PROGRAM_DETAILS:
             if (action.payload === "cached") {
                 return state;
             }

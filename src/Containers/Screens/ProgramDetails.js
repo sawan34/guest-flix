@@ -6,7 +6,7 @@
 */
 import React from 'react';
 import BaseScreen,{invokeConnect} from './BaseScreen';
-import KeyMap from '../../constants/keymap';
+import KeyMap from '../../constants/keymap.constant';
 import { translate, Trans } from 'react-i18next';
 import { SCREENS } from '../../constants/screens.constant';
 import {getProgramDetails} from '../../actions';
@@ -28,9 +28,11 @@ class ProgramDetails extends BaseScreen {
             active:1
         }
         this.leftButtonLength = 3;
+        this.forward =  false;
         
     }
    
+ 
     /**
      * Description: Handling the key event.
      * @param {event} 
@@ -40,13 +42,17 @@ class ProgramDetails extends BaseScreen {
         const keycode = event.keyCode;
         switch(keycode){
             case KeyMap.VK_UP:
-            this.activeButton(KEY.UP);
+            this.focusedItem(KEY.UP);
             break;
             case KeyMap.VK_DOWN:
-            this.activeButton(KEY.DOWN);
+            this.focusedItem(KEY.DOWN);
             break;
             case KeyMap.VK_BACK:
             this.handleBack();
+            break;
+            case KeyMap.VK_ENTER:
+               this.goToScreen(SCREENS.player, null);
+            
             break;
 
             default:
@@ -65,7 +71,7 @@ class ProgramDetails extends BaseScreen {
      * @param {string} _direction
      * @return {null}
      */    
-    activeButton = (_direction) => {
+    focusedItem = (_direction) => {
         if(_direction === KEY.UP){
             if(this.state.active > 1){
                 this.setState({active:this.state.active-1});

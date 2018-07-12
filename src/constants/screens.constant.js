@@ -7,6 +7,6 @@ export const SCREENS ={
     loading:'loading',
     home:"home",
     programdetails:'program-details',
-    menu:"menu"
-
+    menu:"menu",
+    player: "player"
 }

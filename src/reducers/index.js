@@ -18,7 +18,7 @@ const rootReducer = combineReducers({
   VOD:ReducerVod,
   getScreenStateData:getScreenStateData,
   getSelectables:getSelectables,
-  getGrouings : getGroupings,
+  getGroupings : getGroupings,
   getUiConfig : getUiConfig,
   getProgramDetails:reducerProgramDetails
 });

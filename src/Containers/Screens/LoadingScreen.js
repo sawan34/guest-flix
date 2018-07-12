@@ -8,8 +8,8 @@ import React from 'react';
 import BaseScreen, { invokeConnect } from './BaseScreen';
 import { SCREENS } from '../../constants/screens.constant';
 import logo from '../images/logo-lodingpage.jpg';
-import AuthService from '../../services/AuthenticationService'
-import { alertConstants } from '../../constants/alert.constant'
+import AuthService from '../../services/service.authentication';
+import { alertConstants } from '../../constants/alert.constant';
 import { commonConstants } from '../../constants/common.constants'
 import actionGroupings from '../../actions/action.groupings';
 import actionUIConfig from '../../actions/action.UIConfig';
@@ -47,7 +47,7 @@ class LoadingScreen extends BaseScreen {
      *  3. Go to Home Screen
      */
     componentDidUpdate() {
-        if (this.props.UIConfigReducer.type === alertConstants.SUCCESS &&  this.props.UIConfigReducer.message.status === 200) {
+        if (this.props.UIConfigReducer.type === alertConstants.SUCCESS && this.props.UIConfigReducer.message.status === 200) {
             if (Object.keys(this.props.groupingsReducer).length === 0) {
                 this.props.groupingAction();
             }
@@ -72,6 +72,7 @@ class LoadingScreen extends BaseScreen {
     /**
     * Request the AUTH Service to get the AUTH API and store in Local Storage in String format
     * Calling Action for UiConfig Data
+    * check if Access Token Length is greater than 10 , procceed to UiConfig call
     * @param {*} siteId 
     * @param {*} roomId 
     */
@@ -80,12 +81,15 @@ class LoadingScreen extends BaseScreen {
         const key = Md5.hashStr(siteId + room);
         const queryParameter = "?siteId=" + siteId + "&room=" + room + "&key=" + key;
         AuthService.getTokenRequest(queryParameter).then((response) => {
-            if (response.type === alertConstants.SUCCESS && response.message.status === 200)
-                this.setTokenToStorage(JSON.stringify(response.message.data[0]))
-            if (AuthService.getAccessToken().length > 10) {
-                this.props.UIConfigAction();
+            if (response.type === alertConstants.SUCCESS) {
+                if ((response.message.data[0]).hasOwnProperty("accessToken")) {
+                    this.setTokenToStorage(JSON.stringify(response.message.data[0]))
+                    this.props.UIConfigAction();
+                }
             }
-        })
+        }).catch(function (error) {
+            console.log(error);
+        });
     }
 
 
@@ -130,8 +134,6 @@ export default invokeConnect(LoadingScreen, null, '', {
     UIConfigAction: actionUIConfig,
     groupingAction: actionGroupings,
 }, {
-        UIConfigReducer: 'getUiConfig',
-        groupingsReducer: 'getGrouings',
-    });
-
-
+    UIConfigReducer: 'getUiConfig',
+    groupingsReducer: 'getGroupings',
+});

@@ -4,25 +4,9 @@
 * @author Sawan Kumar
 * @date  21.06.2018
 */
-import VODSERVICE from '../services/VODServices';
 import {ACTION} from '../constants/action.constant';
-import SELECTABLES from '../services/services.selectables'
-import ProgramDetailsServices from '../services/ProgramDetailsServices';
-
-/**
-    * Description: Action to fetch group
-    * @return {object}
-    */
-
-export function fetchGroupings(){
-    let data = [];
-    //Fetch 
-    data =  VODSERVICE.getVods();;
-    return {
-        type:ACTION.VOD,
-        payload:data
-    }
-}
+import SELECTABLES from '../services/service.selectables';
+import ProgramDetailsServices from '../services/service.programDetails';
 
 /**
     * Description: Get Program Details
@@ -34,7 +18,7 @@ export function fetchGroupings(){
     //Fetch 
     data =  ProgramDetailsServices.getProgramDetails(id);;
     return {
-        type:ACTION.ProgramDetails,
+        type:ACTION.PROGRAM_DETAILS,
         payload:data
     }
 }

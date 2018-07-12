@@ -7,11 +7,8 @@
 import React from 'react';
 
 export default function GridItem(props) {
-  const Styel = {
-
-  }
-    return (
-        <li key={props.i} id={props.i} className={props.i === props.active ? "list-item active" : "list-item"}>
-           <img src={props.data.image} />
-       </li>)
+  return (
+    <li key={props.i} id={props.i} className={props.i === props.active ? "list-item active" : "list-item"}>
+       <img src={props.data.image} />
+   </li>)
 }

@@ -4,7 +4,7 @@
 * @author Akash Sharma
 * @date  04.07.2018
 */
-import UIConfigService from '../services/UIConfigService'
+import UIConfigService from '../services/service.UIConfig';
 import {ACTION} from '../constants/action.constant';
 
 /**

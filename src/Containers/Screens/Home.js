@@ -6,7 +6,7 @@
 */
 import React from 'react';
 import BaseScreen, { invokeConnect } from './BaseScreen';
-import KeyMap from '../../constants/keymap'
+import KeyMap from '../../constants/keymap.constant'
 import { translate, Trans } from 'react-i18next';
 import { SCREENS } from '../../constants/screens.constant';
 import { actionGetSelectables } from '../../actions';
@@ -85,16 +85,23 @@ class Home extends BaseScreen {
         }
 
         if (this.state.homeGroupings.length > 0) {
-            promises =   this.state.homeGroupings.map(function (item) {
-               return  new Promise(function(resolve, reject) {
-                resolve(selfThis.props.actionGetSelectables.call(null, item.selectables,item.id))
-              });
-            });
-            Promise.all([...promises]).then(function(values) {
+            Promise.all(this.state.homeGroupings.map(function (item) {
+                return  new Promise(function(resolve, reject) {
+                 resolve(selfThis.props.actionGetSelectables.call(null, item.selectables,item.id))
+               }); //getting data for all request
+             })).then(function(values) {
                 selfThis.setState((prevState)=>{
+                    const  newSelectables  = selfThis.props.getSelectables;
                     return {
-                        groupWiseSelectables:selfThis.props.getSelectables,
-                        numberOfGrouping:selfThis.props.getSelectables.length
+                        groupWiseSelectables:newSelectables,
+                        numberOfGrouping:selfThis.props.getSelectables.length,
+                        activeGridInfo:{
+                            title:newSelectables[0].data[0].title,
+                            description:newSelectables[0].data[0].shortDescription,
+                            rating:newSelectables[0].data[0].rating,
+                            amount:newSelectables[0].data[0].price,
+                            runTime:newSelectables[0].data[0].runTime,
+                        } 
                     }
                 })
               });
@@ -174,7 +181,6 @@ class Home extends BaseScreen {
      * @return {null}
      */
     handleFocusChange(focusLostPosition, currentItemFocus) {
-        console.log(currentItemFocus)
        this.setState((prevState)=>{
         
            const position = prevState.gridPositionColumn[prevState.gridPositionRow] =currentItemFocus;
@@ -280,7 +286,7 @@ class Home extends BaseScreen {
     }
 
 };
-export default invokeConnect(Home, null, 'getGrouings',
+export default invokeConnect(Home, null, 'getGroupings',
                                 {actionGetSelectables:actionGetSelectables},{
                                                                 getSelectables:'getSelectables',
                                                                 uiConfig:'getUiConfig' });
