@@ -36,7 +36,10 @@ class Home extends BaseScreen {
                 rating:"",
                 amount:"",
                 runTime:""
-            }
+            },
+            startIndex: 0,
+            endIndex: 0,
+            prefixGroup:''
         }
         this.menuOn = false ;
         this.topPosition = 0;
@@ -101,7 +104,9 @@ class Home extends BaseScreen {
                             rating:newSelectables[0].data[0].rating,
                             amount:newSelectables[0].data[0].price,
                             runTime:newSelectables[0].data[0].runTime,
-                        } 
+                        },
+                        activeProgramId:newSelectables[0].data[0].programId,
+                        endIndex: 4
                     }
                 })
               });
@@ -116,7 +121,7 @@ class Home extends BaseScreen {
     */
     handleKey(event) {
         var keyCode = event.keyCode;
-        
+
         if (this.state.menuOn) {
             return;
         }
@@ -125,31 +130,40 @@ class Home extends BaseScreen {
         }
         switch (keyCode) {
             case KeyMap.VK_UP:
-                this.handleUpDown("up",event);
+                this.handleUpDown("up", event);
                 break;
             case KeyMap.VK_DOWN:
-                    this.handleUpDown("down",event);
+                this.handleUpDown("down", event);
                 break;
             case KeyMap.VK_ENTER:
                 // setting keyEvent null because coming back this screen state should not have any key
-                this.setState({keyEvent:null});  
-                this.goToScreen(SCREENS.programdetails+"/"+this.state.activeProgramId, null);
-            break; 
-                case KeyMap.VK_INSERT:
+                this.setState({
+                    keyEvent: null
+                });
+                this.goToScreen(SCREENS.programdetails + "/" + this.state.activeProgramId, null);
+                break;
+            case KeyMap.VK_INSERT:
                 this.changeMenuStatus(event)
                 break
-            case KeyMap.VK_RIGHT :
-                this.setState({ keyEvent: event });
-            break  
+            case KeyMap.VK_RIGHT:
+                this.setState({
+                    keyEvent: event
+                });
+                break
             case KeyMap.VK_LEFT:
-            this.setState({ keyEvent: event });
-              break   
+                this.setState({
+                    keyEvent: event
+                });
+                break
 
             default:
-               true;
-            break;
+                this.setState({
+                    keyEvent: event
+                });
+                break;
         }
     }
+
     /**
     * Description: This Could handle Up and Down
     * @param {string}  direction 
@@ -160,7 +174,7 @@ class Home extends BaseScreen {
         if (direction === "up") {
             if (this.state.gridPositionRow > 0) {
                 this.setState((prevState) => {
-                    return { gridPositionRow: prevState.gridPositionRow - 1, scrollY: prevState.scrollY + 690,keyEvent:event };
+                    return { gridPositionRow: prevState.gridPositionRow - 1, scrollY: prevState.scrollY + 690,keyEvent:event,startIndex:prevState.startIndex-1,endIndex:prevState.endIndex-1 };
                 });
             }
         }
@@ -168,7 +182,7 @@ class Home extends BaseScreen {
         if (direction === "down") {
             if (this.state.gridPositionRow < this.state.numberOfGrouping - 1) {
                 this.setState((prevState) => {
-                    return { gridPositionRow: prevState.gridPositionRow + 1, scrollY: prevState.scrollY - 690,keyEvent:event };
+                    return { gridPositionRow: prevState.gridPositionRow + 1, scrollY: prevState.scrollY - 690,keyEvent:event, startIndex:prevState.startIndex+1,endIndex:prevState.endIndex+1,prefixGroup:prevState.startIndex };
                 });
             }
         }
@@ -206,12 +220,25 @@ class Home extends BaseScreen {
      * @return {JSX}
      */
     renderGroupingSeletables(selectables,i) {
+        const imageType = this.state.homeGroupings[i].imageType; // imagetype 
         let selectablesData = selectables.map((item,index)=>{
+            let   imageUrl ="",dimension={};
+            item.images.forEach(element => {
+                if(element.type === imageType){
+                    imageUrl = element.url;
+                    dimension = {
+                        height:element.height,
+                        width:element.width
+                    }
+                }
+            });
             return {
-                image:item.images[0].url,
-                title:item.title
+                image:imageUrl,
+                title:item.title,
+                dimension:dimension
             }
         });
+
 
         const activeGrid = this.state.gridPositionColumn[i]?this.state.gridPositionColumn[i]:0;
         const maxVisibleItem = selectablesData.length > 1 ? selectablesData.length : 1;
@@ -259,11 +286,16 @@ class Home extends BaseScreen {
             transform: "translate3d(0px," + this.state.scrollY  + "px,0)",
             transition: 'all 300ms ease-in-out'
         }
-        
+        var menuCondition = ( this.state.keyEvent && this.state.keyEvent.keyCode === KeyMap.VK_1 || localStorage.isMenuActive);
         return (
             <div>
             <div className="container" >
-            <Menu keyEvent={this.state.keyEvent} changeMenuStatus={this.changeMenuStatus.bind(this)} />
+                { (menuCondition === "true" || menuCondition === true) ?
+                    <div>
+                        <Menu keyEvent={this.state.keyEvent} changeMenuStatus={this.changeMenuStatus.bind(this)} />
+                    </div> :null
+                }
+
                 <div className="slide-container-wrapper" data-show="home">
                     <div className="home-top-poster">
                         <img src="images/poster_top.png" />
@@ -272,7 +304,11 @@ class Home extends BaseScreen {
                     <div className="sliders-list" style={style}>
                         {
                             this.state.groupWiseSelectables.map((item, i) => {
-                                return this.renderGroupingSeletables.call(this, item.data,i);
+                                let c = 0;
+                                if((i>=this.state.startIndex && i<this.state.endIndex) || i===this.state.prefixGroup) {
+                                        return this.renderGroupingSeletables.call(this, item.data,i,c++);
+                                }
+
                             })
                         }
                     </div>

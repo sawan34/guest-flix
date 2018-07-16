@@ -115,7 +115,25 @@ class Menu extends Component {
     		this.uiConfigData = getResponse.message.data;
     		this.createMenuItem(menuMetadata);
     	}
-    }
+	}
+
+	/**
+	 * This function is making menu active and background as blurr
+	 * @param {} null: 
+	 */
+	makeMenuActive = () => {
+		localStorage.isMenuActive = true;
+		let showOtherEle;
+		showOtherEle = document.querySelector("div [data-show]");
+		if (showOtherEle) {
+			showOtherEle.classList.add('bluureffects');
+		}
+		this.setState({
+			showMenu: {
+				display: 'block'
+			}
+		});
+	}
 
 	/**
 	 * This function is responsible for menu item traversing
@@ -135,17 +153,12 @@ class Menu extends Component {
 						let showOtherEle;
 						showOtherEle= document.querySelector("div [data-show]");
 						showOtherEle.classList.remove('bluureffects');
-					    this.props.changeMenuStatus(event);
+						document.removeEventListener("keydown", this.onKeyDown);
+						this.props.changeMenuStatus(event);
 					}
 					break;
 				case KeyMap.VK_1:
-					localStorage.isMenuActive = true;
-					let showOtherEle;
-					showOtherEle= document.querySelector("div [data-show]");
-					if(showOtherEle){
-					showOtherEle.classList.add('bluureffects');
-					}
-					this.setState({showMenu:{display:'block'}});
+					this.makeMenuActive();
 					break;
 				case KeyMap.VK_UP:
 					
@@ -180,12 +193,17 @@ class Menu extends Component {
 	 * This function is responsible for calling the server action and binding the key action
 	 * @param {} none: 
 	 */
-    componentDidMount(){
-        //fetching the menu items
-		setTimeout(() => {
-			this.getMenuMetaData();
-		}, 0);
-		document.addEventListener("keydown", this.onKeyDown.bind(this));
+    componentDidMount() {
+    	//fetching the menu items
+    	setTimeout(() => {
+    		this.getMenuMetaData();
+    		this.makeMenuActive();
+    	}, 0);
+    	document.addEventListener("keydown", this.onKeyDown);
+    }
+
+	componentWillUnmount(){
+		document.removeEventListener("keydown", this.onKeyDown);
 	}
 
 	/**
