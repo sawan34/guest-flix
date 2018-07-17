@@ -304,9 +304,8 @@ class Home extends BaseScreen {
                     <div className="sliders-list" style={style}>
                         {
                             this.state.groupWiseSelectables.map((item, i) => {
-                                let c = 0;
-                                if((i>=this.state.startIndex && i<this.state.endIndex) || i===this.state.prefixGroup) {
-                                        return this.renderGroupingSeletables.call(this, item.data,i,c++);
+                                if((i>=this.state.startIndex && i<=this.state.endIndex) || i===this.state.prefixGroup) {
+                                        return this.renderGroupingSeletables.call(this, item.data,i);
                                 }
 
                             })
