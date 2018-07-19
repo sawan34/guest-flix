@@ -11,12 +11,13 @@ const servicesSelect = {
     getSelectables,
   };
 
-  function getSelectables(params,groupId){
+  function getSelectables(params,groupId,nextData){
     return Method.get(API_INTERFACE.SELECTABLES+params, "").then(
         req_response => {
             let getResponse = responseActions.response(req_response);
             if (getResponse) {
                 getResponse.groupId = groupId;
+                getResponse.nextData = nextData;
                 return getResponse;
             }
         },

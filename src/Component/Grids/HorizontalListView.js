@@ -26,7 +26,7 @@ class HorizontalListView extends BaseGrid {
                 }
                 this.scrollX = this.scrollX - (this.itemWidth + this.itemPadding);
                 this.setState((prevState) => {
-                    return { focusLostItemPosition: prevState.activeIndex, activeIndex: prevState.activeIndex + 1, scrollX: this.scrollX }
+                    return {startIndex:prevState.startIndex+1,endIndex:prevState.endIndex+1, focusLostItemPosition: prevState.activeIndex, activeIndex: prevState.activeIndex + 1, scrollX: this.scrollX }
                 }, () => {
                     this.focusChange();
                 });
@@ -37,7 +37,7 @@ class HorizontalListView extends BaseGrid {
                 }
                 this.scrollX = this.scrollX + (this.itemWidth + this.itemPadding);
                 this.setState((prevState) => {
-                    return { focusLostItemPosition: prevState.activeIndex, activeIndex: prevState.activeIndex - 1, scrollX: this.scrollX }
+                    return {startIndex:prevState.startIndex-1,endIndex:prevState.endIndex-1, focusLostItemPosition: prevState.activeIndex, activeIndex: prevState.activeIndex - 1, scrollX: this.scrollX }
                 }, () => {
                     this.focusChange();
                 });

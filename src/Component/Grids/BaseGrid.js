@@ -20,6 +20,9 @@ class BaseGrid extends Component {
         this.state = {
             activeIndex: 0,
             focusLostItemPosition: -1,
+            startIndex: 0,
+            endIndex: 5,
+            prefixGroup:'',
         }
         this.initData();
     }
@@ -133,13 +136,17 @@ class BaseGrid extends Component {
     renderItem = () => {
         return (
             this.dataSource.map((item, i) => {
-                if (i < this.getMaxVisibleItem())
+                if((i>=this.state.startIndex && i<=this.state.endIndex) ) {
+                    if (i < this.getMaxVisibleItem())
                     if (this.props.activeEvent) {
                         return this.getView(i, this.state.activeIndex, item);
                     }
                     else {
                         return this.getView(i, -1, item);
                     }
+                 }
+
+               
             }))
     }
 

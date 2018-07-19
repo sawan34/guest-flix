@@ -55,7 +55,11 @@ export default function (state = [], action) {
                     fecthedData.data = action.payload.message;
                 }
             }
-            return state = state.concat(fecthedData);
+            if(action.payload.nextData){
+                return state = fecthedData;
+            }else{
+                    return state = state.concat(fecthedData);                
+            }
             break;
             default:
             break;

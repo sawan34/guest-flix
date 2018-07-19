@@ -27,14 +27,14 @@ import ProgramDetailsServices from '../services/service.programDetails';
     * Description: action for getting selectables
     *  @return {object}
     */
-export function actionGetSelectables(params,groupId=""){
+export function actionGetSelectables(params,groupId="",nextData=false){
     let data = [];
     let queryString = "";
     if(params.length > 0){
         queryString = '?id=' + params.join('&id=');
     }
     //Fetch 
-    data =  SELECTABLES.getSelectables(queryString,groupId);;
+    data =  SELECTABLES.getSelectables(queryString,groupId,nextData);;
     return {
         type:ACTION.GET_SELECTABLES,
         payload:data

@@ -12,6 +12,7 @@ import { SCREENS } from '../../constants/screens.constant';
 import { actionGetSelectables } from '../../actions';
 import { alertConstants } from '../../constants/alert.constant';
 import Menu from '../../Component/Menu/Menu';
+import _ from 'lodash';
 
 import HomeHorizontalView from '../../Component/Grids/HorizontalListView'
 
@@ -39,11 +40,16 @@ class Home extends BaseScreen {
             },
             startIndex: 0,
             endIndex: 0,
-            prefixGroup:''
+            prefixGroup:'',
+            selectable:0
         }
         this.menuOn = false ;
         this.topPosition = 0;
         this.handleFocusChange =  this.handleFocusChange.bind(this);
+        this.numberTofetchSeletables = 20; //number of seletables to fetch at time
+        this.getSelectablesOnLoad =  this.getSelectablesOnLoad.bind(this);
+        this.gridrowLoad = 4;
+        this.groupWiseSelectablePage = {};
     }
 
     /**
@@ -67,13 +73,12 @@ class Home extends BaseScreen {
     }
 
     /**
-     * 
+     *  Description:fetching grouping
      */
     componentDidMount(){
         if(this.state.groupWiseSelectables.length > 0){
             return true;
-        }
-        let promises = [],selfThis = this; // this variable for promise which is new object
+        }        
         if(this.props.networkData.type===alertConstants.SUCCESS && alertConstants.SUCCESS===this.props.uiConfig.type){
             //parsing on home Grouping from All grouping
             const homeGroupingIds = this.props.uiConfig.message.data.homeGroupings;
@@ -82,36 +87,105 @@ class Home extends BaseScreen {
                     return false;
                 }
                 if(homeGroupingIds.indexOf(item.id)>=0){
+                    // adding seletables page wise 
+                    const seletablesPageWise  = _.chunk(item.selectables,this.numberTofetchSeletables);
+                    const totalPages = seletablesPageWise.length
+                    this.groupWiseSelectablePage[item.id] = {
+                        seletablesPageWise:seletablesPageWise, 
+                        totalPages:totalPages ,
+                        currentPage:0
+                    };
                     return true;
                 }
             });
         }
 
         if (this.state.homeGroupings.length > 0) {
-            Promise.all(this.state.homeGroupings.map(function (item) {
-                return  new Promise(function(resolve, reject) {
-                 resolve(selfThis.props.actionGetSelectables.call(null, item.selectables,item.id))
-               }); //getting data for all request
-             })).then(function(values) {
-                selfThis.setState((prevState)=>{
-                    const  newSelectables  = selfThis.props.getSelectables;
-                    return {
-                        groupWiseSelectables:newSelectables,
-                        numberOfGrouping:selfThis.props.getSelectables.length,
-                        activeGridInfo:{
-                            title:newSelectables[0].data[0].title,
-                            description:newSelectables[0].data[0].shortDescription,
-                            rating:newSelectables[0].data[0].rating,
-                            amount:newSelectables[0].data[0].price,
-                            runTime:newSelectables[0].data[0].runTime,
-                        },
-                        activeProgramId:newSelectables[0].data[0].programId,
-                        endIndex: 4
-                    }
-                })
-              });
+           this.getSelectablesOnLoad();
         }
 
+    }
+
+    /**
+     * Description: get Selectables
+     * @return {promise}
+     */
+    getSelectablesOnLoad(){
+        let selfThis = this; // this variable for promise which is new object
+        Promise.all(this.state.homeGroupings.map(function (item) {
+            return  new Promise(function(resolve, reject) {
+             resolve(selfThis.props.actionGetSelectables.call(null,selfThis.groupWiseSelectablePage[item.id].seletablesPageWise[selfThis.groupWiseSelectablePage[item.id].currentPage],item.id));
+           }); //getting data for all request
+         })).then(function(values) {
+            selfThis.setState((prevState)=>{
+                const  newSelectables  = selfThis.props.getSelectables;
+                return {
+                    groupWiseSelectables:newSelectables,
+                    numberOfGrouping:selfThis.props.getSelectables.length,
+                    activeGridInfo:{
+                        title:newSelectables[0].data[0].title,
+                        description:newSelectables[0].data[0].shortDescription,
+                        rating:newSelectables[0].data[0].rating,
+                        amount:newSelectables[0].data[0].price,
+                        runTime:newSelectables[0].data[0].runTime,
+                    },
+                    activeProgramId:newSelectables[0].data[0].programId,
+                    endIndex: selfThis.gridrowLoad
+                }
+            })
+          });
+    }
+
+    /**
+     * 
+     */
+    fetchNextSelectableForActive(){
+        let returnValue, currentGroupId,lastIndex ;
+        try { 
+             currentGroupId =  this.state.groupWiseSelectables[this.state.gridPositionRow].groupId;
+             return this.addSelectablesToGroup(currentGroupId);
+        }
+        catch(err) {
+            returnValue= false 
+        }
+        return false;
+    }
+
+    /**
+     * 
+     */
+    addSelectablesToGroup(groupId){
+        const currentActiveData = this.groupWiseSelectablePage[groupId];
+        const selfThis = this;
+        let selectablesToCall = [];
+
+        if(currentActiveData.currentPage +1 < currentActiveData.totalPages){
+            currentActiveData.currentPage = currentActiveData.currentPage +1;
+            selectablesToCall = currentActiveData.seletablesPageWise[currentActiveData.currentPage];
+            let promise = new Promise((resolve, reject) => {
+                  resolve(selfThis.props.actionGetSelectables.call(null,selectablesToCall,groupId,true)); 
+              });
+              promise.then((successMessage) => {
+                   if(this.props.getSelectables.type ===alertConstants.SUCCESS && _.isNumber(this.props.getSelectables.groupId)  ){
+                        this.setState((prevState)=>{
+                            const newGropWiseSelectable = prevState.groupWiseSelectables.map((item)=>{
+                                if(item.groupId===this.props.getSelectables.groupId ){
+                                    item.data = [...item.data,...this.props.getSelectables.data];
+                                    return item;
+                                }
+                                return item ;
+                            }) 
+                            return{
+                                groupWiseSelectables:newGropWiseSelectable
+                            };
+                        });
+                   }
+                   
+              });
+            
+        }else{
+            return false;
+        }
     }
 
     /**
@@ -173,6 +247,7 @@ class Home extends BaseScreen {
     handleUpDown = (direction,event) => {
         if (direction === "up") {
             if (this.state.gridPositionRow > 0) {
+                  //  this.fetchNextSelectableForActive();
                 this.setState((prevState) => {
                     return { gridPositionRow: prevState.gridPositionRow - 1, scrollY: prevState.scrollY + 690,keyEvent:event,startIndex:prevState.startIndex-1,endIndex:prevState.endIndex-1 };
                 });
@@ -275,9 +350,7 @@ class Home extends BaseScreen {
      * @return {JSX}
      */
     render() {
-        if (this.state.groupWiseSelectables.length ===0) {
-            return <div><p><Trans i18nKey="loadingData">Loading Data ...</Trans> </p></div>
-        }
+       
         if (this.state.data.type === alertConstants.ERROR) {
             return <div>{this.state.data.data}</div>
         }
@@ -304,6 +377,7 @@ class Home extends BaseScreen {
                     <div className="sliders-list" style={style}>
                         {
                             this.state.groupWiseSelectables.map((item, i) => {
+                                //doing windowing
                                 if((i>=this.state.startIndex && i<=this.state.endIndex) || i===this.state.prefixGroup) {
                                         return this.renderGroupingSeletables.call(this, item.data,i);
                                 }
