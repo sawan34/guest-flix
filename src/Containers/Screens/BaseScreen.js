@@ -107,8 +107,6 @@ class BaseScreen extends Component {
      */
     componentWillMount() {
         document.addEventListener("keydown", this.handleKey);
-        //this if block will be called when user comes from on the screen.
-        localStorage.isMenuActive = "false";
         if (this.props.routerData.history.action.toLowerCase() ==="push"){ //for forward
             if(this.props.fetchNetworkData){ //condition if no redux is getting done on screen
                 this.onScreenLoad();

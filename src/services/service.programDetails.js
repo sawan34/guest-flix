@@ -6,6 +6,7 @@
 import Method from './services';
 import API_INTERFACE from '../constants/uri.constant';
 import {responseActions} from '../actions/action.response';
+import {authHeader} from './service.auth-header';
 
  const programDetailsServices = {
     getProgramDetails,
@@ -16,7 +17,7 @@ import {responseActions} from '../actions/action.response';
     * @return {object}
     */
  function getProgramDetails(id){
-		return Method.get(API_INTERFACE.ProgramDetails+id, "").then(
+		return Method.get(API_INTERFACE.ProgramDetails+id,authHeader()).then(
 			req_response => {
 				let getResponse = responseActions.response(req_response);
 				if (getResponse) {

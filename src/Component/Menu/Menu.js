@@ -14,6 +14,7 @@ class Menu extends Component {
 		}
 		this.onKeyDown= this.onKeyDown.bind(this);
 	}
+	
 	/**
 	 * This function creates the menu from mode (like adult,kid or hollywood)
 	 * @param {object} metaData: contains the information about menu items 
@@ -156,9 +157,6 @@ class Menu extends Component {
 						document.removeEventListener("keydown", this.onKeyDown);
 						this.props.changeMenuStatus(event);
 					}
-					break;
-				case KeyMap.VK_1:
-					this.makeMenuActive();
 					break;
 				case KeyMap.VK_UP:
 					
