@@ -11,6 +11,7 @@ import VerticalItem from './GridItem'
 import BaseGrid from './BaseGrid'
 import KeyMap from '../../constants/keymap.constant';
 import Utility from '../../commonUtilities';
+import { utimes } from 'fs';
 class HorizontalListView extends BaseGrid {
 
     /**
@@ -18,16 +19,20 @@ class HorizontalListView extends BaseGrid {
      * @param {*} event  Handling KeyCode event for Left,Right and Enter Key
      */
     handleKeyPress = (event) => {
+        if(Utility.isEmpty(event)){
+            return;
+        }
         const keyCode = event.keyCode;
         switch (keyCode) {
             case KeyMap.VK_RIGHT:
-                if (this.state.activeIndex >= this.getMaxVisibleItem() - 1) {
+                if (this.state.scrollIndex >= this.dataSource.length - 1) {
                     return;
                 }
                 this.scrollX = this.scrollX - (this.itemWidth + this.itemPadding);
                 this.setState((prevState) => {
-                    return {startIndex:prevState.startIndex+1,endIndex:prevState.endIndex+1, focusLostItemPosition: prevState.activeIndex, activeIndex: prevState.activeIndex + 1, scrollX: this.scrollX }
+                    return { focusLostItemPosition: prevState.scrollIndex, scrollIndex: prevState.scrollIndex + 1, activeIndex: prevState.activeIndex + 1, SCROOL_SPEED: this.SCROLL_SPEED }
                 }, () => {
+                    this.scrollDirection = 'RIGHT';
                     this.focusChange();
                 });
                 break;
@@ -37,8 +42,9 @@ class HorizontalListView extends BaseGrid {
                 }
                 this.scrollX = this.scrollX + (this.itemWidth + this.itemPadding);
                 this.setState((prevState) => {
-                    return {startIndex:prevState.startIndex-1,endIndex:prevState.endIndex-1, focusLostItemPosition: prevState.activeIndex, activeIndex: prevState.activeIndex - 1, scrollX: this.scrollX }
+                    return { focusLostItemPosition: prevState.scrollIndex, scrollIndex: prevState.scrollIndex - 1, activeIndex: prevState.activeIndex - 1, SCROOL_SPEED: this.SCROLL_SPEED }
                 }, () => {
+                    this.scrollDirection = 'LEFT';
                     this.focusChange();
                 });
                 break;
@@ -51,6 +57,8 @@ class HorizontalListView extends BaseGrid {
                 break;
         }
     }
+
+
 
 
     /**
@@ -68,7 +76,7 @@ class HorizontalListView extends BaseGrid {
       */
     onItemSelected = (position) => {
         if (!Utility.isEmpty(this.props.onItemSelected))
-            this.props.onItemSelected(this.state.activeIndex);
+            this.props.onItemSelected(this.state.scrollIndex);
     }
 
     /**
@@ -79,7 +87,7 @@ class HorizontalListView extends BaseGrid {
      * @param {*} dataObject  single object with three attribute(id,title,image)
      */
     getView = (position, activeIndex, dataObject) => {
-        return (<VerticalItem key={position} i={position} active={activeIndex} data={dataObject} />)
+        return (<VerticalItem key={dataObject.id} i={position} active={activeIndex} data={dataObject} />)
     }
 }
 export default HorizontalListView;

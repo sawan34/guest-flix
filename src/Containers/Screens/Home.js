@@ -45,27 +45,16 @@ class Home extends BaseScreen {
         }
         this.menuOn = false ;
         this.topPosition = 0;
-        this.handleFocusChange =  this.handleFocusChange.bind(this);
-        this.numberTofetchSeletables = 20; //number of seletables to fetch at time
-        this.getSelectablesOnLoad =  this.getSelectablesOnLoad.bind(this);
+        this.numberTofetchSeletables = 10; //number of seletables to fetch at time
         this.gridrowLoad = 4;
         this.groupWiseSelectablePage = {};
+        this.loadNextData =  this.loadNextData.bind(this);
+        this.handleFocusChange =  this.handleFocusChange.bind(this);
+        this.getSelectablesOnLoad =  this.getSelectablesOnLoad.bind(this);
+        
+        
     }
-
     /**
-    * Get the Selected item position
-    */
-    itemSelected = (position) => {
-    }
-
-    /**
-     * 
-     */
-    shouldComponentUpdate(nextProps, nextState) {
-        return true;
-    }
-
-      /**
      * Description:Setting  Menu status On || Off 
      */
     changeMenuStatus(event = null) {
@@ -137,24 +126,32 @@ class Home extends BaseScreen {
     }
 
     /**
-     * 
-     */
-    fetchNextSelectableForActive(){
-        let returnValue, currentGroupId,lastIndex ;
-        try { 
-             currentGroupId =  this.state.groupWiseSelectables[this.state.gridPositionRow].groupId;
-             return this.addSelectablesToGroup(currentGroupId);
-        }
-        catch(err) {
-            returnValue= false 
-        }
-        return false;
-    }
+    * Load data for grids 
+    */
+    // loadNextData(gridId,length,callBack){
+    //     this.fetchNextSelectableForActive(gridId);
+    //     callBack(data);
+    // }
 
     /**
      * 
      */
-    addSelectablesToGroup(groupId){
+    // fetchNextSelectableForActive(gridId){
+    //     let returnValue,lastIndex ;
+    //     try { 
+    //         // currentGroupId =  this.state.groupWiseSelectables[this.state.gridPositionRow].groupId;
+    //          return this.addSelectablesToGroup(gridId);
+    //     }
+    //     catch(err) {
+    //         returnValue= false 
+    //     }
+    //     return false;
+    // }
+
+    /**
+     * 
+     */
+    loadNextData(groupId,callBack){
         const currentActiveData = this.groupWiseSelectablePage[groupId];
         const selfThis = this;
         let selectablesToCall = [];
@@ -170,6 +167,7 @@ class Home extends BaseScreen {
                         this.setState((prevState)=>{
                             const newGropWiseSelectable = prevState.groupWiseSelectables.map((item)=>{
                                 if(item.groupId===this.props.getSelectables.groupId ){
+                                    callBack(this.prepareDataForGrid(this.props.getSelectables.data,groupId));
                                     item.data = [...item.data,...this.props.getSelectables.data];
                                     return item;
                                 }
@@ -288,15 +286,47 @@ class Home extends BaseScreen {
        });
     }
 
-     /**
-     * Description: This method is used for populating grids
-     *  @param {object}  selectables 
-     * @param {number}  i 
-     * @return {JSX}
+    /**
+     * Description : Get Group Name By Group Id
+     * @param {number}  groupId
+     * @returns {string}
      */
-    renderGroupingSeletables(selectables,i) {
-        const imageType = this.state.homeGroupings[i].imageType; // imagetype 
-        let selectablesData = selectables.map((item,index)=>{
+    getGroupNameById(groupId){
+      const arr = [...this.state.homeGroupings];
+      let groupName = "";
+
+      arr.forEach((item)=>{
+        if(item.id===groupId){
+            groupName = item.label;
+        }
+      });
+      return groupName;
+    }
+
+     /**
+     * Description : Get Group Name By Group Id
+     * @param {number}  groupId
+     * @returns {string}
+     */
+    getGroupImageType(groupId){
+        const arr = [...this.state.homeGroupings];
+        let imageType = "";
+  
+        arr.forEach((item)=>{
+          if(item.id===groupId){
+            imageType = item.imageType;
+          }
+        });
+        return imageType;
+      }
+
+    /**
+     * Description: Prepare Data for Grid
+     */
+    prepareDataForGrid(selectables,id){
+        let data = "";
+        let imageType = this.getGroupImageType(id);
+        data = selectables.map((item,index)=>{
             let   imageUrl ="",dimension={};
             item.images.forEach(element => {
                 if(element.type === imageType){
@@ -313,6 +343,18 @@ class Home extends BaseScreen {
                 dimension:dimension
             }
         });
+        return data;
+    }
+     /**
+     * Description: This method is used for populating grids
+     *  @param {object}  selectables 
+     * @param {number}  i 
+     * @return {JSX}
+     */
+    renderGroupingSeletables(selectables,id,i) {
+        console.log(id);
+        const imageType = this.state.homeGroupings[i].imageType; // imagetype 
+        let selectablesData = this.prepareDataForGrid(selectables,id);
 
 
         const activeGrid = this.state.gridPositionColumn[i]?this.state.gridPositionColumn[i]:0;
@@ -326,7 +368,7 @@ class Home extends BaseScreen {
             this.position = 690 *i;
             top = {top:this.position+'px'} ;
         }
-        return (<div key={i} className="slider-row" style = {top} > <h2>{this.state.homeGroupings[i].label}</h2><div className={wrapperActive}><HomeHorizontalView dataSource={selectablesData} defaultSelectedPosition={activeGrid} onItemSelected={this.itemSelected} maxVisibleItem={maxVisibleItem} keyEvent={this.state.keyEvent} onFocusChange={this.handleFocusChange} activeEvent={i === this.state.gridPositionRow} />
+        return (<div key={i} className="slider-row" style = {top} > <h2>{this.getGroupNameById(id)}</h2><div className={wrapperActive}><HomeHorizontalView dataSource={selectablesData} defaultSelectedPosition={activeGrid} onItemSelected={this.itemSelected} maxVisibleItem={this.numberTofetchSeletables} keyEvent={this.state.keyEvent} onFocusChange={this.handleFocusChange} activeEvent={i === this.state.gridPositionRow} loadNextData={this.loadNextData} id={id} />
          {i === this.state.gridPositionRow && 
         <span>
         <div className="arrow left-arrow"></div>
@@ -379,7 +421,7 @@ class Home extends BaseScreen {
                             this.state.groupWiseSelectables.map((item, i) => {
                                 //doing windowing
                                 if((i>=this.state.startIndex && i<=this.state.endIndex) || i===this.state.prefixGroup) {
-                                        return this.renderGroupingSeletables.call(this, item.data,i);
+                                        return this.renderGroupingSeletables.call(this, item.data,item.groupId,i);
                                 }
 
                             })

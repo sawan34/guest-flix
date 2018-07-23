@@ -5,10 +5,10 @@
 * @date  22.06.2018
 */
 import React from 'react';
-
 export default function GridItem(props) {
+  console.log('Render Item')
   return (
     <li key={props.i} id={props.i} className={props.i === props.active ? "list-item active" : "list-item"}>
-       <img src={props.data.image} />
-   </li>)
+      <img src={props.data.image} />
+    </li>)
 }
