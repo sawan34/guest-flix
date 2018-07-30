@@ -5,6 +5,7 @@
  * @date  23.07.2018
  */
 import Utility from '../commonUtilities';
+import AuthenticationServices from  './service.authentication';
 
 /**
 * Description: returns header params to the request
@@ -12,10 +13,8 @@ import Utility from '../commonUtilities';
 * @return {object} Content-Type, charset, Accept, Authorization
 */
 function authHeader() {
-    let token = JSON.parse(localStorage.getItem('GuestFlixTokenDetails'));
-    debugger;
-        if(!Utility.isEmptyObject(token)){
-            let userdata = token.tokenType + " " + token.accessToken;
+        if(!Utility.isEmptyObject(AuthenticationServices.getTokenType()) && !Utility.isEmptyObject(AuthenticationServices.getAccessToken())){
+            let userdata = AuthenticationServices.getTokenType() + " " + AuthenticationServices.getAccessToken();
             return { 'Content-Type': 'application/json; charset=utf-8', 'Accept': 'application/json', 'Authorization': userdata };
         }
         return false;

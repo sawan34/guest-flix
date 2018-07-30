@@ -11,5 +11,9 @@ export const ACTION ={
     GET_UI_CONFIG : 'getUiConfig',
     SAVE_PREVIOUS:'saveprevious',
     GET_SELECTABLES:"getselectables",
-    PROGRAM_DETAILS:'programdetails'
+    PROGRAM_DETAILS:'programdetails',
+    PURCHASE_START:'purchasestart',
+    PURCHASE_PMS:'purchasepms',
+    PURCHASE_COMPLETE:'purchasecomplete',
+    GET_BOOKMARKS:'getBookMarks'
 }

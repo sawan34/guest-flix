@@ -12,5 +12,12 @@
   "director":"Director",
   "purchase":"Purchase",
   "related_titles":"Related Titles",
-  "go_back":"Go Back"
+  "go_back":"Go Back",
+  "tax":"Tax",
+  "confirm":"Confirm",
+  "audio_language":"Audio Language",
+  "subtitles":"Subtitles",
+  "cancel":"Cancel",
+  "resume":"Resume",
+  "purchase_confirm_description":"The title you have selected is available to view with alternate language audio and subtitles. Please choose your desired language options and press Confirm to begin playing your selection."
 }

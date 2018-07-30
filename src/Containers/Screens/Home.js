@@ -6,17 +6,24 @@
 */
 import React from 'react';
 import BaseScreen, { invokeConnect } from './BaseScreen';
-import KeyMap from '../../constants/keymap.constant'
+import KeyMap from '../../constants/keymap.constant';
+import Menu from '../../Component/Menu/Menu';
+import HomeHorizontalView from '../../Component/Grids/HorizontalListView';
+import COMMON_UTILITIES from '../../commonUtilities';
+import roomUser from '../../services/service.roomUser';
+import _ from 'lodash';
+
 import { translate, Trans } from 'react-i18next';
 import { SCREENS } from '../../constants/screens.constant';
 import { actionGetSelectables } from '../../actions';
+import { actionGetBoookmarks } from '../../actions/action.bookmark';
+
 import { alertConstants } from '../../constants/alert.constant';
-import Menu from '../../Component/Menu/Menu';
-import _ from 'lodash';
 
-import HomeHorizontalView from '../../Component/Grids/HorizontalListView'
+
 const keyDirections =  {up: "up",down:"down"};
-
+//declaring currency symbol below so that no iteration of function done each time;
+const currency =  COMMON_UTILITIES.getCurrencySymbol();
 class Home extends BaseScreen {
 
     constructor() {
@@ -44,14 +51,18 @@ class Home extends BaseScreen {
             prefixGroup: '',
             selectable: 0,
             groupWiseSelectablePage: {},
-            menuOn:false
+            menuOn:false,
+            timeInterval:0,
         }
+        this.scrollSpeed = 200;
         this.topPosition = 0;
         this.numberTofetchSeletables = 10; //number of seletables to fetch at time
         this.gridrowLoad = 4;
         this.loadNextData = this.loadNextData.bind(this);
         this.handleFocusChange = this.handleFocusChange.bind(this);
         this.getSelectablesOnLoad = this.getSelectablesOnLoad.bind(this);
+        this.groupingHeight = 690;
+        this.findGroupingById = this.findGroupingById.bind(this);
     }
     /**
      * Description:Setting  Menu status On || Off 
@@ -66,6 +77,10 @@ class Home extends BaseScreen {
      *  Description:fetching grouping
      */
     componentDidMount() {
+        //call for bookmarks
+        const stayId = roomUser.getStayId();
+        this.props.actionGetBoookmarks(stayId);
+        
         if (this.state.groupWiseSelectables.length > 0) {
             return true;
         }
@@ -73,28 +88,43 @@ class Home extends BaseScreen {
         if (this.props.networkData.type === alertConstants.SUCCESS && alertConstants.SUCCESS === this.props.uiConfig.type) {
             //parsing on home Grouping from All grouping
             const homeGroupingIds = this.props.uiConfig.message.data.homeGroupings;
-            this.state.homeGroupings = this.props.networkData.message.data.filter((item) => {
-                if (item.selectables.length < 1) {
-                    return false;
-                }
-                if (homeGroupingIds.indexOf(item.id) >= 0) {
-                    // adding seletables page wise 
-                    const seletablesPageWise = _.chunk(item.selectables, this.numberTofetchSeletables);
-                    const totalPages = seletablesPageWise.length
-                    groupWiseSelectablePage[item.id] = {
-                        seletablesPageWise: seletablesPageWise,
-                        totalPages: totalPages,
-                        currentPage: 0
-                    };
-                    return true;
-                }
-            });
+            let homeGroupingDetails = [],counter=0;
+             homeGroupingIds.forEach((item,i)=>{
+                if(this.findGroupingById(item).length > 0) {
+                    homeGroupingDetails[counter] = this.findGroupingById(item)[0];
+                     // adding seletables page wise 
+                     const seletablesPageWise = _.chunk(homeGroupingDetails[counter].selectables, this.numberTofetchSeletables);
+                     const totalPages = seletablesPageWise.length
+                     groupWiseSelectablePage[item] = {
+                         seletablesPageWise: seletablesPageWise,
+                         totalPages: totalPages,
+                         currentPage: 0
+                     };
+                     counter++;
+                }              
+             });
+             this.state.homeGroupings = homeGroupingDetails;
+
         }
 
         if (this.state.homeGroupings.length > 0) {
             this.getSelectablesOnLoad(groupWiseSelectablePage);
         }
 
+    }
+
+    /**
+     * Description: get Selectables
+     * @return {promise}
+     */
+    findGroupingById(groupId){
+       return  this.props.networkData.message.data.filter((item)=>{
+                if (item.selectables.length < 1) {
+                    return false;
+                }
+                return  (groupId===item.id);
+                return false;
+       });
     }
 
     /**
@@ -108,10 +138,17 @@ class Home extends BaseScreen {
                 resolve(selfThis.props.actionGetSelectables.call(null, groupWiseSelectablePage[item.id].seletablesPageWise[groupWiseSelectablePage[item.id].currentPage], item.id));
             }); //getting data for all request
         })).then(function (values) {
-            selfThis.setState((prevState) => {
-                const newSelectables = selfThis.props.getSelectables;
+            selfThis.setState((prevState) => {                
+                let newSelectables = selfThis.state.homeGroupings.map((item)=>{
+                    const groupId = item.id;
+                 return   selfThis.props.getSelectables.filter((dataItem)=>{
+                        return dataItem.groupId === groupId;
+                    });
+                });
+                newSelectables = _.flatten(newSelectables);
+                //selfThis.props.getSelectables;
                 return {
-                    groupWiseSelectables: newSelectables,
+                    groupWiseSelectables:newSelectables, 
                     numberOfGrouping: selfThis.props.getSelectables.length,
                     activeGridInfo: {
                         title: newSelectables[0].data[0].title,
@@ -184,9 +221,6 @@ class Home extends BaseScreen {
         if (this.state.menuOn) {
             return;
         }
-        if (localStorage.isMenuActive === "true") {
-            return;
-        }
         switch (keyCode) {
             case KeyMap.VK_UP:
                 this.handleUpDown(keyDirections.up, event);
@@ -233,20 +267,21 @@ class Home extends BaseScreen {
     * @return {null}
     */
     handleUpDown = (direction, event) => {
-        if (direction === keyDirections.up) {
-            if (this.state.gridPositionRow > 0) {
-                //  this.fetchNextSelectableForActive();
-                this.setState((prevState) => {
-                    return { gridPositionRow: prevState.gridPositionRow - 1, scrollY: prevState.scrollY + 690, keyEvent: event, startIndex: prevState.startIndex - 1, endIndex: prevState.endIndex - 1 };
-                });
+        if (event.timeStamp - this.state.timeInterval > this.scrollSpeed) { // condition for handling long press
+            if (direction === keyDirections.up) {
+                if (this.state.gridPositionRow > 0) {
+                    this.setState((prevState) => {
+                        return { gridPositionRow: prevState.gridPositionRow - 1, scrollY: prevState.scrollY + this.groupingHeight, keyEvent: event, startIndex: prevState.startIndex - 1, endIndex: prevState.endIndex - 1, timeInterval: event.timeStamp };
+                    });
+                }
             }
-        }
 
-        if (direction === keyDirections.down) {
-            if (this.state.gridPositionRow < this.state.numberOfGrouping - 1) {
-                this.setState((prevState) => {
-                    return { gridPositionRow: prevState.gridPositionRow + 1, scrollY: prevState.scrollY - 690, keyEvent: event, startIndex: prevState.startIndex + 1, endIndex: prevState.endIndex + 1, prefixGroup: prevState.startIndex };
-                });
+            if (direction === keyDirections.down) {
+                if (this.state.gridPositionRow < this.state.numberOfGrouping - 1) {
+                    this.setState((prevState) => {
+                        return { gridPositionRow: prevState.gridPositionRow + 1, scrollY: prevState.scrollY - this.groupingHeight, keyEvent: event, startIndex: prevState.startIndex + 1, endIndex: prevState.endIndex + 1, prefixGroup: prevState.startIndex, timeInterval: event.timeStamp };
+                    });
+                }
             }
         }
     }
@@ -258,7 +293,6 @@ class Home extends BaseScreen {
      * @return {null}
      */
     handleFocusChange(focusLostPosition, currentItemFocus) {
-        console.log(currentItemFocus);
         this.setState((prevState) => {
             const position = prevState.gridPositionColumn[prevState.gridPositionRow] = currentItemFocus;
             return {
@@ -282,7 +316,7 @@ class Home extends BaseScreen {
      * @returns {string}
      */
     getGroupNameById(groupId) {
-        const arr = [...this.state.homeGroupings];
+        const arr =  [...this.state.homeGroupings];
         let groupName = "";
 
         arr.forEach((item) => {
@@ -310,6 +344,23 @@ class Home extends BaseScreen {
         return imageType;
     }
 
+     /**
+    * Description : Get Group Wrap By Group Id
+    * @param {number}  groupId
+    * @returns {string}
+    */
+   getGroupScrollWrap(groupId) {
+    const arr = [...this.state.homeGroupings];
+    let scrollWrap = false;
+
+    arr.forEach((item) => {
+        if (item.id === groupId) {
+            scrollWrap = item.scrollWrap;
+        }
+    });
+    return scrollWrap;
+}
+
     /**
      * Description: Prepare Data for Grid
      */
@@ -330,7 +381,11 @@ class Home extends BaseScreen {
             return {
                 image: imageUrl,
                 title: item.title,
-                dimension: dimension
+                dimension:dimension,
+                description:item.shortDescription,
+                rating:item.rating,
+                amount:currency+item.price,
+                runTime:item.runTime
             }
         });
         return data;
@@ -345,7 +400,6 @@ class Home extends BaseScreen {
         const imageType = this.state.homeGroupings[i].imageType; // imagetype 
         let selectablesData = this.prepareDataForGrid(selectables, id);
 
-
         const activeGrid = this.state.gridPositionColumn[i] ? this.state.gridPositionColumn[i] : 0;
         const maxVisibleItem = selectablesData.length > 1 ? selectablesData.length : 1;
         if (selectablesData.length < 1) {
@@ -354,30 +408,12 @@ class Home extends BaseScreen {
         let wrapperActive = i === this.state.gridPositionRow ? "slider-wrapper active" : "slider-wrapper";
         let top = { top: 0 };
         if (i > 0) {
-            this.position = 690 * i;
+            this.position = this.groupingHeight * i;
             top = { top: this.position + 'px' };
         }
-        return (<div key={i} className="slider-row" style={top} > <h2>{this.getGroupNameById(id)}</h2><div className={wrapperActive}><HomeHorizontalView dataSource={selectablesData} key={"hori" + i} defaultSelectedPosition={activeGrid} onItemSelected={this.itemSelected} maxVisibleItem={this.numberTofetchSeletables} keyEvent={this.state.keyEvent} onFocusChange={this.handleFocusChange} activeEvent={i === this.state.gridPositionRow} loadNextData={this.loadNextData} id={id} />
-            {i === this.state.gridPositionRow &&
-                <span>
-                    {
-                       (  (this.state.gridPositionColumn[this.state.gridPositionRow]===0 ||
-                            this.state.gridPositionColumn[this.state.gridPositionRow] === undefined ) ) && <div className="arrow left-arrow"></div>
-                    }
-                    
-                    <div className="active-details">
-                        <div className="left-col">
-                            <div className="heading-row">
-                                <h3>{this.state.activeGridInfo.title}</h3> <span className="btn-style">{this.state.activeGridInfo.rating}</span> <span className="time">{this.state.activeGridInfo.runTime}</span> <span className="price">${this.state.activeGridInfo.amount}</span>
-                            </div>
-                            <p>{this.state.activeGridInfo.description}</p>
-                        </div>
-                        <div className="key-action-details">Press OK <br />to view and <br />order</div>
-                    </div>
-                </span>
-            }
-        </div></div>
-        );
+        return (<div key={i} className="slider-row" style={top} > <h2>{this.getGroupNameById(id)}</h2>
+        <div className={wrapperActive}><HomeHorizontalView dataSource={selectablesData} key={"hori" + i} defaultSelectedPosition={activeGrid} onItemSelected={this.itemSelected} maxVisibleItem={this.numberTofetchSeletables} keyEvent={this.state.keyEvent} onFocusChange={this.handleFocusChange} activeEvent={i === this.state.gridPositionRow} loadNextData={this.loadNextData} id={id} isScrollWrap = {this.getGroupScrollWrap(id)} />
+        </div></div>);
     }
 
     /**
@@ -385,7 +421,6 @@ class Home extends BaseScreen {
     * @return {JSX}
     */
     render() {
-
         if (this.state.data.type === alertConstants.ERROR) {
             return <div>{this.state.data.data}</div>
         }
@@ -394,11 +429,12 @@ class Home extends BaseScreen {
             transform: "translate3d(0px," + this.state.scrollY + "px,0)",
             transition: 'all 300ms ease-in-out'
         }
+        const classForBlur = this.state.menuOn ? "slide-container-wrapper bluureffects":"slide-container-wrapper"
         return (
             <div>
                 <div className="container" >
                     {this.state.menuOn && <Menu openMenu = {this.state.menuOn}  changeMenuStatus={this.changeMenuStatus.bind(this)} /> }
-                    <div className="slide-container-wrapper" data-show="home">
+                    <div className={classForBlur} data-show="home">
                         <div className="home-top-poster">
                             <img src="images/poster_top.png" />
                         </div>
@@ -425,7 +461,11 @@ class Home extends BaseScreen {
 
 };
 export default invokeConnect(Home, null, 'getGroupings',
-    { actionGetSelectables: actionGetSelectables }, {
+    {   //actions
+        actionGetSelectables: actionGetSelectables, 
+        actionGetBoookmarks:actionGetBoookmarks }, 
+    {  //reducers
         getSelectables: 'getSelectables',
-        uiConfig: 'getUiConfig'
+        uiConfig: 'getUiConfig',
+        getBookmarks:'getBookmarks'
     });

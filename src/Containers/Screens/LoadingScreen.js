@@ -6,18 +6,24 @@
 */
 import React from 'react';
 import BaseScreen, { invokeConnect } from './BaseScreen';
-import { SCREENS } from '../../constants/screens.constant';
 import logo from '../images/logo-lodingpage.jpg';
 import AuthService from '../../services/service.authentication';
-import { alertConstants } from '../../constants/alert.constant';
-import { commonConstants } from '../../constants/common.constants'
+import RoomUserService from '../../services/service.roomUser';
 import actionGroupings from '../../actions/action.groupings';
 import actionUIConfig from '../../actions/action.UIConfig';
+import utility from '../../commonUtilities';
+import { SCREENS } from '../../constants/screens.constant';
 import { Md5 } from 'ts-md5/dist/md5';
+import { validCodes } from '../../constants/error.constant'
+import { alertConstants } from '../../constants/alert.constant';
+import { commonConstants } from '../../constants/common.constants'
+
 class LoadingScreen extends BaseScreen {
 
     constructor() {
         super();
+        this.roomId;
+        this.siteId;
         this.state = {
             ...this.state,
             screen: SCREENS.loading,//This is mandatory for all the screens 
@@ -43,48 +49,66 @@ class LoadingScreen extends BaseScreen {
     /**
      *  @ Override function of Component class
      *  1. Check UiConfig API data either save on redux or not 
-     *  2. Sequencial calling for Grouping API 
+     *  2. Sequencial calling for RoomUser API 
      *  3. Go to Home Screen
      */
     componentDidUpdate() {
-        if (this.props.UIConfigReducer.type === alertConstants.SUCCESS && this.props.UIConfigReducer.message.status === 200) {
+        if (this.props.uiConfigReducer.type === alertConstants.SUCCESS && validCodes(this.props.uiConfigReducer.message.status)) {
             if (Object.keys(this.props.groupingsReducer).length === 0) {
-                this.props.groupingAction();
+                this.getRoomUserRequest()
             }
             else {
-                if (this.props.UIConfigReducer.type === alertConstants.SUCCESS && this.props.UIConfigReducer.message.status === 200) {
-                    setTimeout(() => {
-                        this.goToScreen("home")
-                    }, 2000);
+                if (this.props.groupingsReducer.type === alertConstants.SUCCESS && validCodes(this.props.groupingsReducer.message.status)) {
+                    this.goToScreen("home")
                 }
             }
         }
     }
 
     /**
-     * Store the Auth Data in Local Storage 
+     * Store the Auth Data in session Storage 
      * @param {*} authDetails  
      */
-    setTokenToStorage(authDetails) {
-        localStorage.setItem(commonConstants.AUTH_TOKEN_STORAGE, authDetails);
+    setTokenToStorage(storageKey, authDetails) {
+        sessionStorage.setItem(storageKey, authDetails);
     }
 
     /**
-    * Request the AUTH Service to get the AUTH API and store in Local Storage in String format
+    * Request the AUTH Service to get the AUTH API and store in session Storage in String format
     * Calling Action for UiConfig Data
     * check if Access Token Length is greater than 10 , procceed to UiConfig call
     * @param {*} siteId 
     * @param {*} roomId 
     */
     getAuthTokenRequest() {
-        const siteId = '13532', room = '101';
-        const key = Md5.hashStr(siteId + room);
-        const queryParameter = "?siteId=" + siteId + "&room=" + room + "&key=" + key;
-        AuthService.getTokenRequest(queryParameter).then((response) => {
+        this.siteId = utility.getQueryStringValue('siteId');
+        this.roomId = utility.getQueryStringValue('room');
+        if (!utility.isEmpty(this.siteId) && !utility.isEmpty(this.roomId)) {
+            const key = Md5.hashStr(this.siteId + this.roomId);
+            const queryParameter = "?siteId=" + this.siteId + "&room=" + this.roomId + "&key=" + key;
+            AuthService.getTokenRequest(queryParameter).then((response) => {
+                if (response.type === alertConstants.SUCCESS) {
+                    if ((response.message.data[0]).hasOwnProperty("accessToken")) {
+                        this.setTokenToStorage(commonConstants.GUEST_AUTH_INFO, JSON.stringify(response.message.data[0]))
+                        this.props.uiConfigAction();
+                    }
+                }
+            }).catch(function (error) {
+                console.log(error);
+            });
+        }
+    }
+
+   /**
+    * Request the Room User  Service to get the RoomUser API and store in session Storage in String format
+    * Calling Action for groupingAction Data
+    */
+    getRoomUserRequest() {
+        RoomUserService.roomUserRequest(this.roomId).then((response) => {
             if (response.type === alertConstants.SUCCESS) {
-                if ((response.message.data[0]).hasOwnProperty("accessToken")) {
-                    this.setTokenToStorage(JSON.stringify(response.message.data[0]))
-                    this.props.UIConfigAction();
+                if ((response.message.data[0]).hasOwnProperty("stayId")) {
+                    this.setTokenToStorage(commonConstants.GUEST_ROOM_USER_INFO, JSON.stringify(response.message.data[0]))
+                    this.props.groupingAction();
                 }
             }
         }).catch(function (error) {
@@ -92,23 +116,11 @@ class LoadingScreen extends BaseScreen {
         });
     }
 
-
     /**
-     * Description: check if need to re-render or not
-     * @param {object}  nextProps
-     * @param {object} nextState
-     * @return {Boolean} 
+     * Description:This code is for mounting HTML on Browser
+     * @param {null} 
+     * @return {null}
      */
-    shouldComponentUpdate(nextProps, nextState) {
-        return true;
-    }
-
-
-    /**
-    * Description:This code is for mounting HTML on Browser
-    * @param {null} 
-    * @return {null}
-    */
     render() {
         return (
             <div>
@@ -131,9 +143,9 @@ class LoadingScreen extends BaseScreen {
 };
 
 export default invokeConnect(LoadingScreen, null, '', {
-    UIConfigAction: actionUIConfig,
+    uiConfigAction: actionUIConfig,
     groupingAction: actionGroupings,
 }, {
-    UIConfigReducer: 'getUiConfig',
-    groupingsReducer: 'getGroupings',
-});
+        uiConfigReducer: 'getUiConfig',
+        groupingsReducer: 'getGroupings',
+    });

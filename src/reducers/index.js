@@ -11,6 +11,10 @@ import getGroupings from './reducer.groupings';
 import getSelectables from './reducer.selectables';
 import getUiConfig from './reducer.UIConfig'
 import reducerProgramDetails from './reducer.programDetails';
+import reducerPurchaseStart from './reducer.purchaseStart';
+import reducerBookmark from './reducer.bookmark';
+
+
 /**
     * Description: Combining reducer
     */
@@ -20,7 +24,9 @@ const rootReducer = combineReducers({
   getSelectables:getSelectables,
   getGroupings : getGroupings,
   getUiConfig : getUiConfig,
-  getProgramDetails:reducerProgramDetails
+  getProgramDetails:reducerProgramDetails,
+  reducerPurchaseStart:reducerPurchaseStart,
+  getBookmarks:reducerBookmark
 });
 
 export default rootReducer;

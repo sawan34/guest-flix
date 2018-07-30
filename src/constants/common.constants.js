@@ -6,5 +6,10 @@
 */
 
 export const commonConstants = {
-    AUTH_TOKEN_STORAGE: 'GuestFlixTokenDetails',
+    GUEST_AUTH_INFO: 'GUEST_AUTH_INFO',
+    GUEST_ROOM_USER_INFO: 'GUEST_ROOM_USER_INFO',
+    GRID_DIDECTION_LEFT: 'LEFT',
+    GRID_DIRECTION_RIGHT: 'RIGHT',
+    GRID_DIDECTION_UP: 'UP',
+    GRID_DIRECTION_DOWN: 'DOWN',
 };

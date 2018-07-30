@@ -43,42 +43,42 @@ function getTokenRequest(query) {
 
 
 /**
- * Return Auth Object from Local Storage
+ * Return Auth Object from session Storage
  */
 function getTokenFromStorage() {
-	return JSON.parse(localStorage.getItem(commonConstants.AUTH_TOKEN_STORAGE));
+	return JSON.parse(sessionStorage.getItem(commonConstants.GUEST_AUTH_INFO));
 }
 
 /**
- * Return Token Type from Local Storage
+ * Return Token Type from session Storage
  */
 function getTokenType() {
 	return getTokenFromStorage().tokenType;
 }
 
 /**
- * Return Access Token  from Local Storage
+ * Return Access Token  from session Storage
  */
 function getAccessToken() {
 	return getTokenFromStorage().accessToken;
 }
 
 /**
- * Return Refresh Token  from Local Storage
+ * Return Refresh Token  from session Storage
  */
 function getRefreshToken() {
 	return getTokenFromStorage().refreshToken;
 }
 
 /**
- * Return Site Id  from Local Storage
+ * Return Site Id  from session Storage
  */
 function getsiteId() {
 	return getTokenFromStorage().siteId;
 }
 
 /**
- * Return Room Id  from Local Storage
+ * Return Room Id  from session Storage
  */
 function getRoomId() {
 	return getTokenFromStorage().room;
@@ -95,7 +95,7 @@ function getkey(siteId, roomId) {
 }
 
 /**
- * Request the AUTH Service to get the AUTH API and store in Local Storage in String format
+ * Request the AUTH Service to get the AUTH API and store in session Storage in String format
  * @param {*} siteId 
  * @param {*} roomId 
  */

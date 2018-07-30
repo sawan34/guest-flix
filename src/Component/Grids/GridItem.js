@@ -5,9 +5,15 @@
 * @date  22.06.2018
 */
 import React from 'react';
+import commonUtility from '../../commonUtilities';
+
 export default function GridItem(props) {
+  var itemstyle = {
+    width: props.data.dimension.width,
+    height: props.data.dimension.height
+  }
   return (
-    <li key={props.i} id={props.i} className={props.i === props.active ? "list-item active" : "list-item"}>
-      <img src={props.data.image} />
+    <li key={props.i} id={props.i} className={props.i === props.active ? props.data.dimension.width > props.data.dimension.height ? "list-item active-landscape" : "list-item active" : "list-item"} style={itemstyle}>
+      <img src={props.data.image} style={itemstyle} onError={commonUtility.onImageErrorHandler} />
     </li>)
 }

@@ -1,17 +1,23 @@
 import React, {Component} from 'react';
+import ReactDOM from 'react-dom';
 import { connect } from "react-redux";
+import BaseOverlay from '../Overlay/BaseOevrlay';
 import KeyMap from '../../constants/keymap.constant';
 
 
+var extMenu = "Exit Menu";
 class Menu extends Component {
     constructor(){
         super();
         //initial setup of props and state
         this.state = {
 			menuItems:[],
-			showMenu:{display:"none"},
+			showMenu:{display:false},
+			scrollStyle:{transform:'translate3d(0,0,0)'},
+			currIndex:0,
 			activeMenu:""
 		}
+		
 		this.onKeyDown= this.onKeyDown.bind(this);
 	}
 	
@@ -61,6 +67,7 @@ class Menu extends Component {
 				this.setState({
 					menuItems: [...this.state.menuItems, ...groupmenu]
 				});
+				
 			}
 		}
 	}
@@ -86,8 +93,15 @@ class Menu extends Component {
 	 * This function makes default focus item in menu list (i.e exit menu)
 	 * @param {object} none:
 	 */
-	focusDefaultMenu = ()=>{
-		this.setState({activeMenu:"Exit Menu"})
+	focusDefaultMenu = () => {
+		try {
+			this.setState({
+				activeMenu: extMenu,
+				currIndex: this.state.menuItems.indexOf(extMenu)
+			})
+		} catch (error) {
+
+		}
 	}
 
 	/**
@@ -126,13 +140,63 @@ class Menu extends Component {
 		localStorage.isMenuActive = true;
 		let showOtherEle;
 		showOtherEle = document.querySelector("div [data-show]");
-		if (showOtherEle) {
-			showOtherEle.classList.add('bluureffects');
-		}
 		this.setState({
 			showMenu: {
-				display: 'block'
+				display: true
 			}
+		});
+	}
+
+	/**
+	 * This function is responsible for up or down movement for menu items
+	 * @param {boolean} isDown: inidcates that the direction is down if true else up
+	 * @param {number}  currentPos: 
+	 */
+	handleUpDown = (isDown, currentPos) => {
+		let dirVal = 1;
+		const currNode = ReactDOM.findDOMNode(this);
+		if (isDown) {
+			this.prevPos = (this.state.currIndex === currentPos) ? currentPos : this.state.currIndex ;
+			currentPos = this.prevPos + 1;
+			dirVal = -1;
+		} else {
+			this.prevPos = (this.state.currIndex === currentPos) ? currentPos : this.state.currIndex ;
+			currentPos = this.prevPos - 1
+		}
+		let nextActivemenu = this.state.menuItems[currentPos];
+		// here checking if last item is out of page
+		let itemPos = 0,
+			activeElem = null,
+			menuHeight = 0,
+			itemHeight = 0;
+		activeElem = currNode.querySelector('.active');
+		if(activeElem){
+			itemHeight = Math.ceil(activeElem.scrollHeight);
+		}
+		let scrollNum = 1;
+		var scrollStyle = {...this.state.scrollStyle};
+		var lastIndex = 8;
+		var nextIndex = (currentPos + 1) ;
+		var menuElem = activeElem.parentElement;
+		
+		if(nextIndex > lastIndex && isDown){
+			scrollNum = nextIndex - lastIndex;
+			scrollStyle.transform = `translate3d(0,${itemHeight*dirVal*scrollNum}px,0)`;
+		}else if(!isDown && menuElem && menuElem.style && menuElem.style.transform && this.prevPos > lastIndex - 1){
+			var checkForPos = parseInt(activeElem.parentElement.style.transform.split(",")[1]);
+			var yPos = 0;
+			if(checkForPos < 0){
+				checkForPos = checkForPos + itemHeight;
+				scrollStyle.transform = `translate3d(0,${checkForPos}px,0)`;
+			}
+		}else{
+			scrollStyle.transform = `translate3d(0,0,0)`;
+		}
+
+		this.setState({
+			activeMenu: nextActivemenu,
+			currIndex:currentPos,
+			scrollStyle:scrollStyle
 		});
 	}
 
@@ -144,17 +208,14 @@ class Menu extends Component {
 		try {
 			var keyCode = event.keyCode;
 			var currentPos = null;
-			var nextActivemenu = null;
 			currentPos = this.state.menuItems.indexOf(this.state.activeMenu);
 			switch (keyCode) {
 				case KeyMap.VK_ENTER:
-					if(this.state.activeMenu === "Exit Menu"){
-						localStorage.isMenuActive = false;
-						this.setState({showMenu:{display:'none'}});
-						let showOtherEle;
-						showOtherEle= document.querySelector("div [data-show]");
-						showOtherEle.classList.remove('bluureffects');
+					if(this.state.activeMenu === extMenu){
+						this.setState({showMenu:{display:false}});
+						var menuNode = ReactDOM.findDOMNode(this);
 						document.removeEventListener("keydown", this.onKeyDown);
+						localStorage.isMenuActive = false;
 						this.props.changeMenuStatus(event);
 					}
 					break;
@@ -163,21 +224,13 @@ class Menu extends Component {
 					if (currentPos === 0 || this.state.showMenu.display === 'none') {
 						return;
 					}
-					currentPos = currentPos - 1;
-					nextActivemenu = this.state.menuItems[currentPos];
-					this.setState({
-						activeMenu: nextActivemenu
-					});
+					this.handleUpDown(false,currentPos);
 					break;
 				case KeyMap.VK_DOWN:
 					if (currentPos === this.state.menuItems.length-1 || this.state.showMenu.display === 'none') {
 						return;
 					}
-					currentPos = currentPos + 1;
-					nextActivemenu = this.state.menuItems[currentPos];
-					this.setState({
-						activeMenu: nextActivemenu
-					});
+					this.handleUpDown(true,currentPos);
 					break;
 				default:
 					break;
@@ -212,38 +265,38 @@ class Menu extends Component {
 		var submenuShow = {
 			display:'none'
 		}
-		if(this.state.activeMenu && this.state.activeMenu.toLowerCase() !== "exit menu"){
+		if(this.state.activeMenu && this.state.activeMenu.toLowerCase() !== extMenu.toLowerCase()){
 			submenuShow.display = 'block';
 		}
+
+		var leftMenu = "left-menu hide";
+		if(this.state.showMenu.display){
+			leftMenu = "left-menu show";
+		}
         return(
-		<div className="left-menu" style={this.state.showMenu}>
+		<div className={leftMenu} >
 			<div className="menu">
-				<div className="logo"><img src={"../../../images/logo-menu.jpg"} /></div>
-				<nav>
-					<ul>
-						{this.state.menuItems.map((item)=>{
-							return (<li key={item+"id"} className={(item === this.state.activeMenu)?"active":""}><a href="#">{item}<i className={(item && item.toLowerCase() === "exit menu")?"fa fa-caret-left":"fa fa-caret-right"} aria-hidden="true"></i></a></li>)
+				<div className="logo"><img src={"images/logo-menu.jpg"} /></div>
+				<nav className="scrollMenu">
+					<ul style={this.state.scrollStyle}>
+						{this.state.menuItems.map((item,i)=>{
+							return (<li key={i+"id"} className={(i === this.state.currIndex)?"active":""}><a href="#">{item}<i className={(item && item.toLowerCase() === "exit menu")?"fa fa-caret-left":"fa fa-caret-right"} aria-hidden="true"></i></a></li>)
 						})}
 					</ul>
 				</nav>
 			</div>
-			<div className="sub-menu" style={submenuShow}>
-				<div className="movie-list">
-					<ul>
-					</ul>
-				</div>
-			</div>
+			<BaseOverlay show={submenuShow}/>
 		</div>
         )
     }
 }
-//export default  Menu;
 
 const mapStateToProps = state => ({
 	getUiConfig:state.getUiConfig,
 	getGroupings:state.getGroupings
-  });
-  
+});
 
+
+//export default Menu;
 
 export default connect(mapStateToProps)(Menu);

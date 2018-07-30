@@ -12,5 +12,12 @@
   "director":"Regisseur",
   "purchase":"Aankoop",
   "related_titles":"Gerelateerde titels",
-  "go_back":"Ga terug"
+  "go_back":"Ga terug",
+  "tax":"belasting",
+  "confirm":"Bevestigen",
+  "audio_language":"Audiotaal",
+  "subtitles":"Ondertitels",
+  "cancel":"Annuleer",
+  "resume":"Hervat",
+  "purchase_confirm_description":"De titel die u hebt geselecteerd, is beschikbaar om met audio en ondertitels in alternatieve talen te bekijken. Selecteer de gewenste taalopties en druk op Bevestigen om uw selectie te spelen."
 }
