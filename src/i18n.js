@@ -19,8 +19,18 @@ i18n
     ns: ['translations'],
     defaultNS: 'translations',
     debug: false,
+    preload: ['en', 'de'],
     interpolation: {
       escapeValue: false, // not needed for react!!
+    },
+    backend:{
+      // path where resources get loaded from, or a function
+      // returning a path:
+      // function(lngs, namespaces) { return customPath; }
+      // the returned path will interpolate lng, ns if provided like giving a static path
+      loadPath: './locales/{{lng}}/{{ns}}.json',
+      // path to post missing resources
+      addPath: './locales/add/{{lng}}/{{ns}}'
     },
     react: {
       wait: true

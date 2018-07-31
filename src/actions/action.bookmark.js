@@ -15,7 +15,7 @@ import {ACTION} from '../constants/action.constant';
   */
 export function actionGetBoookmarks(stayId) {
     //Fetch 
-    const data = BookMarkService.getBookMarks(stayId);;
+    const data = BookMarkService.getBookMarks(stayId);
     return {
         type: ACTION.GET_BOOKMARKS,
         payload: data

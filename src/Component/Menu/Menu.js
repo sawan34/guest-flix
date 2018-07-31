@@ -3,9 +3,11 @@ import ReactDOM from 'react-dom';
 import { connect } from "react-redux";
 import BaseOverlay from '../Overlay/BaseOevrlay';
 import KeyMap from '../../constants/keymap.constant';
+import {commonConstants} from '../../constants/common.constants'
 
 
 var extMenu = "Exit Menu";
+var upDownKeyTimeOut = null;
 class Menu extends Component {
     constructor(){
         super();
@@ -56,8 +58,8 @@ class Menu extends Component {
 			let availableGroupNo = metaData.groupings.length;
 			var groupmenu = [];
 			if (groupNo > 0) {
-				for (var i = 0; i < groupNo; i++) {
-					for (var j = 0; j < availableGroupNo; j++) {
+				for (var j = 0; j <availableGroupNo ; j++) {
+					for (var i = 0; i < groupNo; i++) {
 						if (this.props.getGroupings.message.data[i].id === metaData.groupings[j]) {
 							groupmenu.push(this.props.getGroupings.message.data[i].label);
 						}
@@ -114,6 +116,7 @@ class Menu extends Component {
 			this.createMenuFromMode(metaData);
 			this.setState({menuItems: [...this.state.menuItems, "Exit Menu"]}); 
 			this.createMenuFromAttr(metaData);
+			this.defaultMenuNo = this.state || this.state.menuItems ? this.state.menuItems.length : 5;
 			this.createMenuFromGroup(metaData);
 			this.focusDefaultMenu();
 		}
@@ -146,6 +149,65 @@ class Menu extends Component {
 			}
 		});
 	}
+
+	getCurrentIndex = () => {
+        var currMenuPos = null;
+        if (this.state && this.state.menuItems && this.state.menuItems.length > 0) {
+            currMenuPos = this.state.menuItems.indexOf(this.state.activeMenu);
+        }
+        return currMenuPos;
+    }
+
+	
+    getGroupingInfo = () => {
+        var currMenuPos = this.getCurrentIndex();
+        var currGroupingId = null
+        var totalAvailableGroup = this.props.getUiConfig.message.data.leftMenu.groupings
+        if (currMenuPos + 1 > this.defaultMenuNo) {
+            currGroupingId = totalAvailableGroup[currMenuPos - this.defaultMenuNo];
+        }
+        return currGroupingId;
+    }
+
+	onItemFocus = () => {
+		try {
+
+			//call the callback function when selected item is
+			var currGroupingId = null;
+			var groupObj = {};
+			groupObj.type = commonConstants.MENU_DEFAULT_TYPE;
+			groupObj.id = null;
+			currGroupingId = this.getGroupingInfo();
+			if (currGroupingId) {
+				var groupObj
+				groupObj.id = currGroupingId;
+				groupObj.type = commonConstants.MENU_GROUPING_TYPE;
+			}
+			this.props.onFocus(groupObj);
+		} catch (error) {
+
+		}
+	}
+
+    onItemSelected = () => {
+		//call the callback function when selected item is
+		var currGroupingId = null;
+		var groupObj = {};
+		groupObj.type = commonConstants.MENU_DEFAULT_TYPE;
+		groupObj.id = null;
+        try {
+            currGroupingId = this.getGroupingInfo();
+            if (currGroupingId) {
+				var groupObj
+				groupObj.id = currGroupingId;
+				groupObj.type = commonConstants.MENU_GROUPING_TYPE;
+            }
+			this.props.onItemSelect(groupObj);
+        } catch (error) {
+
+        }
+    }
+
 
 	/**
 	 * This function is responsible for up or down movement for menu items
@@ -193,6 +255,14 @@ class Menu extends Component {
 			scrollStyle.transform = `translate3d(0,0,0)`;
 		}
 
+		if(upDownKeyTimeOut){
+            clearTimeout(upDownKeyTimeOut)
+        }
+        upDownKeyTimeOut = setTimeout(function(){
+            this.onItemFocus();
+        }.bind(this),500);
+
+
 		this.setState({
 			activeMenu: nextActivemenu,
 			currIndex:currentPos,
@@ -211,13 +281,17 @@ class Menu extends Component {
 			currentPos = this.state.menuItems.indexOf(this.state.activeMenu);
 			switch (keyCode) {
 				case KeyMap.VK_ENTER:
+				case KeyMap.VK_RIGHT:
 					if(this.state.activeMenu === extMenu){
 						this.setState({showMenu:{display:false}});
 						var menuNode = ReactDOM.findDOMNode(this);
 						document.removeEventListener("keydown", this.onKeyDown);
 						localStorage.isMenuActive = false;
 						this.props.changeMenuStatus(event);
-					}
+					}else{
+						document.removeEventListener("keydown", this.onKeyDown);						
+                        this.onItemSelected();
+                    }
 					break;
 				case KeyMap.VK_UP:
 					

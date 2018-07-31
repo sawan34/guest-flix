@@ -1164,6 +1164,28 @@ html,body{
     }
   }
 
+    /* Horizontal Grid */
+
+    .Vertical-grid-wrapper .Vertical-grid .item{
+      border:solid 5px transparent;
+    }
+    .Vertical-grid-wrapper .Vertical-grid .item.active{
+      border:solid 5px white;
+    }
+    .selectable-related-title {
+      padding: 50px 282px;
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+    .selectable-related-title .title-related-top {
+      padding-left: 5px;
+    }
+    .selectable-related-title .title-related-top h3 {
+      font-size: 2em;
+      padding: 5px 0 15px 0; 
+    }
+
   /* Player Screen */
   .text-center{
     text-align: center;

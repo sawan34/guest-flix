@@ -50,6 +50,14 @@ const COMPONENT_NAME = {
   "BUTTON": "button"
 }
 
+/**
+* Description: Define constant to visible Component Row
+*/
+const ROW_VISIBLE = {
+  "RADIO_BUTTON":5,
+  "BUTTON":1
+}
+
 class PurchaseScreen extends React.Component {
 
   /**
@@ -64,6 +72,7 @@ class PurchaseScreen extends React.Component {
       prevGrid:1,
       activeGrid: 3,
       currentRowIndex:0,
+      scrolledRowIndex:0,
       direction:"",
       firsttimeActive: true,
       subtitle: [{ None: { id: "none", status: true } }],
@@ -81,13 +90,14 @@ class PurchaseScreen extends React.Component {
   * @param {direction}  string
   * @return {null}
   */
-  eventCallbackFunction(direction,currentRowIndex) {
+  eventCallbackFunction(direction,currentRowIndex,scrolledRowIndex) {
     switch (direction) {
       case KEY.LEFT:
         if (this.state.activeGrid !== 3) {
           this.setState({
             activeGrid: 1,
             currentRowIndex:currentRowIndex,
+            scrolledRowIndex:scrolledRowIndex,
             direction:direction
           })
         }
@@ -99,6 +109,7 @@ class PurchaseScreen extends React.Component {
             activeGrid: 2,
             jumpNextGrid: true,
             currentRowIndex:currentRowIndex,
+            scrolledRowIndex:scrolledRowIndex,
             direction:direction
           })
         }
@@ -111,6 +122,7 @@ class PurchaseScreen extends React.Component {
         this.setState({
           activeGrid: this.state.prevGrid,
           currentRowIndex:currentRowIndex,
+          scrolledRowIndex:scrolledRowIndex,
           direction:direction
         })
         break;
@@ -125,6 +137,7 @@ class PurchaseScreen extends React.Component {
           prevGrid:this.currentActiveGrid,
           activeGrid: 3,
           currentRowIndex:currentRowIndex,
+          scrolledRowIndex:scrolledRowIndex,
           direction:direction
         })
         break;
@@ -294,7 +307,9 @@ class PurchaseScreen extends React.Component {
                     onChange={this.onChange}
                     activeIndex={0}
                     currentRowIndex={this.state.currentRowIndex}
+                    scrolledRowIndex={this.state.scrolledRowIndex}
                     focusDirection = {this.state.direction}
+                    visibleRow={ROW_VISIBLE.RADIO_BUTTON}
                   />
                 </div>
               </div>
@@ -314,7 +329,9 @@ class PurchaseScreen extends React.Component {
                     onChange={this.onChange}
                     activeIndex={0}
                     currentRowIndex={this.state.currentRowIndex}
+                    scrolledRowIndex={this.state.scrolledRowIndex}
                     focusDirection = {this.state.direction}
+                    visibleRow={ROW_VISIBLE.RADIO_BUTTON}
                   />
                 </div>
               </div>
@@ -333,8 +350,10 @@ class PurchaseScreen extends React.Component {
                 onChange={this.onChange}
                 activeIndex={this.state.active}
                 currentRowIndex={this.state.currentRowIndex}
+                scrolledRowIndex={this.state.scrolledRowIndex}
                 focusDirection = {this.state.direction}
                 defaultItemIndex={this.state.defaultItemIndex}
+                visibleRow={ROW_VISIBLE.BUTTON}
               />
             </div>
           </div>

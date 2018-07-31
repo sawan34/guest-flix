@@ -83,27 +83,42 @@ function timeFormat(time) {
     const MIN = time[5] + time[6];
     return (HR * 1) + 'h ' + (MIN * 1) + 'm';
 }
-
-function getBookmarksOrderIdByProgramId(programId){
+/**
+  * Description: get OrderId By ProgramId
+  * @param {time}programId
+  * @return {number || Boolean}
+  */
+function getBookmarksOrderIdByProgramId(programId) {
     let data = false;
     const state = store.getState();
-    try{
-        if(state.getBookmarks){
-            if(state.getBookmarks.data.length > 0){
-                 data = getObjectByKeyFromObjectInArray(state.getBookmarks.data,'programId',programId );
-                if(data) {
+    try {
+        if (state.getBookmarks) {
+            if (state.getBookmarks.data.length > 0) {
+                data = getObjectByKeyFromObjectInArray(state.getBookmarks.data, 'programId', programId, true);
+                if (data) {
                     return data[0].orderId;
                 }
             }
         }
-    }catch(e){
+    } catch (e) {
         return data;
     }
 }
-
-function getObjectByKeyFromObjectInArray(_arrayObj,key,id){
+/**
+  * Description: get Object By Key from Object Array
+  * @param {Array} _arrayObj
+  * @param {string} key
+  * @param {string || numeric} id
+  * @param {Boolean} compareNumber
+  * @return {Object}
+  */
+function getObjectByKeyFromObjectInArray(_arrayObj,key,id,compareNumber=false){
     const data =  _arrayObj.filter((item)=>{
-        return _.toNumber(item[key]) === id;
+        if(compareNumber){
+                return _.toNumber(item[key]) === id;
+        }else{
+            return item[key]=== id;            
+        }
     });
     if(data.length >0){
       return  data;
@@ -111,11 +126,11 @@ function getObjectByKeyFromObjectInArray(_arrayObj,key,id){
         return false;
     }
 }
-
+/**
+  * Description: Referesh Bookmark
+  * @return {undefined}
+  */
 function refreshBookmarks(){
     const state = store.dispatch(actionGetBoookmarks(roomUser.getStayId()));
 }
-
-
-
 export default COMMON_UTILITIES;

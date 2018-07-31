@@ -18,6 +18,11 @@ const KEY = {
     "UP": "UP",
     "DOWN": "DOWN"
 }
+
+const SCROLLED_ROW = {
+    "UP":52,
+    "DOWN":-52
+}
 class Grid extends React.Component {
     /**
     * Description: class initialization 
@@ -30,7 +35,9 @@ class Grid extends React.Component {
             selectedRow: this.props.currentRowIndex,
             selectedItemIndex: this.props.activeIndex,
             previousIndexState: 0,
-            firsttimeActive: this.props.firsttimeActive
+            firsttimeActive: this.props.firsttimeActive,
+            scrolledRow:this.props.scrolledRowIndex,
+            scrollY:0
         }
         this.totalItem = 0;
         this.totalRow = this.rowData().length;
@@ -108,22 +115,22 @@ class Grid extends React.Component {
             case KEY.LEFT:
                 if (this.state.selectedItemIndex === 0) {
                     this.setState({ firsttimeActive: true });
-                    this.props.eventCallback(KEY.LEFT, this.state.selectedRow)
+                    this.props.eventCallback(KEY.LEFT, this.state.selectedRow, this.state.scrolledRow)
                 }
                 break;
             case KEY.RIGHT:
                 if (this.state.selectedItemIndex === (this.props.col - 1)) {
-                    this.props.eventCallback(KEY.RIGHT, this.state.selectedRow);
+                    this.props.eventCallback(KEY.RIGHT, this.state.selectedRow, this.state.scrolledRow);
                 }
                 break;
             case KEY.UP:
                 if (this.state.selectedRow === 0) {
-                    this.props.eventCallback(KEY.UP, this.state.selectedRow)
+                    this.props.eventCallback(KEY.UP, this.state.selectedRow, this.state.scrolledRow)
                 }
                 break;
             case KEY.DOWN:
                 if (this.state.selectedRow === (this.totalRow - 1) || !this.rowData()[this.state.selectedRow + 1][this.state.selectedItemIndex]) {
-                    this.props.eventCallback(KEY.DOWN, this.state.selectedRow)
+                    this.props.eventCallback(KEY.DOWN, this.state.selectedRow, this.state.scrolledRow)
                 }
                 break;
         }
@@ -154,6 +161,14 @@ class Grid extends React.Component {
             var currentRowIndex = this.props.currentRowIndex;
             if (this.props.currentRowIndex > (this.totalRow - 1) && (this.props.focusDirection === KEY.LEFT || this.props.focusDirection === KEY.RIGHT)) {
                 currentRowIndex = this.totalRow - 1;
+            }
+
+            if(this.props.scrolledRowIndex > this.state.scrolledRow){
+                currentRowIndex = (this.props.currentRowIndex - this.props.scrolledRowIndex) + this.state.scrolledRow;
+            }
+            if(this.props.scrolledRowIndex < this.state.scrolledRow){
+                let scrolledRowLength = this.state.scrolledRow - this.props.scrolledRowIndex
+                currentRowIndex = currentRowIndex + scrolledRowLength;
             }
             switch (this.props.focusDirection) {
                 case KEY.LEFT:
@@ -225,6 +240,16 @@ class Grid extends React.Component {
         if (this.state.selectedRow > 0) {
             this.setState({ selectedRow: this.state.selectedRow - 1 });
         }
+        if(this.state.scrollY===0){
+            return;
+        }
+        let ScrolledLength = Math.abs(this.state.scrollY/SCROLLED_ROW.UP);
+        if((this.state.selectedRow+1) >= this.props.visibleRow || ScrolledLength > 0){
+            this.setState({
+                scrolledRow:this.state.scrolledRow-1,
+                scrollY:this.state.scrollY+SCROLLED_ROW.UP
+            })
+        }
     }
 
     /**
@@ -238,6 +263,15 @@ class Grid extends React.Component {
         }
         if (this.state.selectedRow < this.totalRow - 1) {
             this.setState({ selectedRow: this.state.selectedRow + 1 });
+        }
+        if((this.props.visibleRow + this.state.scrolledRow) >= this.totalRow){
+            return;
+        }
+        if((this.state.selectedRow+1) > this.props.visibleRow && (this.totalRow > this.props.visibleRow)){
+            this.setState({
+                scrolledRow:this.state.scrolledRow+1,
+                scrollY:this.state.scrollY+SCROLLED_ROW.DOWN
+            })
         }
     }
 
@@ -273,8 +307,12 @@ class Grid extends React.Component {
     }
 
     render() {
+        var style = {
+            transform: "translate3d(0px," + this.state.scrollY + "px,0)",
+            transition: 'all 300ms ease-in-out'
+        }
         return (
-            <div className="data-list">
+            <div className="data-list" style={style}>
                 {
                     this.rowData().map((array, index) => {
                         return <div className='row' key={index}>
