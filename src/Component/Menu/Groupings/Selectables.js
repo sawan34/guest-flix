@@ -77,7 +77,7 @@ class Selectables extends React.Component {
 
     const styles = {
       width: props.width,
-      height:props.height
+      height: props.height
     };
 
     return (
@@ -140,6 +140,12 @@ class Selectables extends React.Component {
    * @return {null}
    */
   dataForSelctable = (selectableIdArray) => {
+    var selectableWrapper = document.getElementsByClassName("selectable-related-title");
+    var selectableWrapperWidth = selectableWrapper[0].clientWidth;
+    var selectableWrapperPadding = window.getComputedStyle(selectableWrapper[0], null).getPropertyValue('padding-left');
+    selectableWrapperPadding = selectableWrapperPadding.substring(0, selectableWrapperPadding.length - 2);
+    selectableWrapperWidth = selectableWrapperWidth - (selectableWrapperPadding * 2);
+
     if (selectableIdArray.length > 0) {
       var queryString = '?id=' + selectableIdArray.join('&id=');
     }
@@ -153,7 +159,7 @@ class Selectables extends React.Component {
               for (var imageTypeId = 0; imageTypeId < getResponse.message.data[selectableIndex].images.length; imageTypeId++) {
                 if (this.props.getGroupings.message.data[this.groupingID].imageType === getResponse.message.data[selectableIndex].images[imageTypeId].type) {
                   var itemObj = {
-                    image_url : getResponse.message.data[selectableIndex].images[imageTypeId].url,
+                    image_url: getResponse.message.data[selectableIndex].images[imageTypeId].url,
                     width: getResponse.message.data[selectableIndex].images[imageTypeId].width,
                     height: getResponse.message.data[selectableIndex].images[imageTypeId].height
                   };
@@ -163,6 +169,14 @@ class Selectables extends React.Component {
                   break;
                 }
               }
+            }
+
+            var gridWidth = (this.gridProps.itemWidth + (10)) * 6;
+            if (gridWidth > selectableWrapperWidth) {
+              var coloumns = Math.round(selectableWrapperWidth / (this.gridProps.itemWidth + (20)));
+              this.gridProps.coloumns = coloumns;
+            } else {
+              this.gridProps.coloumns = 6;
             }
             this.gridProps.entries = this.state.items;
             this.setState({ isLoading: false });

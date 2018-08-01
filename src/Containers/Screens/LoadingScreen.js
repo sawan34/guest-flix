@@ -13,6 +13,7 @@ import actionGroupings from '../../actions/action.groupings';
 import actionUIConfig from '../../actions/action.UIConfig';
 import utility from '../../commonUtilities';
 import { SCREENS } from '../../constants/screens.constant';
+import { translate, Trans } from 'react-i18next';
 import { Md5 } from 'ts-md5/dist/md5';
 import { validCodes } from '../../constants/error.constant'
 import { alertConstants } from '../../constants/alert.constant';
@@ -59,6 +60,9 @@ class LoadingScreen extends BaseScreen {
             }
             else {
                 if (this.props.groupingsReducer.type === alertConstants.SUCCESS && validCodes(this.props.groupingsReducer.message.status)) {
+                    if(!utility.isEmpty(this.props.uiConfigReducer.message.data.defaultPreferences.uiLanguage)){
+                            this.props.i18n.changeLanguage(this.props.uiConfigReducer.message.data.defaultPreferences.uiLanguage);                        
+                    }
                     this.goToScreen("home")
                 }
             }

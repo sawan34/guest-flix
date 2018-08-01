@@ -183,13 +183,6 @@ class Grid extends React.Component {
                         selectedItemIndex: 0
                     });
                     break;
-                case KEY.UP:
-                    if (Utility.isEmpty(this.rowData()[this.totalRow - 1][this.state.selectedItemIndex]) || Utility.isEmpty(this.rowData()[this.totalRow - 1][this.state.selectedItemIndex])) {
-                        this.setState({
-                            selectedItemIndex: this.state.selectedItemIndex - 1
-                        });
-                    }
-                    break;
             }
         }
     }
@@ -261,6 +254,10 @@ class Grid extends React.Component {
         if (!this.rowData()[this.state.selectedRow][this.state.selectedItemIndex]) {
             return;
         }
+        if (this.state.selectedRow !== this.totalRow - 1 && Utility.isEmpty(this.rowData()[this.state.selectedRow+1][this.state.selectedItemIndex])) {
+            return;
+        }
+
         if (this.state.selectedRow < this.totalRow - 1) {
             this.setState({ selectedRow: this.state.selectedRow + 1 });
         }

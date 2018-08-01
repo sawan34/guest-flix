@@ -18,7 +18,8 @@ const COMMON_UTILITIES = {
     onImageErrorHandler,
     timeFormat,
     getBookmarksOrderIdByProgramId,
-    refreshBookmarks
+    refreshBookmarks,
+    getUILanguagesAvailable
 }
 
 
@@ -132,5 +133,10 @@ function getObjectByKeyFromObjectInArray(_arrayObj,key,id,compareNumber=false){
   */
 function refreshBookmarks(){
     const state = store.dispatch(actionGetBoookmarks(roomUser.getStayId()));
+}
+
+function getUILanguagesAvailable(){
+    const state = store.getState();
+    return (state.getUiConfig.message.data.uiLanguagesAvailable);
 }
 export default COMMON_UTILITIES;

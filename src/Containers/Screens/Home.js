@@ -13,13 +13,11 @@ import COMMON_UTILITIES from '../../commonUtilities';
 import roomUser from '../../services/service.roomUser';
 import _ from 'lodash';
 import Selectables from '../../Component/Menu/Groupings/Selectables';
-import MenuLanguage from '../../Component/Menu/Language/Language';
-
-
 import { translate, Trans } from 'react-i18next';
 import { SCREENS } from '../../constants/screens.constant';
 import { actionGetSelectables } from '../../actions';
 import { actionGetBoookmarks } from '../../actions/action.bookmark';
+import MenuLanguage from '../../Component/Menu/Language/Language';
 
 import { alertConstants } from '../../constants/alert.constant';
 import { commonConstants } from '../../constants/common.constants';
@@ -60,26 +58,27 @@ class Home extends BaseScreen {
             selectableOn: false,
             selectableActive: false,
             groupingID: 0,
-            isMenuLanguageOn:true, //true when menu got focus
-            isMenuLanguageActive:false //true when menu got selected
+            isMenuLanguageOn:false, //true when menu got focus
+            isSubMenuActive:false //true when menu got selected
         }
         this.scrollSpeed = 200;
         this.topPosition = 0;
         this.numberTofetchSeletables = 10; //number of seletables to fetch at time
         this.gridrowLoad = 4;
+        this.groupingHeight = 690;
+
         this.loadNextData = this.loadNextData.bind(this);
         this.handleFocusChange = this.handleFocusChange.bind(this);
         this.getSelectablesOnLoad = this.getSelectablesOnLoad.bind(this);
-
         this.renderHome = this.renderHome.bind(this);
         this.renderSeletable = this.renderSeletable.bind(this);
         this.toggleHomeSelectable = this.toggleHomeSelectable.bind(this);
         this.onSelectMenuGrouping = this.onSelectMenuGrouping.bind(this);
         this.showSelectable = this.showSelectable.bind(this);
         this.selectableItemClicked = this.selectableItemClicked.bind(this);
-
-        this.groupingHeight = 690;
         this.findGroupingById = this.findGroupingById.bind(this);
+        this.changeSubMenuActiveStatus = this.changeSubMenuActiveStatus.bind(this);
+        this.removeSubMenu = this.removeSubMenu.bind(this);
     }
     /**
      * Description:Setting  Menu status On || Off 
@@ -234,7 +233,9 @@ class Home extends BaseScreen {
     */
     handleKey(event) {
         var keyCode = event.keyCode;
-
+        if(this.state.isSubMenuActive){ //for menu language
+            return;
+        }
         if (this.state.selectableActive) {
             if(keyCode === KeyMap.VK_BACK) {
                 this.setState({
@@ -248,6 +249,7 @@ class Home extends BaseScreen {
             });
             return;
          }
+
         if (this.state.menuOn) {
             return;
         }
@@ -271,7 +273,6 @@ class Home extends BaseScreen {
                 });
                 break
             case KeyMap.VK_LEFT:
-
                 if (this.state.gridPositionColumn[this.state.gridPositionRow] === 0 ||
                     this.state.gridPositionColumn[this.state.gridPositionRow] === undefined) {
                     this.changeMenuStatus();
@@ -374,7 +375,7 @@ class Home extends BaseScreen {
         return imageType;
     }
 
-    /**
+  /**
    * Description : Get Group Wrap By Group Id
    * @param {number}  groupId
    * @returns {string}
@@ -423,31 +424,39 @@ class Home extends BaseScreen {
 
 
     /**
-         * 
-         */
-    showSelectable(menuObj) {
+     * 
+     */
+    showSelectable(menuObj) { //on menu item focus
+        console.log(menuObj);
+        this.removeSubMenu(); // removing submenus
         if (menuObj.type === commonConstants.MENU_GROUPING_TYPE) {
             this.setState({
                 selectableOn: true,
                 groupingID: menuObj.id,
                 selectableActive: false
             })
-        } else {
+        } else if(menuObj.name === commonConstants.MENU_LANGUAGE){ // on language select
+            this.setState({
+                isMenuLanguageOn:true
+            });
+        } else{
             this.setState({
                 selectableOn: false,
-                selectableActive: false
-            })
+                selectableActive: false,
+            });
         }
     }
     /**
      * 
      */
-    onSelectMenuGrouping(menuObj) {
+    onSelectMenuGrouping(menuObj) { // on menu enter or right
         if (menuObj.type === commonConstants.MENU_GROUPING_TYPE) {
             this.changeMenuStatus();
             this.setState({
                 selectableActive: true
             });
+        }else{
+            this.changeSubMenuActiveStatus();
         }
     }
 
@@ -473,10 +482,31 @@ class Home extends BaseScreen {
         return (<div style={selectableStyle}><Selectables activeEvent={this.state.selectableActive} keyEvent={this.state.keyEvent} groupingID={this.state.groupingID} selectableItemClicked={this.selectableItemClicked} ></Selectables></div>);
 
     }
-
+  /**
+   * Description : change MenuActive status
+   * @returns {undefined}
+   */
+    changeSubMenuActiveStatus(status=""){        
+        this.setState((prev)=>{
+           if(status!==""){
+                 return {isSubMenuActive:status}
+           } 
+           return {isSubMenuActive:!prev.isSubMenuActive}           
+        });
+    }
+   /**
+   * Description : change MenuActive status
+   * @returns {undefined}
+   */
+   removeSubMenu(){  
+        this.changeSubMenuActiveStatus(false);     
+        this.setState((prev)=>{
+        return {isMenuLanguageOn:false}
+        });
+   }
     /**
-    * Description : render Home
-    */
+         * Description : render Home
+         */
     renderHome() {
         var style = {
             transform: "translate3d(0px," + this.state.scrollY + "px,0)",
@@ -548,11 +578,15 @@ class Home extends BaseScreen {
         if (this.state.data.type === alertConstants.ERROR) {
             return <div>{this.state.data.data}</div>
         }
+
+
+
         return (
             <div>
                 <div className="container" >
-                    {this.state.menuOn && <Menu openMenu={this.state.menuOn} changeMenuStatus={this.changeMenuStatus.bind(this)} onFocus={this.showSelectable} onItemSelect={this.onSelectMenuGrouping} />}
-                    {this.state.menuOn &&  this.state.isMenuLanguageOn && !this.state.selectableOn &&  <MenuLanguage />}
+                    {this.state.menuOn && <Menu openMenu={this.state.menuOn} changeMenuStatus={this.changeMenuStatus.bind(this)} onFocus={this.showSelectable} onItemSelect={this.onSelectMenuGrouping} changeSubMenuActiveStatus={this.changeSubMenuActiveStatus} subMenuActiveStatus = {this.state.isSubMenuActive} />}
+                    {this.state.menuOn &&  this.state.isMenuLanguageOn && !this.state.selectableOn &&  <MenuLanguage subMenuActiveStatus={this.state.isSubMenuActive} removeSubMenu = {this.changeSubMenuActiveStatus} />}
+
                     {this.toggleHomeSelectable()}
                 </div>
             </div>

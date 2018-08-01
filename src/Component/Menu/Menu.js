@@ -6,7 +6,7 @@ import KeyMap from '../../constants/keymap.constant';
 import {commonConstants} from '../../constants/common.constants'
 
 
-var extMenu = "Exit Menu";
+var extMenu = commonConstants.MENU_EXIT;
 var upDownKeyTimeOut = null;
 class Menu extends Component {
     constructor(){
@@ -29,6 +29,7 @@ class Menu extends Component {
 	 */
 	createMenuFromMode = (metaData) => {
 		let modeMenu = [];
+		this.modeMenuMetaInfo = [];
 		if (metaData.modes && metaData.modes.length > 0) {
 			let modesNo = this.uiConfigData.modes ? this.uiConfigData.modes.length : 0;
 			let availableModeNo = metaData.modes.length;
@@ -36,6 +37,7 @@ class Menu extends Component {
 				for (var i = 0; i < modesNo; i++) {
 					for (var j = 0; j < availableModeNo; j++) {
 						if (this.uiConfigData.modes[i].id === metaData.modes[j]) {
+							this.modeMenuMetaInfo.push(this.uiConfigData.modes[i]);
 							modeMenu.push(this.uiConfigData.modes[i].name)
 						}
 					}
@@ -81,12 +83,12 @@ class Menu extends Component {
 	createMenuFromAttr = (metaData) => {
 	 	if (metaData.languageEnabled) {
 	 		this.setState({
-	 			menuItems: [...this.state.menuItems, "Language"]
+	 			menuItems: [...this.state.menuItems, commonConstants.MENU_LANGUAGE]
 	 		});
 	 	}
 	 	if (metaData.filterEnabled) {
 	 		this.setState({
-	 			menuItems: [...this.state.menuItems, "Filter"]
+	 			menuItems: [...this.state.menuItems, commonConstants.MENU_FILTER]
 	 		});
 	 	}
 	}
@@ -114,7 +116,7 @@ class Menu extends Component {
 		if (metaData) {
 			//creating the menus from data in order 
 			this.createMenuFromMode(metaData);
-			this.setState({menuItems: [...this.state.menuItems, "Exit Menu"]}); 
+			this.setState({menuItems: [...this.state.menuItems, commonConstants.MENU_EXIT]}); 
 			this.createMenuFromAttr(metaData);
 			this.defaultMenuNo = this.state || this.state.menuItems ? this.state.menuItems.length : 5;
 			this.createMenuFromGroup(metaData);
@@ -150,15 +152,22 @@ class Menu extends Component {
 		});
 	}
 
+	/**
+	 * This function return the current index of focused item in menu
+	 * @param {number} currMenuPos: the current index of menu  
+	 */
 	getCurrentIndex = () => {
-        var currMenuPos = null;
-        if (this.state && this.state.menuItems && this.state.menuItems.length > 0) {
-            currMenuPos = this.state.menuItems.indexOf(this.state.activeMenu);
-        }
-        return currMenuPos;
-    }
+		var currMenuPos = null;
+		if (this.state && this.state.menuItems && this.state.menuItems.length > 0) {
+			currMenuPos = this.state.menuItems.indexOf(this.state.activeMenu);
+		}
+		return currMenuPos;
+	}
 
-	
+	/**
+	 * This function return the current index of focused item in grouping menu list
+	 * @param {number} currGroupingId: the current index of grouping menu  
+	 */
     getGroupingInfo = () => {
         var currMenuPos = this.getCurrentIndex();
         var currGroupingId = null
@@ -167,45 +176,68 @@ class Menu extends Component {
             currGroupingId = totalAvailableGroup[currMenuPos - this.defaultMenuNo];
         }
         return currGroupingId;
-    }
+	}
+	
+	/**
+	 * This function is responsible for creating the information for focused item in menu
+	 * @param {} none:
+	 * @return {obj} groupingObj: contains the information about the focused or selected item
+	    in menu list.
+	 */
+	createMenuInfo = () => {
+		var currGroupingId = null;
+		var groupObj = {};
+		groupObj.id = null;
+		currGroupingId = this.getGroupingInfo();
+		if (currGroupingId) {
+			groupObj.id = currGroupingId;
+			groupObj.type = commonConstants.MENU_GROUPING_TYPE;
+			groupObj.name = this.state.activeMenu;
+		} else {
+			if (this.state.currIndex < this.modeMenuMetaInfo.length) {
+				groupObj = this.modeMenuMetaInfo[this.state.currIndex];
+				groupObj.isMode = true;
+			} else if (this.state.currIndex > this.modeMenuMetaInfo.length) {
+				groupObj.name = this.state.activeMenu;
+			}
+			groupObj.type = commonConstants.MENU_DEFAULT_TYPE;
+		}
+		return groupObj
+	}
 
+	/**
+	 * This function is gets execute whenever user treverse up and down in menu list
+	 * @param {} none:
+	 * @return none
+	 */
 	onItemFocus = () => {
 		try {
-
 			//call the callback function when selected item is
-			var currGroupingId = null;
-			var groupObj = {};
-			groupObj.type = commonConstants.MENU_DEFAULT_TYPE;
-			groupObj.id = null;
-			currGroupingId = this.getGroupingInfo();
-			if (currGroupingId) {
-				var groupObj
-				groupObj.id = currGroupingId;
-				groupObj.type = commonConstants.MENU_GROUPING_TYPE;
+			var groupObj = this.createMenuInfo();
+			if (groupObj) {
+				this.props.onFocus(groupObj);
 			}
-			this.props.onFocus(groupObj);
 		} catch (error) {
 
 		}
 	}
 
+	/**
+	 * This function is gets execute whenever user select any item in menu list
+	 * @param {} none:
+	 * @return none
+	 */
     onItemSelected = () => {
-		//call the callback function when selected item is
-		var currGroupingId = null;
-		var groupObj = {};
-		groupObj.type = commonConstants.MENU_DEFAULT_TYPE;
-		groupObj.id = null;
-        try {
-            currGroupingId = this.getGroupingInfo();
-            if (currGroupingId) {
-				var groupObj
-				groupObj.id = currGroupingId;
-				groupObj.type = commonConstants.MENU_GROUPING_TYPE;
-            }
-			this.props.onItemSelect(groupObj);
-        } catch (error) {
+    	//call the callback function when selected item is
+    	var groupObj = null;
+    	try {
+    		groupObj = this.createMenuInfo();
+    		if (groupObj) {
+    			this.props.onItemSelect(groupObj);
+    		}
+    	} catch (error) {
 
-        }
+    	}
     }
 
 
@@ -255,19 +287,23 @@ class Menu extends Component {
 			scrollStyle.transform = `translate3d(0,0,0)`;
 		}
 
-		if(upDownKeyTimeOut){
-            clearTimeout(upDownKeyTimeOut)
-        }
-        upDownKeyTimeOut = setTimeout(function(){
-            this.onItemFocus();
-        }.bind(this),500);
-
-
+		
+		
 		this.setState({
 			activeMenu: nextActivemenu,
 			currIndex:currentPos,
 			scrollStyle:scrollStyle
 		});
+		if (this.getGroupingInfo()) {
+			if (upDownKeyTimeOut) {
+				clearTimeout(upDownKeyTimeOut)
+			}
+			upDownKeyTimeOut = setTimeout(function () {
+				this.onItemFocus();
+			}.bind(this), 500);
+		} else {
+			this.onItemFocus();
+		}
 	}
 
 	/**
@@ -275,6 +311,9 @@ class Menu extends Component {
 	 * @param {object} event: this object contains the keycode for traversing
 	 */
 	onKeyDown(event) {
+		if(this.props.subMenuActiveStatus){ // if sub menu active then no action on menu
+			return ; 
+		}
 		try {
 			var keyCode = event.keyCode;
 			var currentPos = null;
@@ -289,10 +328,9 @@ class Menu extends Component {
 						localStorage.isMenuActive = false;
 						this.props.changeMenuStatus(event);
 					}else{
-						document.removeEventListener("keydown", this.onKeyDown);						
-                        this.onItemSelected();
+						this.onItemSelected();						
                     }
-					break;
+					break;		
 				case KeyMap.VK_UP:
 					
 					if (currentPos === 0 || this.state.showMenu.display === 'none') {
@@ -354,7 +392,9 @@ class Menu extends Component {
 				<nav className="scrollMenu">
 					<ul style={this.state.scrollStyle}>
 						{this.state.menuItems.map((item,i)=>{
-							return (<li key={i+"id"} className={(i === this.state.currIndex)?"active":""}><a href="#">{item}<i className={(item && item.toLowerCase() === "exit menu")?"fa fa-caret-left":"fa fa-caret-right"} aria-hidden="true"></i></a></li>)
+							return (<li key={i+"id"} className={(i === this.state.currIndex)?"active":""}><a href="#">
+										{item}
+								    <i className={(item && item.toLowerCase() === "exit menu")?"fa fa-caret-left":"fa fa-caret-right"} aria-hidden="true"></i></a></li>)
 						})}
 					</ul>
 				</nav>

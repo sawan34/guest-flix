@@ -21,5 +21,6 @@
   "resume":"Hervat",
   "purchase_confirm_description":"De titel die u hebt geselecteerd, is beschikbaar om met audio en ondertitels in alternatieve talen te bekijken. Selecteer de gewenste taalopties en druk op Bevestigen om uw selectie te spelen.",
   "loading_data_message":"Bezig met laden ......",
-  "no_data_message":"Geen gegevens"
+  "no_data_message":"Geen gegevens",
+  "choose_your_lang":"Kies je taal"
 }

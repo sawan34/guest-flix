@@ -64,11 +64,11 @@ export default class VerticalGrid extends React.Component {
 		};
 	}
 
-   /**
-   * Description: class initialization, set initial properties while instanciating
-   * @param {object} 
-   * @return {null}
-   */
+	/**
+	* Description: class initialization, set initial properties while instanciating
+	* @param {object} 
+	* @return {null}
+	*/
 	constructor(props) {
 		super(props);
 		this.state = this.initialState();
@@ -331,7 +331,7 @@ export default class VerticalGrid extends React.Component {
 	 */
 	_scrollListener() {
 		this.scrollOffset = this._visibleIndexes();
-		}
+	}
 
 	/**
 	 * Description: this method is for resize listener
@@ -392,27 +392,66 @@ export default class VerticalGrid extends React.Component {
 					}
 					break;
 				case KeyMap.VK_LEFT:
+					this.scrollAfterIndex = this._itemsPerRow() * (this._numVisibleRows() - 1);
 					var isFirstElementofRow = (((currentIndex + 1) % (this._itemsPerRow())) === 1) ? true : false;
 					currentIndex = currentIndex - 1;
-					if (currentIndex >= 0 && !isFirstElementofRow) {
-						this.setState((prevState) => {
-							return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex }
-						}, () => {
-							this.focusChange();
-						});
+					if (currentIndex >= 0) {
+						if (isFirstElementofRow) {
+							if ((currentIndex + 1) > this.scrollAfterIndex) {
+								currentScroll = this.state.scrollY + this._itemHeight();
+								this.setState((prevState) => {
+									return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex, scrollY: currentScroll }
+								}, () => {
+									this.focusChange();
+								});
+								this._scrollListener();
+							} else {
+								this.setState((prevState) => {
+									return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex, scrollY: currentScroll }
+								}, () => {
+									this.focusChange();
+								});
+							}
+
+						} else {
+							this.setState((prevState) => {
+								return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex }
+							}, () => {
+								this.focusChange();
+							});
+						}
 					} else {
 						this.props.data.FocusCallback(FOCUS_DIRECTION.LEFT);
 					}
 					break;
 				case KeyMap.VK_RIGHT:
 					var isLastElementofRow = ((currentIndex + 1) % (this._itemsPerRow()) === 0) ? true : false;
+					this.scrollAfterIndex = this._itemsPerRow() * this._numVisibleRows();
 					currentIndex = currentIndex + 1;
-					if (currentIndex >= 0 && currentIndex < this.props.data.entries.length && !isLastElementofRow) {
-						this.setState((prevState) => {
-							return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex }
-						}, () => {
-							this.focusChange();
-						});
+					if (currentIndex >= 0 && currentIndex < this.props.data.entries.length) {
+						if (isLastElementofRow) {
+							if ((currentIndex + 1) > this.scrollAfterIndex) {
+								currentScroll = this.state.scrollY - this._itemHeight();
+								this.setState((prevState) => {
+									return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex, scrollY: currentScroll }
+								}, () => {
+									this.focusChange();
+								});
+								this._scrollListener();
+							} else {
+								this.setState((prevState) => {
+									return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex }
+								}, () => {
+									this.focusChange();
+								});
+							}
+						} else {
+							this.setState((prevState) => {
+								return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex }
+							}, () => {
+								this.focusChange();
+							});
+						}
 					} else {
 						this.props.data.FocusCallback(FOCUS_DIRECTION.RIGHT);
 					}
@@ -439,15 +478,15 @@ export default class VerticalGrid extends React.Component {
 					} else {
 						var isNextRowPresent = true;
 						currentIndex = currentIndex - this._itemsPerRow();
-						var noOfElementRemaining =((currentIndex + 1) % (this._itemsPerRow()) === 0) ? 0 : (this._itemsPerRow() - ((currentIndex) + 1) % (this._itemsPerRow()));
-						var lastElementIndex = (currentIndex + noOfElementRemaining)>(this.props.data.entries.length-1)?this.props.data.entries.length-1 : (currentIndex + noOfElementRemaining);
-						if(lastElementIndex === (this.props.data.entries.length-1)){
+						var noOfElementRemaining = ((currentIndex + 1) % (this._itemsPerRow()) === 0) ? 0 : (this._itemsPerRow() - ((currentIndex) + 1) % (this._itemsPerRow()));
+						var lastElementIndex = (currentIndex + noOfElementRemaining) > (this.props.data.entries.length - 1) ? this.props.data.entries.length - 1 : (currentIndex + noOfElementRemaining);
+						if (lastElementIndex === (this.props.data.entries.length - 1)) {
 							isNextRowPresent = false;
 						}
 
-					
-						if(isNextRowPresent){
-							currentIndex = this.props.data.entries.length-1;
+
+						if (isNextRowPresent) {
+							currentIndex = this.props.data.entries.length - 1;
 							if ((currentIndex + 1) > this.scrollAfterIndex) {
 								currentScroll = this.state.scrollY - this._itemHeight();
 								this.setState((prevState) => {
@@ -463,8 +502,8 @@ export default class VerticalGrid extends React.Component {
 									this.focusChange();
 								});
 							}
-						}else{
-						this.props.data.FocusCallback(FOCUS_DIRECTION.DOWN);
+						} else {
+							this.props.data.FocusCallback(FOCUS_DIRECTION.DOWN);
 						}
 					}
 					break;
