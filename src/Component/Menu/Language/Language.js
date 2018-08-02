@@ -57,16 +57,14 @@ class MenuRadioGrid extends RadioGrid{
     * @return {null}
     */
    focusOnRightKey() {
+     console.log(this.rowData())
     if (!this.rowData()[this.state.selectedRow][this.state.selectedItemIndex + 1]) {
       return;
     }
-    console.log(this.state.selectedItemIndex)
-    if(this.state.selectedItemIndex >=0){
+  
       if ((this.state.selectedItemIndex < this.props.col - 1)) {
         this.setState({ selectedItemIndex: this.state.selectedItemIndex + 1 });
       }
-    }
-    
   }
 
   componentDidUpdate(){
@@ -76,14 +74,18 @@ class MenuRadioGrid extends RadioGrid{
   componentDidMount(){
     super.componentDidMount();
     let focusColumn = 0,focusRow=0;
-    if(this.props.scrolledRowIndex > 0){
-      focusRow =  this.props.scrolledRowIndex % numberOfLangColumn;
+    if(this.props.preSelectedLangIndex > 0){
+      focusRow =  this.props.preSelectedLangIndex % numberOfLangColumn;
+      focusColumn = Math.floor(this.props.preSelectedLangIndex / numberOfLangColumn);
+      console.log(focusRow);
+      console.log(focusColumn)
+      this.setState({
+        selectedItemIndex:focusRow-1,
+        selectedRow:focusColumn
+      });
+  
     }
-    this.setState({
-      selectedItemIndex:0,
-      selectedRow:2
-    });
-
+   
   }
 }
 
@@ -150,7 +152,8 @@ class Language extends Component {
   }
   init(item, i) {
     let obj = null;
-    if (item === "en") {
+    if (item === "fr") {
+      console.log(i);
       this.preSelectedLangIndex = i;
       obj = {
         [item]: {
