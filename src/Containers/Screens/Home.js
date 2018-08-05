@@ -17,7 +17,7 @@ import { translate, Trans } from 'react-i18next';
 import { SCREENS } from '../../constants/screens.constant';
 import { actionGetSelectables } from '../../actions';
 import { actionGetBoookmarks } from '../../actions/action.bookmark';
-import MenuLanguage from '../../Component/Menu/Language/Language';
+import MenuLanguage from '../../Component/Menu/Filter/Filter';
 
 import { alertConstants } from '../../constants/alert.constant';
 import { commonConstants } from '../../constants/common.constants';

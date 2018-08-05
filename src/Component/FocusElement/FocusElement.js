@@ -62,7 +62,7 @@ class Grid extends React.Component {
     * @return {null}
     */
     onKeyDown(event) {
-        try {
+     //   try {
             var keyCode = event.keyCode;
             switch (keyCode) {
                 case KeyMap.VK_UP:
@@ -91,9 +91,9 @@ class Grid extends React.Component {
                     this.getActiveDetails();
                     break;
             }
-        } catch (e) {
-            console.log(e);
-        }
+        // } catch (e) {
+        //     console.log(e);
+        // }
     }
 
     /**
