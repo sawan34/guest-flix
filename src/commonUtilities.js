@@ -17,9 +17,12 @@ const COMMON_UTILITIES = {
     getCurrencySymbol,
     onImageErrorHandler,
     timeFormat,
+    getMilliSeconds,
     getBookmarksOrderIdByProgramId,
     refreshBookmarks,
-    getUILanguagesAvailable
+    getUILanguagesAvailable,
+    getDefaultUILanguage,
+    getBookmarksObjByProgramId
 }
 
 
@@ -84,6 +87,10 @@ function timeFormat(time) {
     const MIN = time[5] + time[6];
     return (HR * 1) + 'h ' + (MIN * 1) + 'm';
 }
+
+function getMilliSeconds(second) {
+    return (second) * 1000;
+}
 /**
   * Description: get OrderId By ProgramId
   * @param {time}programId
@@ -105,6 +112,31 @@ function getBookmarksOrderIdByProgramId(programId) {
         return data;
     }
 }
+
+/**
+  * Description: get Bookmark object By ProgramId
+  * @param {time}programId
+  * @return {number || Boolean}
+  */
+ function getBookmarksObjByProgramId(programId) {
+    let data = false;
+    const state = store.getState();
+    try {
+        if (state.getBookmarks) {
+            if (state.getBookmarks.data.length > 0) {
+                data = getObjectByKeyFromObjectInArray(state.getBookmarks.data, 'programId', programId, true);
+                if (data) {
+                    return data[0];
+                }
+            }
+        }
+    } catch (e) {
+        return data;
+    }
+}
+
+
+
 /**
   * Description: get Object By Key from Object Array
   * @param {Array} _arrayObj
@@ -129,14 +161,29 @@ function getObjectByKeyFromObjectInArray(_arrayObj,key,id,compareNumber=false){
 }
 /**
   * Description: Referesh Bookmark
-  * @return {undefined}
+  * @return {Object}
   */
 function refreshBookmarks(){
     const state = store.dispatch(actionGetBoookmarks(roomUser.getStayId()));
 }
-
+/**
+  * Description: get All UI Languge from UI Confid
+  * @return {Object}
+  */
 function getUILanguagesAvailable(){
     const state = store.getState();
     return (state.getUiConfig.message.data.uiLanguagesAvailable);
 }
+/**
+  * Description: get Default UI Languge from user preferences
+  * @return {String}
+  */
+function getDefaultUILanguage(){
+    const state = store.getState();
+    if(!state.userPreferences.data){
+        return;
+    }
+    return (state.userPreferences.data.uiLanguage);
+}
+
 export default COMMON_UTILITIES;

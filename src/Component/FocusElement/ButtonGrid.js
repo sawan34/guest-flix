@@ -5,10 +5,10 @@
 * @date  24.07.2018
 */
 import React from 'react';
-import Grid from "./FocusElement";
+import FocusElement from "./FocusElement";
 import ButtonItem from './ButtonItem';
 
-class ButtonGrid extends Grid {
+class ButtonGrid extends FocusElement {
     /**
     * Description: class initialization 
     * @param {null} 

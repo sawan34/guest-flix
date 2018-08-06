@@ -11,6 +11,7 @@ import {connect} from 'react-redux';
 import { translate } from 'react-i18next';
 import {saveStateOnExitScreen} from '../../actions';
 import {bindActionCreators} from 'redux';
+import _ from 'lodash';
 
 class BaseScreen extends Component {
     constructor(props) {
@@ -19,6 +20,7 @@ class BaseScreen extends Component {
             data:[]
         };
         this.handleKey =  this.handleKey.bind(this);
+        this.changeLanguage =  this.changeLanguage.bind(this);
     }
 
     /**
@@ -33,6 +35,9 @@ class BaseScreen extends Component {
      * Description: This method invoked just before doing back screen
      */
     beforeBackScreen = () => {
+        window.routerHistory = _.remove(window.routerHistory,(n)=>{
+          return  n !== this.state.screen
+        });  
     }
 
     /**
@@ -53,6 +58,11 @@ class BaseScreen extends Component {
      * Description: This method invoked just before going to another screen
      */
     onScreenExitForward = () => {
+        let self =  this;
+        window.routerHistory = _.remove(window.routerHistory,(n)=>{
+           return  n !== self.state.screen
+        });        
+        window.routerHistory.push(this.state.screen);
         this.props.saveExitScreen(this.state);
     }
 
@@ -67,7 +77,7 @@ class BaseScreen extends Component {
         }
 
         //To be decided if we should call it via screen manager or not.
-        this.props.routerData.history.push({
+       this.props.routerData.history.push({
             pathname: '/'+screenId,
             state: { prevPath: this.props.routerData.location.pathname }
         });
@@ -124,6 +134,10 @@ class BaseScreen extends Component {
     componentWillUnmount(){
         document.removeEventListener("keydown", this.handleKey);
     } 
+
+    changeLanguage(lang){
+        this.props.i18n.changeLanguage(lang);
+    }
 
 }; //class Ends
 

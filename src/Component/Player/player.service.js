@@ -5,11 +5,11 @@
  * @date  03.07.2018
  */
 export class PlayerService {
-   /**
-   * Description: class initialization, set initial properties while instanciating
-   * @param {null} 
-   * @return {null}
-   */
+    /**
+    * Description: class initialization, set initial properties while instanciating
+    * @param {null} 
+    * @return {null}
+    */
     constructor(props) {
         this.Player = {};
         this.Player["TAG"] = "PlayerServcie";
@@ -56,7 +56,7 @@ export class PlayerService {
    * @return {null}
    */
     log(tag, message) {
-        
+
     }
 
     /**
@@ -81,7 +81,7 @@ export class PlayerService {
 
         return success;
     }
-    
+
     /**
    * Description: destroy player instance if exists already, clear intervals
    * @param {null} 
@@ -135,11 +135,11 @@ export class PlayerService {
         //this.plugin.SetDisplayArea(0, 0, 960, 540);
     }
 
-     /**
-   * Description: set actual player area on the viewport
-   * @param {null} 
-   * @return {null}
-   */
+    /**
+  * Description: set actual player area on the viewport
+  * @param {null} 
+  * @return {null}
+  */
     setPlayerArea = function (x, y, width, height) {
 
     }
@@ -152,6 +152,18 @@ export class PlayerService {
     setVideoURL = function (url) {
         this.url = url;
     }
+
+
+  /**
+  * Description: set seek Time in sec for resume playback
+  * @param {url} int
+  * @return {null}
+  */
+    setSeekTime = function (seekPosition) {
+        this.seekTime = seekPosition/1000;
+    }
+
+
 
     /**
    * Description: set url to the player source, pause check and resume checks
@@ -185,11 +197,11 @@ export class PlayerService {
         }
     }
 
-     /**
-   * Description: play stream
-   * @param {null} 
-   * @return {null}
-   */
+    /**
+  * Description: play stream
+  * @param {null} 
+  * @return {null}
+  */
     playStream() {
         this.plugin.play();
         this.state = this.PLAYING;
@@ -220,11 +232,11 @@ export class PlayerService {
         }
     }
 
-     /**
-   * Description: stop video
-   * @param {null} 
-   * @return {null}
-   */
+    /**
+  * Description: stop video
+  * @param {null} 
+  * @return {null}
+  */
     stopVideo = function () {
         if (this.state !== this.STOPPED) {
             this.onFinish();
@@ -236,13 +248,13 @@ export class PlayerService {
         }
     }
 
-     /**
-   * Description: resume video
-   * @param {null} 
-   * @return {null}
-   */
+    /**
+  * Description: resume video
+  * @param {null} 
+  * @return {null}
+  */
     resumeVideo = function () {
-        if ((this.stateForwardOrRewind === this.FORWARD) || (this.stateForwardOrRewind === this.REWIND) || (this.pauseAfterFFRR === true)) {
+        if ((this.stateForwardOrRewind === this.FORWARD) || (this.stateForwardOrRewind === this.REWIND) || (this.pauseAfterFFRR === true) || this.seekTime!==0) {
             // Resume video... clear timer
             clearInterval(this.timerForwardRewind);
             this.manualProgressUpdate();
@@ -254,11 +266,11 @@ export class PlayerService {
         this.playStream();
     }
 
- /**
-   * Description: timer for rewind and forward
-   * @param {null} 
-   * @return {null}
-   */
+    /**
+      * Description: timer for rewind and forward
+      * @param {null} 
+      * @return {null}
+      */
     onTickTimerForwardRewind = function () {
         if (this.stateForwardOrRewind === this.FORWARD) {
             if (this.seekTime + this.stepForwardRewind > this.duration) {
@@ -292,11 +304,11 @@ export class PlayerService {
         }
     }
 
-     /**
-   * Description: reset stream speed
-   * @param {null} 
-   * @return {null}
-   */
+    /**
+  * Description: reset stream speed
+  * @param {null} 
+  * @return {null}
+  */
     resetStreamSpeed = function (currentState) {
         if ((this.state !== currentState)) {
             this.speedState = 1;
@@ -309,11 +321,11 @@ export class PlayerService {
         }
     }
 
- /**
-   * Description: forward video
-   * @param {null} 
-   * @return {null}
-   */
+    /**
+      * Description: forward video
+      * @param {null} 
+      * @return {null}
+      */
     forward = function () {
         this.resetStreamSpeed(this.FORWARD);
         this.showMessage('');
@@ -401,11 +413,11 @@ export class PlayerService {
         return this.state;
     }
 
-/**
-   * Description: on buffer start
-   * @param {null} 
-   * @return {null}
-   */
+    /**
+       * Description: on buffer start
+       * @param {null} 
+       * @return {null}
+       */
     onBufferingStart = function () {
         this.isBuffering = true;
     }
@@ -416,7 +428,7 @@ export class PlayerService {
    * @return {null}
    */
     onBufferingProgress = function (percent) {
-
+        this.showMessage('Buffering...');
     }
     /**
    * Description: on buffering complete
@@ -425,6 +437,7 @@ export class PlayerService {
    */
     onBufferingComplete = function () {
         this.isBuffering = false;
+        this.showMessage('');
     }
 
     /**
@@ -458,13 +471,13 @@ export class PlayerService {
         //this.onplayFinish();
     }
 
-      /**
-   * Description: on error
-   * @param {null} 
-   * @return {null}
-   */
+    /**
+ * Description: on error
+ * @param {null} 
+ * @return {null}
+ */
     onError = function () {
-        //this.showMessage('Error while playing.');
+        this.showMessage('Error while playing.');
     }
 
     /**
@@ -509,11 +522,11 @@ export class PlayerService {
 
     setCurBuffer = function (buffer) { this.log(this.Player.TAG, "setCurBuffer " + buffer); }
 
-     /**
-   * Description: manual update progress bar
-   * @param {null} 
-   * @return {null}
-   */
+    /**
+  * Description: manual update progress bar
+  * @param {null} 
+  * @return {null}
+  */
     manualProgressUpdate = () => {
         clearInterval(this.timerManualUpdate);
         let that = this;
@@ -535,7 +548,7 @@ export class PlayerService {
                 }
             }
 
-        }, 1000);
+        }, 100);
     }
 
     /**
@@ -544,7 +557,7 @@ export class PlayerService {
    * @return {null}
    */
     registerListeners = function () {
-         this.manualProgressUpdate();
+        this.manualProgressUpdate();
 
         this.plugin.onloadstart = this.onLoadStart.bind(this);
         this.plugin.onended = this.onComplete.bind(this);
@@ -552,21 +565,21 @@ export class PlayerService {
         this.plugin.onerror = this.onError.bind(this);
         this.plugin.onloadedmetadata = this.onMetaData.bind(this);
         this.plugin.onplaying = function () {
-           // this.showMessage('.......pppppplayyyyy');
+            // this.showMessage('.......pppppplayyyyy');
             this.isBuffering = false;
         }.bind(this);
         this.plugin.onloadeddata = function () {
-           // this.showMessage('....starrrrrrr....');
+            // this.showMessage('....starrrrrrr....');
             this.isBuffering = false;
         }.bind(this);
         this.plugin.onwaiting = this.onWaiting.bind(this);
     };
 
-     /**
-   * Description: update ui time
-   * @param {_currentTime, _duration} float 
-   * @return {null}
-   */
+    /**
+  * Description: update ui time
+  * @param {_currentTime, _duration} float 
+  * @return {null}
+  */
     updateUITime = function (_currentTime, _duration) {
         function pad(n, width) {
             var n = n + '';

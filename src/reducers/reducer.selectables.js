@@ -15,6 +15,10 @@ import { alertConstants } from '../constants/alert.constant';
     */
 export default function (state = [], action) {
     switch (action.type) {
+        
+        case ACTION.REFRESH_SELECTABLE:
+        return state = [];
+        break;
         case ACTION.GET_SELECTABLES:
             if (action.payload === "cached") {
                 return state;

@@ -8,5 +8,6 @@ export const SCREENS ={
     home:"home",
     programdetails:'program-details',
     menu:"menu",
-    player: "player"
+    player: "player",
+    dataloading:"data-loading"
 }

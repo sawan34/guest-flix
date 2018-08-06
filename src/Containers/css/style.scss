@@ -78,6 +78,15 @@ html,body{
   overflow:hidden;
   @include linear-gradient-b(left, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%);
 }
+.modeGrey{
+  background: $btn-active-gray;
+}
+#playerMessageView{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 
 /* media queries */
 @media (min-width: 1280px) {
@@ -365,8 +374,8 @@ html,body{
             z-index: 51;
             right:5%;
             top:18px;
-            width:25%;
-            line-height:1;
+            width:20%;
+            line-height:1.3;
             text-align:center;
           }
         }
@@ -501,6 +510,8 @@ html,body{
   .bluureffects{
     filter: blur(10px);
     -webkit-filter: blur(10px);
+    width:1280px;
+    height:720px;
   }
   .menu{
     width:400px;
@@ -577,21 +588,21 @@ html,body{
     overflow: hidden;
   }
   .sub-menu{
-    width:1220px;
-    height:880px;
-    padding:50px;
+    width: calc(100% - 401px);
+    height: 560px;
+    padding: 50px;
     @include box-sizing(border-box);
     background:$black;
     float: left;
-    margin-top:100px;
     position: absolute;
     z-index: 1;
-    left:601px;
+    left: 401px;
+    top: 80px;
     .heading{
-      padding:0px 0 50px 0;
+      padding:0px 0 30px 0;
       text-align: center;
       h3{
-        font-size: 2.5em;
+        font-size: 1.8em;
         color:$heading-color;
       }
     }
@@ -646,6 +657,62 @@ html,body{
       bottom:50px;
     }
   }
+
+
+  .menu-mode-sub-menu{
+    width:805px;
+    height:581px;
+    padding:33px;
+    @include box-sizing(border-box);
+    background:$black;
+    margin-top:66px;
+    position: absolute;
+    z-index: 1;
+    left:401px;
+    top:0;
+    .heading{
+      padding:0px 0 33px 0;
+      text-align: center;
+      h3{
+        font-size: 1.7em;
+        color:$heading-color;
+      }
+    }
+    .content{
+      text-align: center;
+      padding:0 33px;
+      height:112px;
+      p{
+        font-size: 1em;
+        line-height: 1.5;
+      }
+    }
+    .movie-list{
+      padding: 0px 20px 0px 20px;
+      ul{
+        overflow: hidden;
+        li{
+          list-style: none;
+          width:211px;
+          height:119px;
+          float: left;
+          margin-right: 14px;
+          margin-bottom:14px;
+          img{
+            width:211px;
+            height:119px;
+          }
+        }
+      }
+    }
+
+    /* kids zone screen */
+  .kids-zone{
+    width:717px;
+    height:581px;
+  }
+    
+  }
   .form-group{
     padding:8px 0;
     &.active > label{
@@ -665,7 +732,7 @@ html,body{
       content: '';
       display: block;
       position: absolute;
-      top: 7px;
+      top: 5px;
       left: 8px;
       width: 3px;
       height: 9px;
@@ -722,7 +789,7 @@ html,body{
       content: '';
       display: block;
       position: absolute;
-      top: 7px;
+      top: 4px;
       left: 6px;
       width: 7px;
       height: 7px;
@@ -759,12 +826,7 @@ html,body{
       }
     }
   }
-  /* kids zone screen */
-  .kids-zone{
-    width:1220px;
-    height:880px;
-    padding:100px;
-  }
+  
   /* language screen */
   .language{
     .checkbox-lists{
@@ -1019,10 +1081,8 @@ html,body{
       border:solid 4px $white;
     }
     .selectable-related-title {
-      padding: 0px 98px;
-      -webkit-box-sizing: border-box;
-      -moz-box-sizing: border-box;
-      box-sizing: border-box;
+      padding: 0px 92px;
+      @include box-sizing(border-box);
     }
     .selectable-related-title .title-related-top {
       padding-left: 5px;
@@ -1042,12 +1102,12 @@ html,body{
       position: absolute;
       padding:20px;
       @include box-sizing(border-box);
-      width:400px;
-      min-height: 250px;
-      right:100px;
-      top:100px;
+      width:360px;
+      min-height: 214px;
+      right:60px;
+      top:60px;
       .btn-exit{
-        font-size:1.8em;
+        font-size:1.3em;
         color:$white;
         text-decoration: none;
         padding:0 20px;
@@ -1061,16 +1121,16 @@ html,body{
       }
       .player-icon{
         text-align: center;
-        padding:20px 0 5px 0;
+        padding:20px 0 10px 0;
         div{
-          background: url(../images/player-icon.png) no-repeat 0;
-          width:42px;
-          height:40px;
+          background: url(../images/player-icon_1280x720.png) no-repeat 0;
+          width:30px;
+          height:30px;
           display: inline-block;
           border: solid 2px transparent;
           @include border-radius(10px);
           padding: 5px;
-          margin:0 1px;
+          margin:0 5px;
           &:hover, &.active{
             border: solid 2px $white;
             background-color:$btn-active-gray;
@@ -1081,45 +1141,46 @@ html,body{
           }
         }
         .RW{
-          background-position: 8px 8px;
+          background-position: 7px 8px;
         }
         .RW-1{
-          background-position: -386px 8px;
-        }
-        .RW-2{
-          background-position: -447px 8px;
-        }
-        .RW-3{
-          background-position: 8px 8px;
-        }
-        .FF{
-          background-position: -93px 8px;
-        }
-        .FF-1{
-          background-position: -324px 8px;
-        }
-        .FF-2{
           background-position: -263px 8px;
         }
+        .RW-2{
+          background-position: -305px 8px;
+        }
+        .RW-3{
+          background-position: 7px 8px;
+        }
+        .FF{
+          background-position: -63px 8px;
+        }
+        .FF-1{
+          background-position: -222px 8px;
+        }
+        .FF-2{
+          background-position: -180px 8px;
+        }
         .FF-3{
-          background-position: -93px 8px;
+          background-position: -63px 8px;
         }
         .play{
-          background-position: -211px 8px;
+          background-position: -144px 8px;
         }
         .pause{
-          background-position: -42px 7px;
+          background-position: -28px 7px;
         }
         .language{
-          background-position: -157px 8px;
+          background-position: -107px 8px;
         }
       }
       h3{
-        font-size: 2em;
+        /* autoprefixer: off */
+        font-size: 1.5em;
         color:$white;
         text-align: center;
         line-height: 1.2;
-        height: 77px;
+        height: 57px;
         display: block;
         display: -webkit-box;
         max-width: 100%;
@@ -1132,17 +1193,18 @@ html,body{
     }
     .audio-language{
       background:$black;
-      padding:50px;
-      width:900px;
+      padding:20px 40px 15px;
+      width:650px;
       position: absolute;
-      right:100px;
-      top:363px;
+      right:60px;
+      top:280px;
+      height:265px;
       .radio-container{
-        height:241px;
+        height:225px;
         overflow:hidden;
       }
       h3{
-        font-size: 1.8em;
+        font-size: 1.3em;
         padding-bottom:20px;
         line-height: 1;
       }
@@ -1152,19 +1214,19 @@ html,body{
     .progressbar-wrapper{
       width:80%;
       position: absolute;
-      bottom:150px;
+      bottom:70px;
       z-index: 5;
       left:10%;
       #progressBarPanasonic{
         border-radius:12px;
         background:$white;
-        box-shadow: 0px 0px 10px rgba($black,.7);
+        box-shadow: 0px 0px 8px rgba($black,.7);
       }
       #currentTimeDiv{
         text-align: center;
-        padding-bottom:50px;
+        padding-bottom:20px;
         #timeView{
-          font-size: 2em;
+          font-size: 1.3em;
           text-shadow: 0 0 5px rgba($black,.7);
         }
       }
@@ -1172,19 +1234,19 @@ html,body{
         width:0px;
         border-radius:12px;
         transition: all 500ms linear;
-        height:15px;
+        height:12px;
         background:$progressbar-bg;
-        box-shadow: 0px 0px 10px rgba($black,.7);
+        box-shadow: 0px 0px 8px rgba($black,.7);
         position: relative;
         .progressbar-circle{
-          width:30px;
-          height:30px;
+          width:24px;
+          height:24px;
           border-radius: 50%;
           background:$progressbar-bg;
-          box-shadow: 0px 0px 10px rgba($black,.8);
+          box-shadow: 0px 0px 8px rgba($black,.8);
           position: absolute;
           right:-15px;
-          top:-8px;
+          top:-6px;
         }
       }
     }
@@ -1520,6 +1582,8 @@ html,body{
   .bluureffects{
     filter: blur(10px);
     -webkit-filter: blur(10px);
+    width:1920px;
+    height:1080px;
   }
   .menu{
     width:600px;
@@ -1602,12 +1666,9 @@ html,body{
     }
     .movie-list{
       ul{
-        overflow: hidden;
         li{
-          list-style: none;
           width:320px;
           height:180px;
-          float: left;
           margin-right: 20px;
           margin-bottom:20px;
         }
@@ -1641,6 +1702,49 @@ html,body{
       position: absolute;
       bottom:50px; 
     }
+  }
+
+  .menu-mode-sub-menu{
+    width:1220px;
+    height:880px;
+    padding:50px;
+    margin-top:100px;
+    left:601px;
+    .heading{
+      padding:0px 0 50px 0;
+      h3{
+        font-size: 2.5em;
+      }
+    }
+    .content{
+      padding:0 50px;
+      height:170px;
+      p{
+        font-size: 2em;
+        line-height: 1.5;
+      }
+    }
+    .movie-list{
+      ul{
+        li{
+          width:320px;
+          height:180px;
+          margin-right: 20px;
+          margin-bottom:20px;
+          img{
+            width:320px;
+            height:180px;
+          }
+        }
+      }
+    }
+
+    /* kids zone screen */
+  .kids-zone{
+    width:1060px;
+    height:880px;
+  }
+    
   }
   .form-group{
     padding:12px 0;
@@ -1717,12 +1821,7 @@ html,body{
     }
   }
 
-  /* kids zone screen */
-  .kids-zone{
-    width:1220px;
-    height:880px;
-    padding:100px;
-  }
+  
   /* language screen */
   .language{
     .checkbox-lists{
@@ -1940,9 +2039,7 @@ html,body{
   }
   .selectable-related-title {
     padding: 50px 282px;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
+    @include box-sizing(border-box);
   }
   .selectable-related-title .title-related-top {
     padding-left: 5px;
@@ -1990,7 +2087,7 @@ html,body{
           border: solid 2px transparent;
           @include border-radius(10px);
           padding: 5px;
-          margin:0 1px;
+          margin:0 5px;
           &:hover, &.active{
             border: solid 2px $white;
             background-color:$btn-active-gray;  
@@ -2053,8 +2150,9 @@ html,body{
       position: absolute;
       right:100px;
       top:363px;
+      height:322px;
       .radio-container{
-        height:241px;
+        height:265px;
       }
       h3{
         font-size: 1.8em;

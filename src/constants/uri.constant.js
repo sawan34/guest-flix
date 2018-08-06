@@ -17,6 +17,8 @@ const API_INTERFACE = {
     ProgramDetails: urlConstants.BASE_URL+"programs/",
     PurchaseStart: urlConstants.BASE_URL+"purchase/start",
     PurchaseCompelte: urlConstants.BASE_URL+"purchase/complete",
+    USER_PREFERENCES:urlConstants.BASE_URL+"preferences",
+    UPDATE_PLAYBACK_POSITION : urlConstants.BASE_URL+"bookmark/",
     GET_BOOKMARKS:urlConstants.BASE_URL+"bookmarks"
 }
 export default API_INTERFACE;

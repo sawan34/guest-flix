@@ -5,36 +5,23 @@
 * @date  31.07.2018
 */
 import React, { Component } from 'react';
-import RadioGrid from '../../FocusElement/RadioGrid';
-import ButtonGrid from '../../FocusElement/ButtonGrid';
 import CommonUtility from '../../../commonUtilities';
-import { Trans } from 'react-i18next';
 
-/**
- * 
- */
-const numberOfLangColumn = 2;
-/**
-* Description: Defind Button Name
-*/
-const button = [{ id: "confirm", label: 'confirm' }];
+import { alertConstants } from '../../../constants/alert.constant';
+import { Trans } from 'react-i18next';
+import UTILITY from "../../../commonUtilities";
+import RadioGrid from '../../FocusElement/RadioGrid';
+
+
 /**
 * Description: Define constant to visible Component Row
 */
 const ROW_VISIBLE = {
-  "CHECKBOX_BUTTON": 10,
-  "BUTTON": 1
+  "CHECKBOX_BUTTON": 10
 }
-let languageData = [];
 const COMPONENT_NAME = {
-  "LANGUAGE": "language",
-  "BUTTON": "button"
-}
-/**
-* Description: Define constant Button List Object
-*/
-const BUTTON_LIST = {
-  "CONFIRM": "confirm"
+  "LANGUAGE": "language"
+  
 }
 /**
 * Description: Define constant for the Key LEFT, RIGHT, UP, DOWN
@@ -45,48 +32,6 @@ const KEY = {
   "UP": "UP",
   "DOWN": "DOWN"
 }
-class MenuRadioGrid extends RadioGrid{
-  constructor(props) {
-    super(props);
-    console.log(this.state);
-    console.log(this.props);
-  }
-  /**
-    * Description: Focus on item by Key Press Right
-    * @param {null} 
-    * @return {null}
-    */
-   focusOnRightKey() {
-    if (!this.rowData()[this.state.selectedRow][this.state.selectedItemIndex + 1]) {
-      return;
-    }
-    console.log(this.state.selectedItemIndex)
-    if(this.state.selectedItemIndex >=0){
-      if ((this.state.selectedItemIndex < this.props.col - 1)) {
-        this.setState({ selectedItemIndex: this.state.selectedItemIndex + 1 });
-      }
-    }
-    
-  }
-
-  componentDidUpdate(){
-    console.log(this.state);
-    console.log(this.props);
-  }
-  componentDidMount(){
-    super.componentDidMount();
-    let focusColumn = 0,focusRow=0;
-    if(this.props.scrolledRowIndex > 0){
-      focusRow =  this.props.scrolledRowIndex % numberOfLangColumn;
-    }
-    this.setState({
-      selectedItemIndex:0,
-      selectedRow:2
-    });
-
-  }
-}
-
 class Language extends Component {
   constructor(props) {
     super(props);
@@ -95,15 +40,22 @@ class Language extends Component {
       currentRowIndex: 0,
       scrolledRowIndex: 0,
       direction: "",
-      activeIndex:-1,
-      activeGrid: 1,
-      prevGrid:1,
-      selectedLang:''
+      activeIndex: 0,
+      activeGrid: -1,
+      prevGrid: 1,
+      selectedLang: '',
+      error: false,
+      errorMessage: ''
     }
     this.currentActiveGrid = 1;
     this.preSelectedLangIndex = 0;
+    this.numberOfLangColumn = 2;
     this.enterEvent = this.enterEvent.bind(this);
     this.eventCallbackFunction = this.eventCallbackFunction.bind(this);
+    this.defaultUIlang = CommonUtility.getDefaultUILanguage();
+    this.focus = this.focus.bind(this);
+    this.deFocus = this.deFocus.bind(this);
+    this.isFocused = this.isFocused.bind(this);
   }
 
   /**
@@ -121,22 +73,41 @@ class Language extends Component {
       let updateArray = [...this.state[gridname]];
 
       updateArray.map((val, i) => {
+        val.status = false;
+        if (i === index) {
+          val.status = true;
+        }
+        return val;
 
-        Object.keys(val).map((innerValue) => {
-          val[innerValue].status = false;
-          if (i === index) {
-            val[innerValue].status = true;
-          }
-          return val;
-        })
       })
       this.setState({ updateArray });
     }
     if (gridname === COMPONENT_NAME.LANGUAGE) {
-      this.setState({selectedLang:Object.keys(name)[0]});
+      this.setState((prev) => {
+        let userPreferance = this.props.getUserPreferences, toSendData = {};
+        if (userPreferance.type === alertConstants.SUCCESS) {
+          toSendData.stayId = userPreferance.data.stayId;
+          toSendData.preferences = {
+            uiLanguage: name.value,
+            programFilters: userPreferance.data.programFilters
+          }
+          this.props.actionSaveUserPreferences(this.props.stayId, toSendData);
+          this.props.changeLanguage(name.value);
+          return { selectedLang: name.value, error: false };
+        } else { // on error
+          this.setState(
+            {
+              error: true,
+              errorMessage: userPreferance.data
+            }
+          );
+        }
+
+      });
     }
   }
   componentWillMount() {
+    let languageData = [];
     const language = CommonUtility.getUILanguagesAvailable();
     if (language.length > 0) {
       languageData = language.map((item, i) => {
@@ -150,122 +121,92 @@ class Language extends Component {
   }
   init(item, i) {
     let obj = null;
-    if (item === "en") {
+    if (item === this.defaultUIlang) {
       this.preSelectedLangIndex = i;
       obj = {
-        [item]: {
-          id: 'audiolang-' + i,
-          status: true
-        }
+        value: item,
+        id: COMPONENT_NAME.LANGUAGE + i,
+        status: true
       }
     }
     else {
       obj = {
-        [item]: {
-          id: 'audiolang-' + i,
-          status: false
-        }
+        value: item,
+        id: COMPONENT_NAME.LANGUAGE + i,
+        status: false
       }
     }
     return obj
-
   }
- /**
-  * Description: do nothing onchange
-  * @param {null}
-  * @return {null}
-  */ 
- onChange(){
-   return;
- }
- /**
-  * Description: on changing grid
-  * @param {null}
-  * @return {null}
-  */
+
+  componentDidMount() {
+    if (!UTILITY.isEmptyObject(this.props.onRef)) {
+      this.props.onRef(this);
+    }
+  }
+  /**
+   * Description: do nothing onchange
+   * @param {null}
+   * @return {null}
+   */
+  onChange() {
+    return;
+  }
+  /**
+   * Description: on changing grid
+   * @param {null}
+   * @return {null}
+   */
   eventCallbackFunction(direction, currentRowIndex, scrolledRowIndex) {
     switch (direction) {
-      case KEY.LEFT:      
+      case KEY.LEFT:
+        this.deFocus();
         this.props.removeSubMenu();
-        break;
-      case KEY.UP:
-        if (this.state.activeGrid === 1) {
-          return false;
-        }
-        this.setState((prev)=>{
-         return { activeGrid: prev.prevGrid,
-          currentRowIndex: currentRowIndex,
-          scrolledRowIndex: scrolledRowIndex,
-          direction: direction
-         }
-        })
-        break;
-
-      case KEY.DOWN:
-        if (this.state.activeGrid !== 2) {
-          this.currentActiveGrid = this.state.activeGrid;
-        }
-        this.setState((prev)=>{
-         return { 
-              defaultItemIndex: 0,
-              active: 0,
-              prevGrid: this.currentActiveGrid,
-              activeGrid: 2,
-              currentRowIndex: currentRowIndex,
-              scrolledRowIndex: scrolledRowIndex,
-              direction: direction
-         }
-        })
         break;
     }
     return;
   }
+
+  focus() {
+    this.audioLangGrid.focus();
+    this.setState({activeGrid: 1});
+  }
+
+  deFocus() {
+    this.audioLangGrid.deFocus();
+    this.setState({activeGrid: -1});
+  }
+
+  isFocused() {
+    return this.audioLangGrid.isFocused();
+  }
+
   render() {
     return (
       <div className="sub-menu language">
+        {<div>{this.state.error && this.state.errorMessage}</div>}
         <div className="heading"><h3><Trans i18nKey="choose_your_lang">Choose Your Language</Trans></h3></div>
         <div className="checkbox-lists">
           <div className="col-2">
-            <MenuRadioGrid
-              data={this.state.language}
-              enterEvent={this.enterEvent}
-              gridNo={1}
-              gridName={COMPONENT_NAME.LANGUAGE}
-              col={numberOfLangColumn}
-              leftNotMove={false}
-              isKeyEvent={this.props.subMenuActiveStatus && this.state.activeGrid === 1}
-              firsttimeActive={false}
-              eventCallback={this.eventCallbackFunction}
-              onChange={this.onChange}
-              activeIndex={this.state.activeIndex}  //active column
-              currentRowIndex={this.state.currentRowIndex} //active row
-              scrolledRowIndex={this.state.scrolledRowIndex}
-              focusDirection={this.state.direction} //Direction
-              visibleRow={ROW_VISIBLE.CHECKBOX_BUTTON}
-              preSelectedLangIndex = {this.preSelectedLangIndex}
+          <RadioGrid
+                    onRef={instance => (this.audioLangGrid = instance)}
+                    data={this.state.language}
+                    enterEvent={this.enterEvent}
+                    gridNo={1}
+                    gridName={'language'}
+                    col={2}
+                    leftNotMove={false}
+                    isKeyEvent={this.state.activeGrid === 1}
+                    eventCallback={this.eventCallbackFunction}
+                    onChange={this.onChange}
+                    activeIndex={0}
+                    currentRowIndex={this.state.currentRowIndex}
+                    scrolledRowIndex={this.state.scrolledRowIndex}
+                    focusDirection={this.state.direction}
+                    visibleRow={ROW_VISIBLE.RADIO_BUTTON}
             />
 
           </div>
-        </div>
-        <div className="menu-button-row">
-          <ButtonGrid
-            data={button}
-            gridNo={2}
-            enterEvent={this.enterEvent}
-            gridName={COMPONENT_NAME.BUTTON} 
-            col={1}
-            leftNotMove={false}
-            isKeyEvent={this.props.subMenuActiveStatus && this.state.activeGrid === 2}
-            firsttimeActive={this.state.firsttimeActive}
-            eventCallback={this.eventCallbackFunction}
-            onChange={this.onChange}
-            activeIndex={this.state.active}
-            currentRowIndex={this.state.currentRowIndex}
-            scrolledRowIndex={this.state.scrolledRowIndex}
-            focusDirection={this.state.direction}
-            defaultItemIndex={this.state.defaultItemIndex}
-            visibleRow={ROW_VISIBLE.BUTTON}
-          />
         </div>
       </div>
     )

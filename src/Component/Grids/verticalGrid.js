@@ -6,17 +6,15 @@
 */
 import React from 'react';
 import PropTypes from 'prop-types';
-import VerticalGridItem from './verticalGriditem';
+import VerticalGridItem from './VerticalGriditem';
 import KeyMap from '../../constants/keymap.constant';
-import Utility from '../../commonUtilities';
+import TvComponenet from '../TvComponent';
 
 // Focus direction Constant
 const FOCUS_DIRECTION = { "UP": "UP", "DOWN": "DOWN", "LEFT": "LEFT", "RIGHT": "RIGHT" }
-
-// Animation time Constant
 const ANIM_TIME = 150
 
-export default class VerticalGrid extends React.Component {
+export default class VerticalGrid extends TvComponenet {
 
 	/**
 	* Description: React Inbuilt method for defining  the property types
@@ -75,7 +73,6 @@ export default class VerticalGrid extends React.Component {
 		// bind the functions
 		this._scrollListener = this._scrollListener.bind(this);
 		this._updateItemDimensions = this._updateItemDimensions.bind(this);
-		this._resizeListener = this._resizeListener.bind(this);
 		this._visibleIndexes = this._visibleIndexes.bind(this);
 		this.handleKeyPress = this.handleKeyPress.bind(this);
 		this.focusDefaultItem = this.focusDefaultItem.bind(this);
@@ -276,13 +273,8 @@ export default class VerticalGrid extends React.Component {
 		}
 	}
 
-	// LIFECYCLE methods
-
-	componentWillMount() {
-		window.addEventListener('resize', this._resizeListener);
-	}
-
 	componentDidMount() {
+		super.componentDidMount();
 		this._updateItemDimensions();
 		this._visibleIndexes();
 	}
@@ -301,25 +293,6 @@ export default class VerticalGrid extends React.Component {
 		if (typeof this.props.data.renderRangeCallback === 'function') {
 			this.props.data.renderRangeCallback(this.state.minItemIndex, this.state.maxItemIndex);
 		}
-		this.state.isActive = this.props.data.activeEvent;
-		if (this.state.isActive && !Utility.isEmptyObject(this.props.data.keyEvent) && (prevState.isActive === this.state.isActive)) {
-			this.keyEvent(this.props.data.keyEvent);
-		}
-	}
-
-	/**
-	 * Description: this method invoke key handling function
-	 * @param {object} event
-	 * @returns {null} 
-	 */
-	keyEvent = (event) => {
-		this.handleKeyPress(event);
-	}
-
-
-	componentWillUnmount() {
-		window.removeEventListener('resize', this._resizeListener);
-		document.removeEventListener("keydown", this.onKeyDown);
 	}
 
 	// LISTENERS
@@ -334,35 +307,11 @@ export default class VerticalGrid extends React.Component {
 	}
 
 	/**
-	 * Description: this method is for resize listener
-	 * @param {object} event
-	 * @returns {null} 
-	 */
-	_resizeListener(event) {
-		if (!this.props.data.wrapperHeight) {
-			this.setState({
-				wrapperHeight: window.innerHeight,
-			});
-		}
-		this._updateItemDimensions();
-		this._visibleIndexes();
-	}
-
-
-
-
-	/**
 	 * This function is responsible for grid item traversing
 	 * @param {object} event: this object contains the keycode for traversing
 	 * @returns {null}
 	 */
 	handleKeyPress = (event) => {
-
-		if (new Date().getTime() - this.keyPressTime < ANIM_TIME) {
-			return;
-		} else {
-			this.keyPressTime = new Date().getTime();
-		}
 		var currentIndex = this.state.activeIndex;
 		var currentScroll = 0;
 		try {
@@ -375,16 +324,12 @@ export default class VerticalGrid extends React.Component {
 						if ((currentIndex + 1) > this.scrollAfterIndex) {
 							currentScroll = this.state.scrollY + this._itemHeight();
 							this.setState((prevState) => {
-								return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex, scrollY: currentScroll }
-							}, () => {
-								this.focusChange();
+								return {activeIndex: currentIndex, scrollY: currentScroll }
 							});
 							this._scrollListener();
 						} else {
 							this.setState((prevState) => {
-								return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex, scrollY: currentScroll }
-							}, () => {
-								this.focusChange();
+								return {activeIndex: currentIndex, scrollY: currentScroll }
 							});
 						}
 					} else {
@@ -400,24 +345,18 @@ export default class VerticalGrid extends React.Component {
 							if ((currentIndex + 1) > this.scrollAfterIndex) {
 								currentScroll = this.state.scrollY + this._itemHeight();
 								this.setState((prevState) => {
-									return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex, scrollY: currentScroll }
-								}, () => {
-									this.focusChange();
+									return {activeIndex: currentIndex, scrollY: currentScroll }
 								});
 								this._scrollListener();
 							} else {
 								this.setState((prevState) => {
-									return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex, scrollY: currentScroll }
-								}, () => {
-									this.focusChange();
+									return { activeIndex: currentIndex, scrollY: currentScroll }
 								});
 							}
 
 						} else {
 							this.setState((prevState) => {
-								return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex }
-							}, () => {
-								this.focusChange();
+								return {activeIndex: currentIndex }
 							});
 						}
 					} else {
@@ -433,23 +372,17 @@ export default class VerticalGrid extends React.Component {
 							if ((currentIndex + 1) > this.scrollAfterIndex) {
 								currentScroll = this.state.scrollY - this._itemHeight();
 								this.setState((prevState) => {
-									return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex, scrollY: currentScroll }
-								}, () => {
-									this.focusChange();
+									return {activeIndex: currentIndex, scrollY: currentScroll }
 								});
 								this._scrollListener();
 							} else {
 								this.setState((prevState) => {
-									return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex }
-								}, () => {
-									this.focusChange();
+									return {activeIndex: currentIndex }
 								});
 							}
 						} else {
 							this.setState((prevState) => {
-								return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex }
-							}, () => {
-								this.focusChange();
+								return {activeIndex: currentIndex }
 							});
 						}
 					} else {
@@ -463,16 +396,12 @@ export default class VerticalGrid extends React.Component {
 						if ((currentIndex + 1) > this.scrollAfterIndex) {
 							currentScroll = this.state.scrollY - this._itemHeight();
 							this.setState((prevState) => {
-								return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex, scrollY: currentScroll }
-							}, () => {
-								this.focusChange();
+								return {activeIndex: currentIndex, scrollY: currentScroll }
 							});
 							this._scrollListener();
 						} else {
 							this.setState((prevState) => {
-								return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex }
-							}, () => {
-								this.focusChange();
+								return {activeIndex: currentIndex }
 							});
 						}
 					} else {
@@ -490,16 +419,12 @@ export default class VerticalGrid extends React.Component {
 							if ((currentIndex + 1) > this.scrollAfterIndex) {
 								currentScroll = this.state.scrollY - this._itemHeight();
 								this.setState((prevState) => {
-									return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex, scrollY: currentScroll }
-								}, () => {
-									this.focusChange();
+									return {activeIndex: currentIndex, scrollY: currentScroll }
 								});
 								this._scrollListener();
 							} else {
 								this.setState((prevState) => {
-									return { focusLostItemPosition: prevState.activeIndex, activeIndex: currentIndex }
-								}, () => {
-									this.focusChange();
+									return {activeIndex: currentIndex }
 								});
 							}
 						} else {
@@ -519,23 +444,22 @@ export default class VerticalGrid extends React.Component {
 		//this.props.focusedItemIndex(this.state.activeIndex);
 	}
 
-	focusChange = () => {
-		this.onFocusChange(this.state.focusLostItemPosition, this.state.activeIndex)
+	
+	focus(){
+		super.focus();
+		this.setState({isActive : true});
 	}
 
-    /**
-     * function called from BaseGrid if Child class not override
-     * @param {*} focusLostPosition 
-     * @param {*} currentItemFocus 
-     */
-	onFocusChange = (focusLostPosition, currentItemFocus) => {
+	deFocus(){
+		super.deFocus();
+		this.setState({isActive : false});
 	}
 
 	// RENDER
 	render() {
 		var CurrentItemFocused = -1;
 
-		if (this.props.data.activeEvent) {
+		if (this.state.isActive) {
 			CurrentItemFocused = this.state.activeIndex;
 		} else {
 			CurrentItemFocused = -1;

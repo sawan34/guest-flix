@@ -78,10 +78,9 @@ class ProgramDetails extends BaseScreen {
         if(this.buttonList[this.state.active-1].id === OPEN_SCREEN.PURCHASE){
             this.setState({overlay:true});
         }else  if(this.buttonList[this.state.active-1].id === OPEN_SCREEN.RELATED_TITLE){
-            console.log("related titles");
             return;
         }else if(this.buttonList[this.state.active-1].id === OPEN_SCREEN.RESUME){
-            this.goToScreen(SCREENS.player, null);
+            this.goToScreen(SCREENS.player+"/"+this.state.data.data.id, null);
         }
     }
     

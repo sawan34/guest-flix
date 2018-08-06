@@ -31,7 +31,7 @@ const KeyCode  =
  VK_PLAY : 415,
  VK_FAST_FWD : 417,
  VK_INFO : 457,
- VK_BACK : 8
+ VK_BACK : 49
 }
 
 export default KeyCode

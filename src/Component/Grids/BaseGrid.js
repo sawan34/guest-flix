@@ -8,6 +8,7 @@
 import React, { Component } from 'react';
 import Utility from '../../commonUtilities';
 import { commonConstants } from '../../constants/common.constants';
+import { Trans } from 'react-i18next';
 class BaseGrid extends Component {
 
     constructor(props) {
@@ -317,10 +318,10 @@ class BaseGrid extends Component {
      * @returns : none
      */
     onTransitionEnd = () => {
-        if (this.scrollDirection === commonConstants.GRID_DIRECTION_RIGHT) {
+        if (this.scrollDirection === commonConstants.DIRECTION_RIGHT) {
             this.nextIndexDataLoad(this.state.scrollIndex - 1);
         }
-        else if ((this.state.activeIndex <= 1) && (this.scrollDirection === commonConstants.GRID_DIDECTION_LEFT)) {
+        else if ((this.state.activeIndex <= 1) && (this.scrollDirection === commonConstants.DIRECTION_LEFT)) {
             this.previousIndexDataLoad(this.state.scrollIndex)
         }
     }
@@ -359,7 +360,7 @@ class BaseGrid extends Component {
                                 </div>
                                 <p>{this.dataSource[this.state.scrollIndex].description}</p>
                             </div>
-                            <div className="key-action-details">Press OK <br />to view and <br />order</div>
+                            <div className="key-action-details"><Trans i18nKey="key_action_details">Press OK <br />to view and <br />order</Trans></div>
                         </div>
                     </span>
                 }

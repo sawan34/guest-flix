@@ -5,10 +5,10 @@
 * @date  24.07.2018
 */
 import React from 'react';
-import Grid from "./FocusElement";
+import FocusElement from "./FocusElement";
 import CheckboxItem from './CheckboxItem';
 
-class CheckboxGrid extends Grid {
+class CheckboxGrid extends FocusElement {
     /**
     * Description: class initialization 
     * @param {null} 
@@ -30,9 +30,7 @@ class CheckboxGrid extends Grid {
         } else {
             return <CheckboxItem isActiveClass={this.isActiveClass} key={colindex} onChange={this.props.onChange} rowindex={-1} colindex={colindex} item={item} />;
         }
-
     }
-
 }
 
 export default CheckboxGrid;

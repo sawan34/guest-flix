@@ -6,14 +6,12 @@
 */
 import React from 'react';
 import BaseScreen, { invokeConnect } from './BaseScreen';
-import logo from '../images/logo-lodingpage.jpg';
 import AuthService from '../../services/service.authentication';
 import RoomUserService from '../../services/service.roomUser';
 import actionGroupings from '../../actions/action.groupings';
 import actionUIConfig from '../../actions/action.UIConfig';
 import utility from '../../commonUtilities';
 import { SCREENS } from '../../constants/screens.constant';
-import { translate, Trans } from 'react-i18next';
 import { Md5 } from 'ts-md5/dist/md5';
 import { validCodes } from '../../constants/error.constant'
 import { alertConstants } from '../../constants/alert.constant';
@@ -91,7 +89,7 @@ class LoadingScreen extends BaseScreen {
             const key = Md5.hashStr(this.siteId + this.roomId);
             const queryParameter = "?siteId=" + this.siteId + "&room=" + this.roomId + "&key=" + key;
             AuthService.getTokenRequest(queryParameter).then((response) => {
-                if (response.type === alertConstants.SUCCESS) {
+                if (response.type === alertConstants.SUCCESS && validCodes(response.message.status)) {
                     if ((response.message.data[0]).hasOwnProperty("accessToken")) {
                         this.setTokenToStorage(commonConstants.GUEST_AUTH_INFO, JSON.stringify(response.message.data[0]))
                         this.props.uiConfigAction();
@@ -109,7 +107,7 @@ class LoadingScreen extends BaseScreen {
     */
     getRoomUserRequest() {
         RoomUserService.roomUserRequest(this.roomId).then((response) => {
-            if (response.type === alertConstants.SUCCESS) {
+            if (response.type === alertConstants.SUCCESS && validCodes(response.message.status)) {
                 if ((response.message.data[0]).hasOwnProperty("stayId")) {
                     this.setTokenToStorage(commonConstants.GUEST_ROOM_USER_INFO, JSON.stringify(response.message.data[0]))
                     this.props.groupingAction();
@@ -130,7 +128,7 @@ class LoadingScreen extends BaseScreen {
             <div>
                 <div className="container">
                     <div className="loading-container">
-                        <div className="loading-logo"><img src={logo} /></div>
+                        <div className="loading-logo"></div>
                         <div className="loading">
                             <div className="loading-wrapper">
                                 <div className="loading-circle">

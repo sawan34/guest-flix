@@ -17,7 +17,7 @@ import { alertConstants } from '../../constants/alert.constant';
 
 let _objAudiolang = null;
 let _objSubtitle = null;
-
+const PREVGRID = { AUDIOGRID: 1, SUBTITLEGRID: 2 }
 /**
 * Description: Defind Button Name
 */
@@ -54,8 +54,8 @@ const COMPONENT_NAME = {
 * Description: Define constant to visible Component Row
 */
 const ROW_VISIBLE = {
-  "RADIO_BUTTON":5,
-  "BUTTON":1
+  "RADIO_BUTTON": 5,
+  "BUTTON": 1
 }
 
 class PurchaseScreen extends React.Component {
@@ -69,17 +69,17 @@ class PurchaseScreen extends React.Component {
     super(props)
     this.state = {
       active: 1,
-      prevGrid:1,
+      prevGrid: 1,
       activeGrid: 3,
-      currentRowIndex:0,
-      scrolledRowIndex:0,
-      direction:"",
+      currentRowIndex: 0,
+      scrolledRowIndex: 0,
+      direction: "",
       firsttimeActive: true,
-      subtitle: [{ None: { id: "none", status: true } }],
+      subtitle: [{ value: "None", id: "none", status: true }],
       audiolang: _objAudiolang,
       errorMessage: ''
     }
-    this.purchase = {gfOrderId : '', localTxId: ''};
+    this.purchase = { gfOrderId: '', localTxId: '' };
     this.currentActiveGrid = 1;
     this.eventCallbackFunction = this.eventCallbackFunction.bind(this);
     this.enterEvent = this.enterEvent.bind(this);
@@ -90,16 +90,19 @@ class PurchaseScreen extends React.Component {
   * @param {direction}  string
   * @return {null}
   */
-  eventCallbackFunction(direction,currentRowIndex,scrolledRowIndex) {
+  eventCallbackFunction(direction, currentRowIndex, scrolledRowIndex) {
     switch (direction) {
       case KEY.LEFT:
         if (this.state.activeGrid !== 3) {
           this.setState({
             activeGrid: 1,
-            currentRowIndex:currentRowIndex,
-            scrolledRowIndex:scrolledRowIndex,
-            direction:direction
-          })
+            currentRowIndex: currentRowIndex,
+            scrolledRowIndex: scrolledRowIndex,
+            direction: direction
+          });
+          this.audioLangGrid.focus();
+          this.subtitleGrid.deFocus();
+          this.buttonGrid.deFocus();
         }
         break;
 
@@ -108,38 +111,58 @@ class PurchaseScreen extends React.Component {
           this.setState({
             activeGrid: 2,
             jumpNextGrid: true,
-            currentRowIndex:currentRowIndex,
-            scrolledRowIndex:scrolledRowIndex,
-            direction:direction
-          })
+            currentRowIndex: currentRowIndex,
+            scrolledRowIndex: scrolledRowIndex,
+            direction: direction
+          });
+
+          this.audioLangGrid.deFocus();
+          this.subtitleGrid.focus();
+          this.buttonGrid.deFocus();
+
         }
         break;
 
       case KEY.UP:
-        if(this.state.activeGrid===2 || this.state.activeGrid===1){
+        if (this.audioLangGrid.isFocused() || this.subtitleGrid.isFocused()) {
           return false;
         }
         this.setState({
           activeGrid: this.state.prevGrid,
-          currentRowIndex:currentRowIndex,
-          scrolledRowIndex:scrolledRowIndex,
-          direction:direction
+          currentRowIndex: currentRowIndex,
+          scrolledRowIndex: scrolledRowIndex,
+          direction: direction
         })
+        switch (this.state.prevGrid) {
+          case PREVGRID.AUDIOGRID:
+            this.audioLangGrid.focus();
+            this.subtitleGrid.deFocus();
+            this.buttonGrid.deFocus();
+            break;
+          case PREVGRID.SUBTITLEGRID:
+            this.subtitleGrid.focus();
+            this.audioLangGrid.deFocus();
+            this.buttonGrid.deFocus();
+            break;
+        }
         break;
 
       case KEY.DOWN:
-      if(this.state.activeGrid !==3){
-       this.currentActiveGrid = this.state.activeGrid;
-      }
+        if (!this.buttonGrid.isFocused()) {
+          this.currentActiveGrid = this.state.activeGrid;
+        }
         this.setState({
-          defaultItemIndex:0,
-          active :0,
-          prevGrid:this.currentActiveGrid,
+          defaultItemIndex: 0,
+          active: 0,
+          prevGrid: this.currentActiveGrid,
           activeGrid: 3,
-          currentRowIndex:currentRowIndex,
-          scrolledRowIndex:scrolledRowIndex,
-          direction:direction
-        })
+          currentRowIndex: currentRowIndex,
+          scrolledRowIndex: scrolledRowIndex,
+          direction: direction
+        });
+            this.subtitleGrid.deFocus();
+            this.audioLangGrid.deFocus();
+            this.buttonGrid.focus();
         break;
     }
   }
@@ -150,28 +173,31 @@ class PurchaseScreen extends React.Component {
   * @param {prevState}  object
   * @return {null}
   */
-  componentDidUpdate(prevProps, prevState) {  
+  componentDidUpdate(prevProps, prevState) {
     if (this.props.reducerPurchaseStart && this.props.reducerPurchaseStart.data && this.props.reducerPurchaseStart.type === alertConstants.SUCCESS && this.props.reducerPurchaseStart.data.gfOrderId) {
       const room = roomUser.getRoomUserInfoFromStorage().room;
       const stayId = roomUser.getStayId();
       const gfOrderId = this.props.reducerPurchaseStart.data.gfOrderId;
-      this.purchase.gfOrderId =  gfOrderId;
+      this.purchase.gfOrderId = gfOrderId;
       this.props.pmsPurchaseAction(room, stayId, gfOrderId);
     }
-    else if (this.props.reducerPurchaseStart && this.props.reducerPurchaseStart.data && this.props.reducerPurchaseStart.type ===  alertConstants.SUCCESS  && this.props.reducerPurchaseStart.data.localTxId) {
+    else if (this.props.reducerPurchaseStart && this.props.reducerPurchaseStart.data && this.props.reducerPurchaseStart.type === alertConstants.SUCCESS && this.props.reducerPurchaseStart.data.localTxId) {
       const gfOrderId = this.purchase.gfOrderId;
       const localTxId = this.props.reducerPurchaseStart.data.localTxId;
       this.props.purchaseCompleteAction(gfOrderId, localTxId);
-    } 
+    }
     else if (this.props.reducerPurchaseStart && this.props.reducerPurchaseStart.data && this.props.reducerPurchaseStart.type === alertConstants.SUCCESS && this.props.reducerPurchaseStart.data.exp) {
       this.props.closePopup();
-      this.props.goToScreen(SCREENS.player, null);
+      this.props.goToScreen(SCREENS.player + "/" + this.props.data.id, null);
     }
     else {
 
     }
   }
 
+  componentDidMount(){
+    this.buttonGrid.focus();
+  }
   /**
   * Description: Get the Enter Key Event
   * @param {gridname}  string
@@ -187,14 +213,11 @@ class PurchaseScreen extends React.Component {
       let updateArray = [...this.state[gridname]];
 
       updateArray.map((val, i) => {
-
-        Object.keys(val).map((innerValue) => {
-          val[innerValue].status = false;
-          if (i === index) {
-            val[innerValue].status = true;
-          }
-          return val;
-        })
+        val.status = false;
+        if (i === index) {
+          val.status = true;
+        }
+        return val;
       })
       this.setState({ updateArray });
     }
@@ -230,26 +253,22 @@ class PurchaseScreen extends React.Component {
   }
 
   init(item, i) {
-
     let obj = null;
     if (i === 0) {
       obj = {
-        [item]: {
-          id: 'audiolang-' + i,
-          status: true
-        }
+        value: item,
+        id: 'audiolang-' + i,
+        status: true
       }
     }
     else {
       obj = {
-        [item]: {
-          id: 'audiolang-' + i,
-          status: false
-        }
+        value: item,
+        id: 'audiolang-' + i,
+        status: false
       }
     }
     return obj
-
   }
   /**
   * Description: Convert Audio Language and Subtitle Array into Object and Set into State
@@ -264,10 +283,9 @@ class PurchaseScreen extends React.Component {
 
       _objSubtitle = this.props.data.availableSubtitles.map((item, i) => {
         return {
-          [item]: {
-            id: 'subtitle-' + i,
-            status: false
-          }
+          value: item,
+          id: 'subtitle-' + i,
+          status: false
         }
       })
     }
@@ -295,6 +313,7 @@ class PurchaseScreen extends React.Component {
                 <h3><Trans i18nKey="audio_language">AUDIO LANGUAGE</Trans>:</h3>
                 <div className="col-2 radio-container">
                   <RadioGrid
+                    onRef={instance => (this.audioLangGrid = instance)}
                     data={this.state.audiolang}
                     enterEvent={this.enterEvent}
                     gridNo={1}
@@ -308,7 +327,7 @@ class PurchaseScreen extends React.Component {
                     activeIndex={0}
                     currentRowIndex={this.state.currentRowIndex}
                     scrolledRowIndex={this.state.scrolledRowIndex}
-                    focusDirection = {this.state.direction}
+                    focusDirection={this.state.direction}
                     visibleRow={ROW_VISIBLE.RADIO_BUTTON}
                   />
                 </div>
@@ -317,6 +336,7 @@ class PurchaseScreen extends React.Component {
                 <h3><Trans i18nKey="subtitles">SUBTITLES</Trans>:</h3>
                 <div className="col-2 radio-container">
                   <RadioGrid
+                    onRef={instance => (this.subtitleGrid = instance)}
                     data={this.state.subtitle}
                     enterEvent={this.enterEvent}
                     gridNo={2}
@@ -330,7 +350,7 @@ class PurchaseScreen extends React.Component {
                     activeIndex={0}
                     currentRowIndex={this.state.currentRowIndex}
                     scrolledRowIndex={this.state.scrolledRowIndex}
-                    focusDirection = {this.state.direction}
+                    focusDirection={this.state.direction}
                     visibleRow={ROW_VISIBLE.RADIO_BUTTON}
                   />
                 </div>
@@ -339,6 +359,7 @@ class PurchaseScreen extends React.Component {
             <div className="menu-button-row purchase-button">
               <div className="confirmation-error-message">{this.props.reducerPurchaseStart && this.props.reducerPurchaseStart.error}</div>
               <ButtonGrid
+                onRef={instance => (this.buttonGrid = instance)}
                 data={button}
                 gridNo={3}
                 enterEvent={this.enterEvent}
@@ -351,7 +372,7 @@ class PurchaseScreen extends React.Component {
                 activeIndex={this.state.active}
                 currentRowIndex={this.state.currentRowIndex}
                 scrolledRowIndex={this.state.scrolledRowIndex}
-                focusDirection = {this.state.direction}
+                focusDirection={this.state.direction}
                 defaultItemIndex={this.state.defaultItemIndex}
                 visibleRow={ROW_VISIBLE.BUTTON}
               />

@@ -40,6 +40,19 @@ export function actionGetSelectables(params,groupId="",nextData=false){
         payload:data
     }
 }
+
+/**
+    * Description: action for refresing selectables
+    *  @return {object}
+    */
+   export function actionRefreshtSelectables(){
+    return {
+        type:ACTION.REFRESH_SELECTABLE,
+        payload:[]
+    }
+}
+
+
    /* * Description: action for saving data of back Screen  while moving forward
     * @param {string} stateData  
     * @return {object}

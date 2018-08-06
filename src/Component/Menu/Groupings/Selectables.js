@@ -8,7 +8,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from "react-redux";
 import { Trans } from 'react-i18next';
-import VerticalGrid from '../../Grids/verticalGrid';
+import VerticalGrid from '../../Grids/VerticalGrid';
 import Method from '../../../services/services';
 import API_INTERFACE from '../../../constants/uri.constant';
 import { responseActions } from '../../../actions/action.response';
@@ -54,6 +54,12 @@ class Selectables extends React.Component {
       enterPressed: this.gridItemSelected,
 
     };
+
+    if(window.innerWidth <= 1280){
+      this.gridProps.wrapperHeight = (this.gridProps.wrapperHeight * .66);
+      this.gridProps.paddingBottom = (this.gridProps.paddingBottom * .66);
+      this.gridProps.coloumns = 4;
+    }
   }
 
   /**
@@ -106,12 +112,17 @@ class Selectables extends React.Component {
    * @return {null}
    */
   componentDidMount(prevProps, prevstate) {
+    this.props.onRef(this)
     this.getGroupingData();
     if (this.selectableIds.length > 0) {
       this.dataForSelctable(this.selectableIds);
       this.state.noData = false;
     } else {
       this.setState({ noData: true });
+    }
+
+    if(!Utility.isEmptyObject(this.verticalGrid) && this.props.isFocus){
+      this.verticalGrid.focus();
     }
   }
 
@@ -222,12 +233,28 @@ class Selectables extends React.Component {
 
   renderGrid = () => {
     if (this.gridProps.entries.length > 0) {
-      return <VerticalGrid data={this.gridProps} />;
+      return <VerticalGrid onRef={instance => ( this.verticalGrid = instance )} data={this.gridProps} />;
     } else if (this.state.noData === true) {
       return <div> <Trans i18nKey="no_data_message">No Data here</Trans></div>;
     } else {
       return <div><Trans i18nKey="loading_data_message">Loading</Trans></div>;
     }
+  }
+
+
+  focus () {
+    if(!Utility.isEmptyObject(this.verticalGrid)){
+    this.verticalGrid.focus();
+    }
+  }
+
+  deFocus = () => {
+    this.verticalGrid.deFocus();
+  }
+
+  isFocused = () => {
+
+    return ((!Utility.isEmptyObject(this.verticalGrid)) && this.verticalGrid.isFocused());
   }
 
   /**

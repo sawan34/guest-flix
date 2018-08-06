@@ -8,6 +8,7 @@ import React from 'react'
 import KeyMap from '../../constants/keymap.constant';
 import loDash from 'lodash';
 import Utility from '../../commonUtilities'
+import TvComponent from '../TvComponent';
 
 /**
 * Description: Defind the Key LEFT, RIGHT, UP, DOWN 
@@ -19,11 +20,7 @@ const KEY = {
     "DOWN": "DOWN"
 }
 
-const SCROLLED_ROW = {
-    "UP":52,
-    "DOWN":-52
-}
-class Grid extends React.Component {
+class FocusElement extends TvComponent {
     /**
     * Description: class initialization 
     * @param {props}  object
@@ -36,32 +33,22 @@ class Grid extends React.Component {
             selectedItemIndex: this.props.activeIndex,
             previousIndexState: 0,
             firsttimeActive: this.props.firsttimeActive,
-            scrolledRow:this.props.scrolledRowIndex,
-            scrollY:0
+            scrolledRow: this.props.scrolledRowIndex,
+            scrollY: 0
         }
         this.totalItem = 0;
         this.totalRow = this.rowData().length;
-        this.onHandleKey = this.onHandleKey.bind(this);
         this.isActiveClass = this.isActiveClass.bind(this);
+        this.rowHeight = 57;
     }
 
-    /**
-    * Description: Handle key on Focus Component 
-    * @param {event} object
-    * @return {null}
-    */
-    onHandleKey(event) {
-        if (this.props.isKeyEvent) {
-            this.onKeyDown(event);
-        }
-    }
-
+    
     /**
     * Description: Handle Key Event
     * @param {event} object
     * @return {null}
     */
-    onKeyDown(event) {
+    handleKeyPress(event) {
         try {
             var keyCode = event.keyCode;
             switch (keyCode) {
@@ -79,11 +66,7 @@ class Grid extends React.Component {
                     break;
                 case KeyMap.VK_RIGHT:
                     this.keyPosition(KEY.RIGHT);
-                    if (this.state.firsttimeActive && this.props.gridNo > 1 && this.props.leftNotMove) {
-                        this.setState({ firsttimeActive: false });
-                    } else {
-                        this.focusOnRightKey();
-                    }
+                    this.focusOnRightKey();
                     break;
                 case KeyMap.VK_BACK:
                     break;
@@ -115,66 +98,78 @@ class Grid extends React.Component {
             case KEY.LEFT:
                 if (this.state.selectedItemIndex === 0) {
                     this.setState({ firsttimeActive: true });
-                    this.props.eventCallback(KEY.LEFT, this.state.selectedRow, this.state.scrolledRow)
+                    this.props.eventCallback(KEY.LEFT, this.state.selectedRow, this.state.scrolledRow, this.state.selectedItemIndex)
                 }
                 break;
             case KEY.RIGHT:
                 if (this.state.selectedItemIndex === (this.props.col - 1)) {
-                    this.props.eventCallback(KEY.RIGHT, this.state.selectedRow, this.state.scrolledRow);
+                    this.props.eventCallback(KEY.RIGHT, this.state.selectedRow, this.state.scrolledRow, this.state.selectedItemIndex);
                 }
                 break;
             case KEY.UP:
                 if (this.state.selectedRow === 0) {
-                    this.props.eventCallback(KEY.UP, this.state.selectedRow, this.state.scrolledRow)
+                    this.props.eventCallback(KEY.UP, this.state.selectedRow, this.state.scrolledRow, this.state.selectedItemIndex)
                 }
                 break;
             case KEY.DOWN:
                 if (this.state.selectedRow === (this.totalRow - 1) || !this.rowData()[this.state.selectedRow + 1][this.state.selectedItemIndex]) {
-                    this.props.eventCallback(KEY.DOWN, this.state.selectedRow, this.state.scrolledRow)
+                    this.props.eventCallback(KEY.DOWN, this.state.selectedRow, this.state.scrolledRow, this.state.selectedItemIndex)
                 }
                 break;
         }
     }
 
-    /**
-    * Description: Remove Event Listener at keydown on componentWillUnmount 
-    * @param {null} 
-    * @return {null}
-    */
-    componentWillUnmount() {
-        document.removeEventListener("keydown", this.onHandleKey);
+   
+    focus(){
+        super.focus()
+        this.setState({isActive : true})
     }
 
+    deFocus(){
+        super.deFocus();
+        this.setState({isActive :false});
+    }
     /**
     * Description: Manage Component Row and Column Index
     * @param {prevProps} object
     * @return {null}
     */
-    componentDidUpdate(prevProps) {
-        if (this.props.isKeyEvent && prevProps.isKeyEvent !== this.props.isKeyEvent) {
+    componentDidUpdate(prevProps,prevState) {
+        if (this.state.isActive && prevState.isActive !== this.state.isActive) {
             if (!Utility.isEmpty(this.props.defaultItemIndex)) {
                 this.setState({
                     selectedItemIndex: this.props.defaultItemIndex
                 });
             }
 
-            var currentRowIndex = this.props.currentRowIndex;
+            let currentRowIndex = this.props.currentRowIndex;
+            let currentColIndex = (this.props.col - 1);
             if (this.props.currentRowIndex > (this.totalRow - 1) && (this.props.focusDirection === KEY.LEFT || this.props.focusDirection === KEY.RIGHT)) {
                 currentRowIndex = this.totalRow - 1;
             }
 
-            if(this.props.scrolledRowIndex > this.state.scrolledRow){
+            if (this.props.scrolledRowIndex > this.state.scrolledRow) {
                 currentRowIndex = (this.props.currentRowIndex - this.props.scrolledRowIndex) + this.state.scrolledRow;
             }
-            if(this.props.scrolledRowIndex < this.state.scrolledRow){
+            if (this.props.scrolledRowIndex < this.state.scrolledRow) {
                 let scrolledRowLength = this.state.scrolledRow - this.props.scrolledRowIndex
                 currentRowIndex = currentRowIndex + scrolledRowLength;
             }
+            if(this.props.scrolledRowIndex > this.state.scrolledRow && this.state.scrolledRow === 0 && (this.totalRow - 1)  <= this.props.visibleRow){
+                currentRowIndex = this.rowData().length-1;
+            }
+            if (Utility.isEmpty(this.rowData()[this.state.selectedRow][this.props.col - 1])) {
+                currentColIndex = this.rowData()[this.state.selectedRow].length - 1
+            }
+            if (this.props.currentRowIndex > (this.totalRow - 1)) {
+                currentColIndex = this.rowData()[(this.totalRow - 1)].length - 1
+            }
+
             switch (this.props.focusDirection) {
                 case KEY.LEFT:
                     this.setState({
                         selectedRow: currentRowIndex,
-                        selectedItemIndex: (this.props.col - 1)
+                        selectedItemIndex: currentColIndex
                     });
                     break;
                 case KEY.RIGHT:
@@ -193,10 +188,11 @@ class Grid extends React.Component {
     * @return {null}
     */
     componentDidMount() {
-        document.addEventListener("keydown", this.onHandleKey);
+       super.componentDidMount();
         if (this.props.data) {
             this.totalItem = this.props.data.length;
         }
+        this.rowHeight = document.getElementsByClassName('data-list')[0].children[0].clientHeight;
     }
 
     /**
@@ -206,6 +202,7 @@ class Grid extends React.Component {
     */
     focusOnRightKey() {
         if (!this.rowData()[this.state.selectedRow][this.state.selectedItemIndex + 1]) {
+            this.props.eventCallback(KEY.RIGHT, this.state.selectedRow, this.state.scrolledRow);
             return;
         }
         if ((this.state.selectedItemIndex < this.props.col - 1)) {
@@ -233,14 +230,14 @@ class Grid extends React.Component {
         if (this.state.selectedRow > 0) {
             this.setState({ selectedRow: this.state.selectedRow - 1 });
         }
-        if(this.state.scrollY===0){
+        if (this.state.scrollY === 0) {
             return;
         }
-        let ScrolledLength = Math.abs(this.state.scrollY/SCROLLED_ROW.UP);
+        let ScrolledLength = Math.abs(this.state.scrollY/this.rowHeight);
         if((this.state.selectedRow+1) >= this.props.visibleRow || ScrolledLength > 0){
             this.setState({
                 scrolledRow:this.state.scrolledRow-1,
-                scrollY:this.state.scrollY+SCROLLED_ROW.UP
+                scrollY:this.state.scrollY+this.rowHeight
             })
         }
     }
@@ -261,13 +258,13 @@ class Grid extends React.Component {
         if (this.state.selectedRow < this.totalRow - 1) {
             this.setState({ selectedRow: this.state.selectedRow + 1 });
         }
-        if((this.props.visibleRow + this.state.scrolledRow) >= this.totalRow){
+        if ((this.props.visibleRow + this.state.scrolledRow) >= this.totalRow) {
             return;
         }
-        if((this.state.selectedRow+1) > this.props.visibleRow && (this.totalRow > this.props.visibleRow)){
+        if ((this.state.selectedRow + 1) > this.props.visibleRow && (this.totalRow > this.props.visibleRow)) {
             this.setState({
                 scrolledRow:this.state.scrolledRow+1,
-                scrollY:this.state.scrollY+SCROLLED_ROW.DOWN
+                scrollY:this.state.scrollY+(-this.rowHeight)
             })
         }
     }
@@ -324,4 +321,4 @@ class Grid extends React.Component {
     }
 }
 
-export default Grid;
+export default FocusElement;

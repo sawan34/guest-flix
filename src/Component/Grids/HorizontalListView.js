@@ -34,7 +34,7 @@ class HorizontalListView extends BaseGrid {
                 this.setState((prevState) => {
                     return { focusLostItemPosition: prevState.scrollIndex, scrollIndex: prevState.scrollIndex + 1, activeIndex: prevState.activeIndex + 1, SCROOL_SPEED: this.SCROLL_SPEED, timeInterval: event.timeStamp }
                 }, () => {
-                    this.scrollDirection = commonConstants.GRID_DIRECTION_RIGHT;
+                    this.scrollDirection = commonConstants.DIRECTION_RIGHT;
                     this.focusChange();
                 });
                 break;
@@ -46,7 +46,7 @@ class HorizontalListView extends BaseGrid {
                 this.setState((prevState) => {
                     return { focusLostItemPosition: prevState.scrollIndex, scrollIndex: prevState.scrollIndex - 1, activeIndex: prevState.activeIndex - 1, SCROOL_SPEED: this.SCROLL_SPEED, timeInterval: event.timeStamp }
                 }, () => {
-                    this.scrollDirection = commonConstants.GRID_DIDECTION_LEFT;
+                    this.scrollDirection = commonConstants.DIRECTION_LEFT;
                     this.focusChange();
                 });
                 break;

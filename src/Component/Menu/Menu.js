@@ -2,13 +2,14 @@ import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from "react-redux";
 import BaseOverlay from '../Overlay/BaseOevrlay';
+import { Trans } from 'react-i18next';
 import KeyMap from '../../constants/keymap.constant';
 import {commonConstants} from '../../constants/common.constants'
+import TvComponent from '../TvComponent';
 
-
-var extMenu = commonConstants.MENU_EXIT;
+const MENULANG = "exit_menu";
 var upDownKeyTimeOut = null;
-class Menu extends Component {
+class Menu extends TvComponent {
     constructor(){
         super();
         //initial setup of props and state
@@ -38,7 +39,7 @@ class Menu extends Component {
 					for (var j = 0; j < availableModeNo; j++) {
 						if (this.uiConfigData.modes[i].id === metaData.modes[j]) {
 							this.modeMenuMetaInfo.push(this.uiConfigData.modes[i]);
-							modeMenu.push(this.uiConfigData.modes[i].name)
+							modeMenu.push(this.uiConfigData.modes[i].i8nLabel)
 						}
 					}
 				}
@@ -100,8 +101,8 @@ class Menu extends Component {
 	focusDefaultMenu = () => {
 		try {
 			this.setState({
-				activeMenu: extMenu,
-				currIndex: this.state.menuItems.indexOf(extMenu)
+				activeMenu: commonConstants.MENU_EXIT,
+				currIndex: this.state.menuItems.indexOf(commonConstants.MENU_EXIT)
 			})
 		} catch (error) {
 
@@ -310,7 +311,7 @@ class Menu extends Component {
 	 * This function is responsible for menu item traversing
 	 * @param {object} event: this object contains the keycode for traversing
 	 */
-	onKeyDown(event) {
+	handleKeyPress(event) {
 		if(this.props.subMenuActiveStatus){ // if sub menu active then no action on menu
 			return ; 
 		}
@@ -321,7 +322,7 @@ class Menu extends Component {
 			switch (keyCode) {
 				case KeyMap.VK_ENTER:
 				case KeyMap.VK_RIGHT:
-					if(this.state.activeMenu === extMenu){
+					if(this.state.activeMenu === commonConstants.MENU_EXIT){
 						this.setState({showMenu:{display:false}});
 						var menuNode = ReactDOM.findDOMNode(this);
 						document.removeEventListener("keydown", this.onKeyDown);
@@ -333,13 +334,13 @@ class Menu extends Component {
 					break;		
 				case KeyMap.VK_UP:
 					
-					if (currentPos === 0 || this.state.showMenu.display === 'none') {
+					if (currentPos === 0 || !this.state.showMenu.display) {
 						return;
 					}
 					this.handleUpDown(false,currentPos);
 					break;
 				case KeyMap.VK_DOWN:
-					if (currentPos === this.state.menuItems.length-1 || this.state.showMenu.display === 'none') {
+					if (currentPos === this.state.menuItems.length-1 || !this.state.showMenu.display) {
 						return;
 					}
 					this.handleUpDown(true,currentPos);
@@ -357,18 +358,16 @@ class Menu extends Component {
 	 * @param {} none: 
 	 */
     componentDidMount() {
+		super.componentDidMount();
     	//fetching the menu items
     	setTimeout(() => {
     		this.getMenuMetaData();
     		this.makeMenuActive();
-    	}, 0);
-    	document.addEventListener("keydown", this.onKeyDown);
+		}, 0);
+		this.focus();
     }
 
-	componentWillUnmount(){
-		document.removeEventListener("keydown", this.onKeyDown);
-	}
-
+	
 	/**
 	 * This function is responsible for rendering the menu UI eact time it get calls
 	 * @param {} none: 
@@ -377,7 +376,7 @@ class Menu extends Component {
 		var submenuShow = {
 			display:'none'
 		}
-		if(this.state.activeMenu && this.state.activeMenu.toLowerCase() !== extMenu.toLowerCase()){
+		if(this.state.activeMenu && this.state.activeMenu.toLowerCase() !== commonConstants.MENU_EXIT.toLowerCase()){
 			submenuShow.display = 'block';
 		}
 
@@ -392,9 +391,19 @@ class Menu extends Component {
 				<nav className="scrollMenu">
 					<ul style={this.state.scrollStyle}>
 						{this.state.menuItems.map((item,i)=>{
-							return (<li key={i+"id"} className={(i === this.state.currIndex)?"active":""}><a href="#">
-										{item}
-								    <i className={(item && item.toLowerCase() === "exit menu")?"fa fa-caret-left":"fa fa-caret-right"} aria-hidden="true"></i></a></li>)
+							var listClassName = "";
+							var modeStyle = "";
+							if(i < this.modeMenuMetaInfo.length){
+								modeStyle = "modeGrey ";
+							}else if(item === commonConstants.MENU_EXIT) {
+								modeStyle = "exit ";
+							}
+							if(i === this.state.currIndex){
+								listClassName = "active ";
+							}
+							return (<li key={i+"id"} className={listClassName + modeStyle}><a href="#">
+										<Trans i18nKey={item === commonConstants.MENU_EXIT ? MENULANG :item.toLowerCase()}>{item}</Trans>
+								    <i className={(item && item.toLowerCase() === commonConstants.MENU_EXIT.toLowerCase())?"fa fa-caret-left":"fa fa-caret-right"} aria-hidden="true"></i></a></li>)
 						})}
 					</ul>
 				</nav>

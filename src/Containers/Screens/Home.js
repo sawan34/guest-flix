@@ -4,35 +4,44 @@
 * @author Sawan Kumar
 * @date  22.06.2018
 */
-import React from 'react';
-import BaseScreen, { invokeConnect } from './BaseScreen';
-import KeyMap from '../../constants/keymap.constant';
-import Menu from '../../Component/Menu/Menu';
-import HomeHorizontalView from '../../Component/Grids/HorizontalListView';
-import COMMON_UTILITIES from '../../commonUtilities';
-import roomUser from '../../services/service.roomUser';
-import _ from 'lodash';
-import Selectables from '../../Component/Menu/Groupings/Selectables';
-import { translate, Trans } from 'react-i18next';
-import { SCREENS } from '../../constants/screens.constant';
-import { actionGetSelectables } from '../../actions';
-import { actionGetBoookmarks } from '../../actions/action.bookmark';
-import MenuLanguage from '../../Component/Menu/Language/Language';
 
+//external Libraries 
+import React from 'react';
+import _ from 'lodash';
+import { translate, Trans } from 'react-i18next';
+//screens
+import BaseScreen, { invokeConnect } from './BaseScreen';
+//constants
+import KeyMap from '../../constants/keymap.constant';
+import { SCREENS } from '../../constants/screens.constant';
 import { alertConstants } from '../../constants/alert.constant';
 import { commonConstants } from '../../constants/common.constants';
+import roomUser from '../../services/service.roomUser';
+//common uitilities
+import COMMON_UTILITIES from '../../commonUtilities';
+//Actions
+import { actionGetUserPreferences, actionSaveUserPreferences } from '../../actions/action.userPreferences';
+import { actionGetBoookmarks } from '../../actions/action.bookmark';
+import { actionGetSelectables, actionRefreshtSelectables } from '../../actions';
+//Other Components
+import Menu from '../../Component/Menu/Menu';
+import HomeHorizontalView from '../../Component/Grids/HorizontalListView';
+import Selectables from '../../Component/Menu/Groupings/Selectables';
+import MenuLanguage from '../../Component/Menu/Language/Language';
+import BaseOverlay from '../../Component/Overlay/BaseOevrlay';
+import MenuFilter from  '../../Component/Menu/Filter/Filter';
 
 
-const keyDirections = { up: "up", down: "down" };
+
 //declaring currency symbol below so that no iteration of function done each time;
 const currency = COMMON_UTILITIES.getCurrencySymbol();
 class Home extends BaseScreen {
-
     constructor() {
         super();
         this.state = {
             ...this.state,
             screen: SCREENS.home,//This is mandatory for all the screens 
+            reload: true,
             keyEvent: {},
             groupWiseSelectables: [],
             gridPositionRow: 0,
@@ -58,14 +67,19 @@ class Home extends BaseScreen {
             selectableOn: false,
             selectableActive: false,
             groupingID: 0,
-            isMenuLanguageOn:false, //true when menu got focus
-            isSubMenuActive:false //true when menu got selected
+            isMenuLanguageOn: false, //true when menu got focus
+            isSubMenuActive: false, //true when menu got selected
+            kidOverLayActive: false,
+            adultOverlayActive: false,
+            isMenuFilterOn:false, //true when menu filter got focus
+            modeOverLayActive: false,
         }
         this.scrollSpeed = 200;
         this.topPosition = 0;
         this.numberTofetchSeletables = 10; //number of seletables to fetch at time
         this.gridrowLoad = 4;
         this.groupingHeight = 690;
+        this.stayId = "";
 
         this.loadNextData = this.loadNextData.bind(this);
         this.handleFocusChange = this.handleFocusChange.bind(this);
@@ -79,14 +93,30 @@ class Home extends BaseScreen {
         this.findGroupingById = this.findGroupingById.bind(this);
         this.changeSubMenuActiveStatus = this.changeSubMenuActiveStatus.bind(this);
         this.removeSubMenu = this.removeSubMenu.bind(this);
+
     }
     /**
      * Description:Setting  Menu status On || Off 
      */
     changeMenuStatus() {
+        if (!COMMON_UTILITIES.isEmptyObject(this.menuComponent)) {
+            if (this.menuComponent.isFocused()) {
+                this.menuComponent.deFocus();
+            } else {
+                // this.menuComponent.focus();
+            }
+        }
         this.setState(prevState => {
             return { menuOn: !prevState.menuOn }
         });
+    }
+
+    componentDidUpdate() {
+        if (!this.state.menuOn && this.state.selectableOn) {
+            if (!COMMON_UTILITIES.isEmptyObject(this.gridSelectables)) {
+                this.gridSelectables.focus();
+            }
+        }
     }
 
     /**
@@ -94,16 +124,19 @@ class Home extends BaseScreen {
      */
     componentDidMount() {
         //call for bookmarks
-        const stayId = roomUser.getStayId();
-        this.props.actionGetBoookmarks(stayId);
-        
+        this.stayId = roomUser.getStayId();
+        this.props.actionGetBoookmarks(this.stayId);
+        //call User Preferences
+        this.props.actionGetUserPreferences(this.stayId);
+
+
         if (this.state.groupWiseSelectables.length > 0) {
             return true;
         }
         let groupWiseSelectablePage = {};
-        if (this.props.networkData.type === alertConstants.SUCCESS && alertConstants.SUCCESS === this.props.uiConfig.type) {
+        if (this.props.networkData.type === alertConstants.SUCCESS && alertConstants.SUCCESS === this.props.reducerUiConfig.type) {
             //parsing on home Grouping from All grouping
-            const homeGroupingIds = this.props.uiConfig.message.data.homeGroupings;
+            const homeGroupingIds = this.props.reducerUiConfig.message.data.homeGroupings;
             let homeGroupingDetails = [], counter = 0;
             homeGroupingIds.forEach((item, i) => {
                 if (this.findGroupingById(item).length > 0) {
@@ -157,15 +190,14 @@ class Home extends BaseScreen {
             selfThis.setState((prevState) => {
                 let newSelectables = selfThis.state.homeGroupings.map((item) => {
                     const groupId = item.id;
-                    return selfThis.props.getSelectables.filter((dataItem) => {
+                    return selfThis.props.reducerRetSelectables.filter((dataItem) => {
                         return dataItem.groupId === groupId;
                     });
                 });
                 newSelectables = _.flatten(newSelectables);
-                //selfThis.props.getSelectables;
                 return {
                     groupWiseSelectables: newSelectables,
-                    numberOfGrouping: selfThis.props.getSelectables.length,
+                    numberOfGrouping: selfThis.props.reducerRetSelectables.length,
                     activeGridInfo: {
                         title: newSelectables[0].data[0].title,
                         description: newSelectables[0].data[0].shortDescription,
@@ -200,12 +232,12 @@ class Home extends BaseScreen {
                     resolve(selfThis.props.actionGetSelectables.call(null, selectablesToCall, groupId, true));
                 });
                 promise.then((successMessage) => {
-                    if (this.props.getSelectables.type === alertConstants.SUCCESS && _.isNumber(this.props.getSelectables.groupId)) {
+                    if (this.props.reducerRetSelectables.type === alertConstants.SUCCESS && _.isNumber(this.props.reducerRetSelectables.groupId)) {
                         this.setState((prevState) => {
                             const newGropWiseSelectable = prevState.groupWiseSelectables.map((item) => {
-                                if (item.groupId === this.props.getSelectables.groupId) {
-                                    callBack(this.prepareDataForGrid(this.props.getSelectables.data, groupId));
-                                    item.data = [...item.data, ...this.props.getSelectables.data];
+                                if (item.groupId === this.props.reducerRetSelectables.groupId) {
+                                    callBack(this.prepareDataForGrid(this.props.reducerRetSelectables.data, groupId));
+                                    item.data = [...item.data, ...this.props.reducerRetSelectables.data];
                                     return item;
                                 }
                                 return item;
@@ -233,32 +265,33 @@ class Home extends BaseScreen {
     */
     handleKey(event) {
         var keyCode = event.keyCode;
-        if(this.state.isSubMenuActive){ //for menu language
+        if (!COMMON_UTILITIES.isEmptyObject(this.menuFilterGrid) && this.menuFilterGrid.isFocused()) { //for menu language
             return;
         }
-        if (this.state.selectableActive) {
-            if(keyCode === KeyMap.VK_BACK) {
+        if (!COMMON_UTILITIES.isEmptyObject(this.menuLangGrid) && this.menuLangGrid.isFocused()) { //for menu language
+            return;
+        }
+        if (!COMMON_UTILITIES.isEmptyObject(this.gridSelectables) && this.gridSelectables.isFocused()) {
+            if (keyCode === KeyMap.VK_BACK) {
+                this.gridSelectables.deFocus();
                 this.setState({
-                    selectableOn:false,
-                    selectableActive:false
+                    selectableOn: false,
                 });
+
                 return;
             }
-            this.setState({
-                keyEvent: event
-            });
             return;
-         }
+        }
 
-        if (this.state.menuOn) {
+        if (!COMMON_UTILITIES.isEmptyObject(this.menuComponent) && this.menuComponent.isFocused()) {
             return;
         }
         switch (keyCode) {
             case KeyMap.VK_UP:
-                this.handleUpDown(keyDirections.up, event);
+                this.handleUpDown(commonConstants.DIRECTION_UP, event);
                 break;
             case KeyMap.VK_DOWN:
-                this.handleUpDown(keyDirections.down, event);
+                this.handleUpDown(commonConstants.DIRECTION_DOWN, event);
                 break;
             case KeyMap.VK_ENTER:
                 // setting keyEvent null because coming back this screen state should not have any key
@@ -299,7 +332,7 @@ class Home extends BaseScreen {
     */
     handleUpDown = (direction, event) => {
         if (event.timeStamp - this.state.timeInterval > this.scrollSpeed) { // condition for handling long press
-            if (direction === keyDirections.up) {
+            if (direction === commonConstants.DIRECTION_UP) {
                 if (this.state.gridPositionRow > 0) {
                     this.setState((prevState) => {
                         return { gridPositionRow: prevState.gridPositionRow - 1, scrollY: prevState.scrollY + this.groupingHeight, keyEvent: event, startIndex: prevState.startIndex - 1, endIndex: prevState.endIndex - 1, timeInterval: event.timeStamp };
@@ -307,7 +340,7 @@ class Home extends BaseScreen {
                 }
             }
 
-            if (direction === keyDirections.down) {
+            if (direction === commonConstants.DIRECTION_DOWN) {
                 if (this.state.gridPositionRow < this.state.numberOfGrouping - 1) {
                     this.setState((prevState) => {
                         return { gridPositionRow: prevState.gridPositionRow + 1, scrollY: prevState.scrollY - this.groupingHeight, keyEvent: event, startIndex: prevState.startIndex + 1, endIndex: prevState.endIndex + 1, prefixGroup: prevState.startIndex, timeInterval: event.timeStamp };
@@ -375,11 +408,11 @@ class Home extends BaseScreen {
         return imageType;
     }
 
-  /**
-   * Description : Get Group Wrap By Group Id
-   * @param {number}  groupId
-   * @returns {string}
-   */
+    /**
+     * Description : Get Group Wrap By Group Id
+     * @param {number}  groupId
+     * @returns {string}
+     */
     getGroupScrollWrap(groupId) {
         const arr = [...this.state.homeGroupings];
         let scrollWrap = false;
@@ -394,6 +427,12 @@ class Home extends BaseScreen {
 
     /**
      * Description: Prepare Data for Grid
+     */
+    /**
+     * Description :  Prepare Data for Grid.
+     * @param {array} selectables
+     * @param {number} id
+     *  @returns {Object}
      */
     prepareDataForGrid(selectables, id) {
         let data = "";
@@ -420,110 +459,30 @@ class Home extends BaseScreen {
             }
         });
         return data;
-    }
-
-
+    }    
+   
+    
     /**
-     * 
-     */
-    showSelectable(menuObj) { //on menu item focus
-        console.log(menuObj);
-        this.removeSubMenu(); // removing submenus
-        if (menuObj.type === commonConstants.MENU_GROUPING_TYPE) {
-            this.setState({
-                selectableOn: true,
-                groupingID: menuObj.id,
-                selectableActive: false
-            })
-        } else if(menuObj.name === commonConstants.MENU_LANGUAGE){ // on language select
-            this.setState({
-                isMenuLanguageOn:true
-            });
-        } else{
-            this.setState({
-                selectableOn: false,
-                selectableActive: false,
-            });
-        }
-    }
-    /**
-     * 
-     */
-    onSelectMenuGrouping(menuObj) { // on menu enter or right
-        if (menuObj.type === commonConstants.MENU_GROUPING_TYPE) {
-            this.changeMenuStatus();
-            this.setState({
-                selectableActive: true
-            });
-        }else{
-            this.changeSubMenuActiveStatus();
-        }
-    }
-
-    selectableItemClicked(index) {
-        this.goToScreen(SCREENS.programdetails + "/" + index, null);
-    }
-
-    renderSeletable() {
-        var selectableStyle = {};
-        if (!this.state.selectableActive) {
-            selectableStyle = {
-                top: '50px',
-                left: '322px',
-                position: 'relative'
-            }
-        } else {
-            selectableStyle = {
-                top: '50px',
-                left: '0px',
-                position: 'relative'
-            }
-        }
-        return (<div style={selectableStyle}><Selectables activeEvent={this.state.selectableActive} keyEvent={this.state.keyEvent} groupingID={this.state.groupingID} selectableItemClicked={this.selectableItemClicked} ></Selectables></div>);
-
-    }
-  /**
-   * Description : change MenuActive status
-   * @returns {undefined}
-   */
-    changeSubMenuActiveStatus(status=""){        
-        this.setState((prev)=>{
-           if(status!==""){
-                 return {isSubMenuActive:status}
-           } 
-           return {isSubMenuActive:!prev.isSubMenuActive}           
-        });
-    }
-   /**
-   * Description : change MenuActive status
-   * @returns {undefined}
-   */
-   removeSubMenu(){  
-        this.changeSubMenuActiveStatus(false);     
-        this.setState((prev)=>{
-        return {isMenuLanguageOn:false}
-        });
-   }
-    /**
-         * Description : render Home
-         */
+      * Description : render Home
+      *  @returns {JSX}
+      */
     renderHome() {
         var style = {
             transform: "translate3d(0px," + this.state.scrollY + "px,0)",
             transition: 'all 300ms ease-in-out'
         }
         const classForBlur = this.state.menuOn ? "slide-container-wrapper bluureffects" : "slide-container-wrapper";
-        return (<span><div className={classForBlur} data-show="home">
+        return (<div><div className={classForBlur} data-show="home">
             <div className="home-top-poster">
                 <img src="images/poster_top.png" />
             </div>
             <div className="slider-main-container">
                 <div className="sliders-list" style={style}>
                     {
-                        this.state.groupWiseSelectables.map((item, i) => {
+                        this.state.groupWiseSelectables.map((item, index) => {
                             //doing windowing
-                            if ((i >= this.state.startIndex && i <= this.state.endIndex) || i === this.state.prefixGroup) {
-                                return this.renderGroupingSeletables.call(this, item.data, item.groupId, i);
+                            if ((index >= this.state.startIndex && index <= this.state.endIndex) || index === this.state.prefixGroup) {
+                                return this.renderGroupingSeletables.call(this, item.data, item.groupId, index);
                             }
 
                         })
@@ -532,9 +491,10 @@ class Home extends BaseScreen {
             </div>
         </div>
             <div className="home-right-poster"></div>
-            <div className="home-bottom-poster"></div></span>);
+            <div className="home-bottom-poster"></div></div>);
     }
 
+    
     toggleHomeSelectable() {
         if (this.state.selectableOn) {
             return <this.renderSeletable />;
@@ -550,25 +510,301 @@ class Home extends BaseScreen {
     * @param {number}  i 
     * @return {JSX}
     */
-    renderGroupingSeletables(selectables, id, i) {
-        const imageType = this.state.homeGroupings[i].imageType; // imagetype 
+    renderHome() {
+        var style = {
+            transform: "translate3d(0px," + this.state.scrollY + "px,0)",
+            transition: 'all 300ms ease-in-out'
+        }
+        const classForBlur = this.state.menuOn ? "slide-container-wrapper bluureffects" : "slide-container-wrapper";
+        return (<div><div className={classForBlur} data-show="home">
+            <div className="home-top-poster">
+                <img src="images/poster_top.png" />
+            </div>
+            <div className="slider-main-container">
+                <div className="sliders-list" style={style}>
+                    {
+                        this.state.groupWiseSelectables.map((item, index) => {
+                            //doing windowing
+                            if ((index >= this.state.startIndex && index <= this.state.endIndex) || index === this.state.prefixGroup) {
+                                return this.renderGroupingSeletables.call(this, item.data, item.groupId, index);
+                            }
+
+                        })
+                    }
+                </div>
+            </div>
+        </div>
+            <div className="home-right-poster"></div>
+            <div className="home-bottom-poster"></div></div>);
+    }
+
+    toggleHomeSelectable() {
+        if (this.state.selectableOn) {
+            return (<this.renderSeletable />);
+        } else {
+            return <this.renderHome />;
+        }
+    }
+
+
+    /**
+   * Description: This method is used for populating grids
+   *  @param {object}  selectables 
+   * @param {number}  i 
+   * @return {JSX}
+   */
+    renderGroupingSeletables(selectables, id, index) {
+        const imageType = this.state.homeGroupings[index].imageType; // imagetype 
         let selectablesData = this.prepareDataForGrid(selectables, id);
 
-        const activeGrid = this.state.gridPositionColumn[i] ? this.state.gridPositionColumn[i] : 0;
+        const activeGrid = this.state.gridPositionColumn[index] ? this.state.gridPositionColumn[index] : 0;
         const maxVisibleItem = selectablesData.length > 1 ? selectablesData.length : 1;
         if (selectablesData.length < 1) {
             return "";
         }
-        let wrapperActive = i === this.state.gridPositionRow ? "slider-wrapper active" : "slider-wrapper";
+        let wrapperActive = index === this.state.gridPositionRow ? "slider-wrapper active" : "slider-wrapper";
         let top = { top: 0 };
-        if (i > 0) {
-            this.position = this.groupingHeight * i;
+        if (index > 0) {
+            this.position = this.groupingHeight * index;
             top = { top: this.position + 'px' };
         }
-        return (<div key={i} className="slider-row" style={top} > <h2>{this.getGroupNameById(id)}</h2>
-            <div className={wrapperActive}><HomeHorizontalView dataSource={selectablesData} key={"hori" + i} defaultSelectedPosition={activeGrid} onItemSelected={this.itemSelected} maxVisibleItem={this.numberTofetchSeletables} keyEvent={this.state.keyEvent} onFocusChange={this.handleFocusChange} activeEvent={i === this.state.gridPositionRow} loadNextData={this.loadNextData} id={id} isScrollWrap={this.getGroupScrollWrap(id)} />
+        return (<div key={index} className="slider-row" style={top} > <h2>{this.getGroupNameById(id)}</h2>
+            <div className={wrapperActive}><HomeHorizontalView dataSource={selectablesData} key={"hori" + index} defaultSelectedPosition={activeGrid} onItemSelected={this.itemSelected} maxVisibleItem={this.numberTofetchSeletables} keyEvent={this.state.keyEvent} onFocusChange={this.handleFocusChange} activeEvent={index === this.state.gridPositionRow} loadNextData={this.loadNextData} id={id} isScrollWrap={this.getGroupScrollWrap(id)} />
             </div></div>);
     }
+
+    /****************** MENU HANDLING***************************/
+
+    /**
+     * Description: This method call on menu Item Focus
+     * @param {Object}  menuObj 
+     * @return {null}
+     */
+    showSelectable(menuObj) { //on menu item focus
+        this.removeSubMenu(); // removing submenus
+        if (menuObj.type === commonConstants.MENU_GROUPING_TYPE) {
+            this.setState({
+                modeOverLayActive: false,
+                selectableOn: true,
+                groupingID: menuObj.id,
+
+            });
+            this.gridSelectables.deFocus();
+        } else if (menuObj.name === commonConstants.MENU_LANGUAGE) { // on language select
+            this.setState({
+                isMenuLanguageOn: true
+            });
+        }else if(menuObj.name === commonConstants.MENU_FILTER){
+            this.setState({
+                isMenuFilterOn: true
+            });
+            this.menuFilterGrid.defocus();
+        }else {
+            if (COMMON_UTILITIES.isEmpty(menuObj.isMode)) {
+                this.setState({ modeOverLayActive: false, selectableOn: false, });
+                this.gridSelectables.deFocus();
+            } else {
+                this.modeID = menuObj.id;
+                this.setState({ modeOverLayActive: true, selectableOn: false });
+                this.gridSelectables.deFocus();
+
+            }
+        }
+    }
+    /**
+     * Description: This method call on Submenu Item Focus
+     *  @param {Object}  menuObj 
+     * @return {null}
+     */
+    onSelectMenuGrouping(menuObj) { // on menu enter or right
+        if (menuObj.type === commonConstants.MENU_GROUPING_TYPE) {
+            this.gridSelectables.focus();
+            //this.menuComponent.deFocus();
+            this.changeMenuStatus();
+        } else {
+            if (menuObj.isMode) {
+                this.props.actionRefreshtSelectables();
+                this.goToScreen(SCREENS.dataloading + "/?mode=" + menuObj.id, null);
+            } else if (menuObj.name === commonConstants.MENU_LANGUAGE) {
+                this.menuComponent.deFocus();
+                this.menuLangGrid.focus();                
+            }else {
+                this.menuComponent.deFocus();                
+                this.menuFilterGrid.focus();
+
+
+            }
+        }
+    }
+    /**
+     * Description:Setting  Menu status On || Off 
+     */
+    changeMenuStatus() {
+        if(!COMMON_UTILITIES.isEmptyObject(this.menuComponent)){
+            if(this.menuComponent.isFocused()){
+                 this.menuComponent.deFocus();
+            }else{
+                this.menuComponent.focus();
+            }
+         }
+        this.setState(prevState => {
+            return { menuOn: !prevState.menuOn }
+        });
+    }
+    
+    /**
+     * Description : change MenuActive status
+     * @returns {undefined}
+     */
+    changeSubMenuActiveStatus(status = "") {
+        this.setState((prev) => {
+            if (status !== "") {
+                return { isSubMenuActive: status }
+            }
+            return { isSubMenuActive: !prev.isSubMenuActive }
+        });
+
+    }
+    /**
+    * Description : change MenuActive status
+    * @returns {undefined}
+    */
+    removeSubMenu() {
+        this.changeSubMenuActiveStatus(false);
+       // this.menuLangGrid.deFocus();
+      //  this.menuFilterGrid.deFocus();
+        this.setState((prev) => {
+            return { isMenuLanguageOn: false,isMenuFilterOn:false,selectableOn:false }
+        });
+    }
+
+    deactivateSubMenu = () => {
+        this.menuLangGrid.deFocus();
+        this.menuComponent.focus();
+    }
+
+
+    /******************** MENU GROUPINGS AND MODES ***************/
+    selectableItemClicked(index) {
+        this.goToScreen(SCREENS.programdetails + "/" + index, null);
+    }
+   
+     /**
+     * Description: This method call on Home and Selectables toggle
+     * @return {JSX}
+     */
+    renderSeletable() {
+        var selectableStyle = {
+            position: 'relative'
+        }
+        if (window.innerWidth <= 1280) {
+            selectableStyle.top = '33px';
+            if (COMMON_UTILITIES.isEmptyObject(this.gridSelectables) || !this.gridSelectables.isFocused()) {
+                selectableStyle.left = '322px';
+            }
+            else {
+                selectableStyle.left = '0px';
+            }
+        } else {
+            selectableStyle.top = '50px';
+            if (COMMON_UTILITIES.isEmptyObject(this.gridSelectables) || !this.gridSelectables.isFocused()) {
+                selectableStyle.left = '322px';
+            } else {
+                selectableStyle.left = '0px';
+            }
+        }
+        return (<div style={selectableStyle}><Selectables onRef={instance => (this.gridSelectables = instance)} groupingID={this.state.groupingID} selectableItemClicked={this.selectableItemClicked} ></Selectables></div>);
+    }
+
+    /**
+    * Description : change MenuActive status
+    * @returns {undefined}
+    */
+    changeSubMenuActiveStatus(status = "") {
+        this.setState((prev) => {
+            if (status !== "") {
+                return { isSubMenuActive: status }
+            }
+            return { isSubMenuActive: !prev.isSubMenuActive }
+        });
+
+    }
+
+    /**
+    * Description : change MenuActive status
+    * @returns {undefined}
+    */
+    removeSubMenu() {
+        this.changeSubMenuActiveStatus(false);
+        this.setState((prev) => {
+            return { isMenuLanguageOn: false }
+        });
+    }
+
+
+    deactivateSubMenu = () => {
+        this.menuLangGrid.deFocus();
+        this.menuComponent.focus();
+    }
+
+    /******************** MENU GROUPINGS AND MODES ***************/
+    /**
+     * Description: This method call on Home and Selectables toggle
+     * @return {JSX}
+     */
+    renderSeletable() {
+        var isFocusNeeded = false;
+        var selectableStyle = {
+            position: 'relative'
+        }
+        if (window.innerWidth <= 1280) {
+            selectableStyle.top = '33px';
+            if ((COMMON_UTILITIES.isEmptyObject(this.gridSelectables) || !this.gridSelectables.isFocused()) && this.state.menuOn) {
+
+                selectableStyle.left = '322px';
+            }
+            else {
+                isFocusNeeded = true;
+                selectableStyle.left = '0px';
+            }
+        } else {
+            selectableStyle.top = '50px';
+            if ((COMMON_UTILITIES.isEmptyObject(this.gridSelectables) || !this.gridSelectables.isFocused()) && this.state.menuOn) {
+                selectableStyle.left = '322px';
+            } else {
+                isFocusNeeded = true;
+                selectableStyle.left = '0px';
+            }
+        }
+        return (<div style={selectableStyle}><Selectables onRef={instance => (this.gridSelectables = instance)} groupingID={this.state.groupingID} selectableItemClicked={this.selectableItemClicked} isFocus={isFocusNeeded}></Selectables></div>);
+
+    }
+
+
+    renderModeMenu(currentModeID) {
+        let imageURL = "";
+        let descLable = "";
+        for (var modeID = 0; modeID < this.props.reducerUiConfig.message.data.modes.length; modeID++) {
+            if (this.props.reducerUiConfig.message.data.modes[modeID].id === currentModeID) {
+                imageURL = this.props.reducerUiConfig.message.data.modes[modeID].image.url || "";
+                descLable = this.props.reducerUiConfig.message.data.modes[modeID].i8nDescription || "abcdefg";
+                break;
+            }
+        }
+
+        if (this.state.modeOverLayActive) {
+            return (
+                <BaseOverlay myClass={'menu-mode-sub-menu'}>
+                    <div className="kids-zone">
+                        <div className="heading"><img src={imageURL} /></div>
+                        <div className="content">
+                            <p><Trans i18nKey={descLable}>Message</Trans></p>
+                        </div>
+                    </div>
+                </BaseOverlay>);
+        }
+    }
+
 
     /**
     * Description: React Inbuilt method
@@ -578,16 +814,14 @@ class Home extends BaseScreen {
         if (this.state.data.type === alertConstants.ERROR) {
             return <div>{this.state.data.data}</div>
         }
-
-
-
         return (
-            <div>
+            <div key={this.state.reload}>
                 <div className="container" >
-                    {this.state.menuOn && <Menu openMenu={this.state.menuOn} changeMenuStatus={this.changeMenuStatus.bind(this)} onFocus={this.showSelectable} onItemSelect={this.onSelectMenuGrouping} changeSubMenuActiveStatus={this.changeSubMenuActiveStatus} subMenuActiveStatus = {this.state.isSubMenuActive} />}
-                    {this.state.menuOn &&  this.state.isMenuLanguageOn && !this.state.selectableOn &&  <MenuLanguage subMenuActiveStatus={this.state.isSubMenuActive} removeSubMenu = {this.changeSubMenuActiveStatus} />}
-
+                    {this.state.menuOn && <Menu onRef = { instance => ( this.menuComponent = instance )} openMenu={this.state.menuOn} changeMenuStatus={this.changeMenuStatus.bind(this)} onFocus={this.showSelectable} onItemSelect={this.onSelectMenuGrouping} changeSubMenuActiveStatus={this.changeSubMenuActiveStatus} subMenuActiveStatus={this.state.isSubMenuActive} />}
+                    {this.state.menuOn && this.state.isMenuLanguageOn && !this.state.selectableOn && <MenuLanguage onRef={instance => (this.menuLangGrid = instance)} removeSubMenu = {this.deactivateSubMenu} actionSaveUserPreferences={this.props.actionSaveUserPreferences} getUserPreferences={this.props.reducerGetUserPreferences} stayId={this.stayId} changeLanguage={this.changeLanguage} />}
+                    {this.state.menuOn && this.state.isMenuFilterOn && !this.state.selectableOn && <MenuFilter onRef={instance => (this.menuFilterGrid = instance)} removeSubMenu = {this.deactivateSubMenu}  actionSaveUserPreferences={this.props.actionSaveUserPreferences} getUserPreferences={this.props.reducerGetUserPreferences} configUserPreference = {this.props.reducerUiConfig.message.data.programFilters} />}
                     {this.toggleHomeSelectable()}
+                    {this.renderModeMenu(this.modeID)}
                 </div>
             </div>
         )
@@ -595,10 +829,14 @@ class Home extends BaseScreen {
 };
 export default invokeConnect(Home, null, 'getGroupings',
     {   //actions
-        actionGetSelectables: actionGetSelectables, 
-        actionGetBoookmarks:actionGetBoookmarks }, 
+        actionGetSelectables: actionGetSelectables,
+        actionGetBoookmarks: actionGetBoookmarks,
+        actionGetUserPreferences: actionGetUserPreferences,
+        actionSaveUserPreferences: actionSaveUserPreferences,
+        actionRefreshtSelectables: actionRefreshtSelectables
+    },
     {  //reducers
-        getSelectables: 'getSelectables',
-        uiConfig: 'getUiConfig',
-        getBookmarks:'getBookmarks'
+        reducerRetSelectables: 'getSelectables',
+        reducerUiConfig: 'getUiConfig',
+        reducerGetUserPreferences: 'userPreferences'
     });

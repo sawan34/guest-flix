@@ -1,3 +1,10 @@
+/**
+* Summary: Vertical Grid item Component
+* Description: This is Vertical Grid item component 
+* @author Amit Singh Tomar
+* @date  26.07.2018
+*/
+
 import React from 'react';
 import { isEqual } from 'lodash';
 
@@ -13,6 +20,7 @@ export default class Item extends React.Component {
 		return this.props.dimensions.width;
 	}
 
+	
 	/**
 	 * This function return grid item left position
 	 * @param {null} 

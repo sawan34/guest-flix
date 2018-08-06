@@ -13,6 +13,9 @@ import getUiConfig from './reducer.UIConfig'
 import reducerProgramDetails from './reducer.programDetails';
 import reducerPurchaseStart from './reducer.purchaseStart';
 import reducerBookmark from './reducer.bookmark';
+import userPreferences from './reducer.userPreferences';
+import reducerBookmarkPlayBack from './reducer.bookmarkPlayback';
+
 
 
 /**
@@ -26,6 +29,8 @@ const rootReducer = combineReducers({
   getUiConfig : getUiConfig,
   getProgramDetails:reducerProgramDetails,
   reducerPurchaseStart:reducerPurchaseStart,
+  userPreferences:userPreferences,
+  reducerBookmarkPlayBack : reducerBookmarkPlayBack,
   getBookmarks:reducerBookmark
 });
 

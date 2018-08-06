@@ -1,11 +1,10 @@
 /**
-* Summary:Contain Bookmark reducers
+* Summary:Contain Save on Exit reducers
 * @author Sawan Kumar
-* @date  05.07.2018
+* @date  30.07.2018
 */
 import { ACTION } from '../constants/action.constant';
 import { alertConstants } from '../constants/alert.constant';
-
 /**
     * Description: reducer Saving Data on Exit
     * @param {object} state  
@@ -14,6 +13,15 @@ import { alertConstants } from '../constants/alert.constant';
     */
 export default function (state = {}, action) {
     switch (action.type) {
+        case ACTION.BOOKMARK_PLAYBACK:
+            return {
+                type:action.payload.type,
+                message:{
+                    status:action.payload.message.status,
+                    data:action.payload.message.data,
+                }
+            }
+        break;   
         case ACTION.GET_BOOKMARKS:
         const fecthedData = {};
         if (action.payload) {
@@ -38,8 +46,9 @@ export default function (state = {}, action) {
             fecthedData.data = action.payload.message;
         }   
         return state = fecthedData;
+        break;
         default:
-            break;
+        break;
     }
     return state;
 }

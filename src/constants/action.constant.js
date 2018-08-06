@@ -15,5 +15,9 @@ export const ACTION ={
     PURCHASE_START:'purchasestart',
     PURCHASE_PMS:'purchasepms',
     PURCHASE_COMPLETE:'purchasecomplete',
-    GET_BOOKMARKS:'getBookMarks'
+    GET_BOOKMARKS:'getBookMarks',
+    GET_USER_PREFERENCES:'getUserPreferences',
+    SAVE_USER_PREFERENCES:'saveUserPreferences',
+    BOOKMARK_PLAYBACK:'bookmarkplayback',
+    REFRESH_SELECTABLE:'refreshSelectable'
 }
