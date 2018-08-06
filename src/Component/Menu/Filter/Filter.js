@@ -238,7 +238,7 @@ class Filter extends Component {
      if (selection.length > 0) {
         selectRating = selection.map((item, i) => {
           let translated  = <Trans i18nKey={item}></Trans>;            
-          return this.init(translated, i,COMPONENT_NAME.RATING_SELECT ,'selectAll')
+          return this.init(translated, i,COMPONENT_NAME.RATING_SELECT)
         })
       };
     //for filter filter
@@ -256,7 +256,7 @@ class Filter extends Component {
 
     })
   }
-  init(item, i,component,value) {
+  init(item, i,component,value=null) {
     let obj = null;
     if(_.isArray(value)){
         if(_.indexOf(value,item) > -1){
