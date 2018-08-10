@@ -78,6 +78,8 @@ class ProgramDetails extends BaseScreen {
         if(this.buttonList[this.state.active-1].id === OPEN_SCREEN.PURCHASE){
             this.setState({overlay:true});
         }else  if(this.buttonList[this.state.active-1].id === OPEN_SCREEN.RELATED_TITLE){
+             //  console.log(this.state.data);
+               this.goToScreen(SCREENS.relatedtitle+"/"+this.state.data.data.title, null);
             return;
         }else if(this.buttonList[this.state.active-1].id === OPEN_SCREEN.RESUME){
             this.goToScreen(SCREENS.player+"/"+this.state.data.data.id, null);
@@ -215,7 +217,7 @@ class ProgramDetails extends BaseScreen {
                         <PurchaseScreen data={this.state.data.data} closePopup={this.closePopup} purchaseStartAction={this.props.purchaseStartAction} pmsPurchaseAction={this.props.pmsPurchaseAction} purchaseCompleteAction={this.props.purchaseCompleteAction} reducerPurchaseStart = {this.props.reducerPurchaseStart}  programId = {this.state.data.data.id} goToScreen = {this.goToScreen} />
                     </div>
                 }
-                <div className={this.state.overlay ? "bluureffects" : null}>
+                <div className={this.state.overlay ? "bluureffects-overlay" : null}>
                 <div className="home-top-poster-details">
                     <img src={this.state.data.data.preferredImage.uri} onError={commonUtility.onImageErrorHandler} />
                 </div>
@@ -233,7 +235,11 @@ class ProgramDetails extends BaseScreen {
                     <div className="right-col">
                         <div className="content-list">
                             <h3>{this.state.data.data.title}</h3>
-                            <div className="heading-row"><span className="btn-style">{this.state.data.data.rating}</span> <span className="text">{this.state.data.data.releaseYear}</span> <span className="text">{this.timeFormat(this.state.data.data.runTime)}</span> <span className="btn-style btn-small">CC</span> <span className="btn-style btn-small"><i className="fa fa-globe"></i></span></div>
+                            <div className="heading-row">
+                            {
+                                !Utilities.isEmpty(this.state.data.data.rating) ? <span className="btn-style">{this.state.data.data.rating}</span> : null
+                            }
+                            <span className="text">{this.state.data.data.releaseYear}</span> <span className="text">{this.timeFormat(this.state.data.data.runTime)}</span></div>
                             <div className="descriptions">
                                 <p>{this.state.data.data.longDescription}</p>
                             </div>

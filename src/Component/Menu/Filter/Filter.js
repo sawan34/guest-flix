@@ -12,7 +12,6 @@ import { Trans } from 'react-i18next';
 import UTILITY from "../../../commonUtilities";
 import CheckboxGrid from '../../FocusElement/CheckboxGrid';
 
-const dummyLang = ['en','es','gn','pd','pl'];
 const selection = ["select_all","select_none"];
 
 /**
@@ -21,15 +20,29 @@ const selection = ["select_all","select_none"];
 const ROW_VISIBLE = {
   "CHECKBOX_BUTTON": 10
 }
+/**
+* Description: Define Component Row
+*/
 const COMPONENT_NAME = {
   "LANGUAGE": "language",
   "RATING":"rating",
   'LANGUAGE_SELECT':'languageSelect',
   'RATING_SELECT':'filterSelect'  
 }
+
+/**
+* Description: Define Select ID
+*/
 const SELECT_ID = {
-    SELECT:'filterSelect0',
-    DE_SELECT:'filterSelect0'
+    [COMPONENT_NAME.RATING_SELECT]:{
+        SELECT:'filterSelect0',
+        DE_SELECT:'filterSelect1'
+    },
+    [COMPONENT_NAME.LANGUAGE_SELECT]:{
+        SELECT:'languageSelect0',
+        DE_SELECT:'languageSelect1'
+    }
+    
 }
 /**
 * Description: Define constant for the Key LEFT, RIGHT, UP, DOWN
@@ -80,20 +93,6 @@ class Filter extends Component {
     * @return {null}
     */
   enterEvent(gridname, name, rowIndex, colIndex, col) {
-    if (gridname != COMPONENT_NAME.BUTTON) {
-      let index = rowIndex * col + colIndex;
-      let updateArray = [...this.state[gridname]];
-
-      updateArray.map((val, i) => {
-        val.status = false;
-        if (i === index) {
-          val.status = true;
-        }
-        return val;
-
-      })
-      this.setState({ updateArray });
-    }
     if(gridname === COMPONENT_NAME.RATING_SELECT){    
         if(name.status===true){
             return;
@@ -110,11 +109,13 @@ class Filter extends Component {
     }      
 
     if (gridname === COMPONENT_NAME.LANGUAGE) {
-     this.selectFilter.call(this,name,COMPONENT_NAME.LANGUAGE);
+     this.selectFilter.call(this,name,COMPONENT_NAME.LANGUAGE,COMPONENT_NAME.LANGUAGE_SELECT);
+     this.postData.call(this);
     }
 
     if (gridname === COMPONENT_NAME.RATING) {
-            this.selectFilter.call(this,name,COMPONENT_NAME.RATING);
+            this.selectFilter.call(this,name,COMPONENT_NAME.RATING,COMPONENT_NAME.RATING_SELECT);
+            this.postData.call(this);
       }
 
   }
@@ -124,10 +125,10 @@ class Filter extends Component {
     * @param {String}  component
     * @return {null}
     */
-  selectFilter(name,component){
+  selectFilter(name,component,selectComponent){
     this.setState((prev) => {
-        var oldData =  [...this.state[component].data];
-        var selectedData = [...this.state[component].selected];
+        var oldData =  [...prev[component].data];
+        var selectedData = [...prev[component].selected];
         var newData = oldData.map((item)=>{
             if(item.id ===name.id){
                 item.status = !item.status;
@@ -137,16 +138,22 @@ class Filter extends Component {
                     }
                 }else{
                     selectedData = selectedData.filter((item)=>{
-                        return item.value !==name.value
+                        return item !==name.value
                     })
                 }
             }
             return item;
         });
+        
+
         return {
             [component]:{
                 data:newData,
                 selected:selectedData
+            },
+            [selectComponent]:{
+                data:this.resetSelect.call(this,selectComponent),
+                selected:[]
             }
         }
       });
@@ -168,6 +175,7 @@ class Filter extends Component {
             }
           }
         this.props.actionSaveUserPreferences(this.props.stayId, toSendData);
+        this.props.filterChangeStatus();
     }else { // on error
         this.setState(
           {
@@ -187,19 +195,25 @@ class Filter extends Component {
     */
   selectAndDeSelect(name,selectName,componentName){
     this.setState(prev=>{
-        let data =  [...prev[componentName].data];
-        let selectButton = [...prev[selectName].data];
+        let data = JSON.parse(JSON.stringify(prev[componentName].data));
+        let value =[];
+        value[0] =  prev[selectName].data[0].value;
+        value[1] =  prev[selectName].data[1].value;
+        
+        let selectButton = JSON.parse(JSON.stringify(prev[selectName].data));
+        selectButton.value = value;
         let selectedArray = [];
-        selectButton =  selectButton.map((item)=>{
+        selectButton =  selectButton.map((item,i)=>{
             if(item.id === name.id){
                 item.status = true;               
             }else{
                 item.status = false;                    
             }
+            item.value = value[i];
             return item;
         });
         data = data.map((item)=>{
-            if(SELECT_ID.SELECT === name.id){
+            if(SELECT_ID[selectName].SELECT === name.id){
                 item.status = true; 
                 selectedArray.push(item.value)                   
             }else{
@@ -213,14 +227,15 @@ class Filter extends Component {
             selected:selectedArray
         },
         [selectName]:{
-            data:selectButton
+            data:selectButton,
+            selected:[]
         }
       };
     });
   }
 
   componentWillMount() {
-    let languageData = [] ,selectRating = [],ratings=[];
+    let languageData = [] ,selectRating = [],selectlang=[],ratings=[];
     this.filters =  this.props.configUserPreference;
     const filtersRating =this.filters.ratings;    
     const filtersLanguage = this.filters.languages;
@@ -234,13 +249,9 @@ class Filter extends Component {
         })
       }
 
-     //for filter select options
-     if (selection.length > 0) {
-        selectRating = selection.map((item, i) => {
-          let translated  = <Trans i18nKey={item}></Trans>;            
-          return this.init(translated, i,COMPONENT_NAME.RATING_SELECT)
-        })
-      };
+    //for filter select options
+     selectRating =  this.resetSelect.call(this,COMPONENT_NAME.RATING_SELECT);
+     selectlang =   this.resetSelect.call(this,COMPONENT_NAME.LANGUAGE_SELECT);
     //for filter filter
     if (filtersRating.length > 0) {
         ratings = filtersRating.map((item, i) => {
@@ -249,11 +260,10 @@ class Filter extends Component {
       };    
    
     this.setState({
-      [COMPONENT_NAME.LANGUAGE]: {data:languageData,selected:[]},
+      [COMPONENT_NAME.LANGUAGE]: {data:languageData,selected:selectedPreferenceLanguage},
+      [COMPONENT_NAME.RATING]:{data:ratings,selected:selectedPreferenceRating},      
       [COMPONENT_NAME.RATING_SELECT]:{data:selectRating,selected:[]},
-      [COMPONENT_NAME.RATING]:{data:ratings,selected:selectedPreferenceRating},
-      [COMPONENT_NAME.LANGUAGE_SELECT]:{data:selectRating,selected:selectedPreferenceLanguage},
-
+      [COMPONENT_NAME.LANGUAGE_SELECT]:{data:selectlang,selected:[]}
     })
   }
   init(item, i,component,value=null) {
@@ -290,7 +300,7 @@ class Filter extends Component {
     return obj
   }
 
-  componentDidMount() {
+componentDidMount() {
     if (!UTILITY.isEmptyObject(this.props.onRef)) {
       this.props.onRef(this);
     }
@@ -303,9 +313,23 @@ class Filter extends Component {
   onChange() {
     return;
   }
+
+  resetSelect(componentName){
+    let selectJsx =[];  
+    if (selection.length > 0) {
+        selectJsx = selection.map((item, i) => {
+          let translated  = <Trans i18nKey={item}></Trans>;            
+          return this.init(translated, i,componentName)
+        })
+      };
+      return selectJsx;
+  }
+
   /**
-   * Description: on changing grid
-   * @param {null}
+   * Description: call back on Select filter change
+   * @param {String}direction
+   * @param {Number}currentRowIndex
+   * @param {Number}scrolledRowIndex
    * @return {null}
    */
   eventCallbackSelectFilter(direction, currentRowIndex, scrolledRowIndex) {
@@ -323,14 +347,18 @@ class Filter extends Component {
             scrolledRowIndex: scrolledRowIndex,
             direction: direction
           }); 
-      break;    
+      break;  
+      default:
+      break    
     }
     return;
   }
 
   /**
-   * Description: on changing grid
-   * @param {null}
+   * Description: call back on  filter change
+   * @param {String}direction
+   * @param {Number}currentRowIndex
+   * @param {Number}scrolledRowIndex
    * @return {null}
    */
   eventCallbackFilters(direction, currentRowIndex, scrolledRowIndex) {
@@ -365,7 +393,11 @@ class Filter extends Component {
   }
 
   /**
-   * 
+   * Description: call back on select language change
+   * @param {String}direction
+   * @param {Number}currentRowIndex
+   * @param {Number}scrolledRowIndex
+   * @return {null}
    */
   eventCallbackSelectLanguage(direction, currentRowIndex, scrolledRowIndex){
     switch (direction) {
@@ -398,8 +430,12 @@ class Filter extends Component {
     return;
   }
 
-  /**
-   * 
+   /**
+   * Description: call back on  language change
+   * @param {String}direction
+   * @param {Number}currentRowIndex
+   * @param {Number}scrolledRowIndex
+   * @return {null}
    */
   eventCallbackLanguages(direction, currentRowIndex, scrolledRowIndex){
       switch (direction) {
@@ -423,32 +459,43 @@ class Filter extends Component {
       }
   }
 
+ /**
+   * Description: On Focus of Filter
+   * @return {null}
+   */  
   focus() {
       this.ratingSelect.focus();
       this.setState({activeGrid: 1});
       this.isFilterFocused = true;
   }
-
+ /**
+   * Description: On Removing Focus of Filter
+   * @return {null}
+   */
   deFocus() {
     this.isFilterFocused = false;  
     this.ratingSelect.deFocus();
     this.ratingData.deFocus();
     this.languageSelect.deFocus();
-    this.languageData.deFocus();
-    
+    this.languageData.deFocus();    
     this.setState({activeGrid: -1});
   }
-
+/**
+   * Description: Check Focus from home
+   * @return {Boolean}
+   */
   isFocused() {
     return this.isFilterFocused;  
-   // return this.ratingSelect.isFocused();
   }
-
+  /**
+   * Description: Check Focus from home
+   * @return {JSX}
+   */
   render() {
     return (
       <div className="sub-menu filter">
         {<div>{this.state.error && this.state.errorMessage}</div>}
-        <div className="heading"><h3><Trans i18nKey="choose_your_lang">Choose Your Language</Trans></h3></div>
+        <div className="heading"><h3><Trans i18nKey="filter_screen_title">Filter Available Titles</Trans></h3></div>
         <div className="checkbox-lists">
              <div className="sub-heading"><Trans i18nKey="by_rating">BY RATING</Trans></div>
           <div className="checkbox-header">

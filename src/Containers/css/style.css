@@ -81,15 +81,6 @@ html, body {
   background-image: -moz-linear-gradient(left, rgba(0, 0, 0, 0) 0%, black 100%);
   background-image: -webkit-linear-gradient(left, rgba(0, 0, 0, 0) 0%, black 100%); }
 
-.modeGrey {
-  background: #808080; }
-
-#playerMessageView {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); }
-
 /* media queries */
 @media (min-width: 1280px) {
   .container {
@@ -336,8 +327,8 @@ html, body {
             z-index: 51;
             right: 5%;
             top: 18px;
-            width: 20%;
-            line-height: 1.3;
+            width: 25%;
+            line-height: 1;
             text-align: center; }
   /* details page*/
   .product-details-wrapper {
@@ -446,9 +437,7 @@ html, body {
   /* Left Menu */
   .bluureffects {
     filter: blur(10px);
-    -webkit-filter: blur(10px);
-    width: 1280px;
-    height: 720px; }
+    -webkit-filter: blur(10px); }
   .menu {
     width: 400px;
     height: 720px;
@@ -514,23 +503,23 @@ html, body {
     height: 913px;
     overflow: hidden; }
   .sub-menu {
-    width: calc(100% - 401px);
-    height: 560px;
+    width: 1220px;
+    height: 880px;
     padding: 50px;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     background: #000000;
     float: left;
+    margin-top: 100px;
     position: absolute;
     z-index: 1;
-    left: 401px;
-    top: 80px; }
+    left: 601px; }
     .sub-menu .heading {
-      padding: 0px 0 30px 0;
+      padding: 0px 0 50px 0;
       text-align: center; }
       .sub-menu .heading h3 {
-        font-size: 1.8em;
+        font-size: 2.5em;
         color: #b7cfdb; }
     .sub-menu .content {
       text-align: center;
@@ -577,11 +566,11 @@ html, body {
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     background: #000000;
+    float: left;
     margin-top: 66px;
     position: absolute;
     z-index: 1;
     left: 401px;
-    top: 0;
     /* kids zone screen */ }
     .menu-mode-sub-menu .heading {
       padding: 0px 0 33px 0;
@@ -595,7 +584,7 @@ html, body {
       height: 112px; }
       .menu-mode-sub-menu .content p {
         font-size: 1em;
-        line-height: 1.5; }
+        line-height: 1; }
     .menu-mode-sub-menu .movie-list {
       padding: 0px 20px 0px 20px; }
       .menu-mode-sub-menu .movie-list ul {
@@ -628,7 +617,7 @@ html, body {
       content: '';
       display: block;
       position: absolute;
-      top: 5px;
+      top: 7px;
       left: 8px;
       width: 3px;
       height: 9px;
@@ -676,7 +665,7 @@ html, body {
       content: '';
       display: block;
       position: absolute;
-      top: 4px;
+      top: 7px;
       left: 6px;
       width: 7px;
       height: 7px;
@@ -934,12 +923,12 @@ html, body {
       -webkit-box-sizing: border-box;
       -moz-box-sizing: border-box;
       box-sizing: border-box;
-      width: 360px;
-      min-height: 214px;
-      right: 60px;
-      top: 60px; }
+      width: 400px;
+      min-height: 250px;
+      right: 100px;
+      top: 100px; }
       .player-wrapper .player-details .btn-exit {
-        font-size: 1.3em;
+        font-size: 1.8em;
         color: #ffffff;
         text-decoration: none;
         padding: 0 20px;
@@ -954,11 +943,11 @@ html, body {
           border-radius: 12px; }
       .player-wrapper .player-details .player-icon {
         text-align: center;
-        padding: 20px 0 10px 0; }
+        padding: 20px 0 5px 0; }
         .player-wrapper .player-details .player-icon div {
-          background: url(../images/player-icon_1280x720.png) no-repeat 0;
-          width: 30px;
-          height: 30px;
+          background: url(../images/player-icon.png) no-repeat 0;
+          width: 42px;
+          height: 40px;
           display: inline-block;
           border: solid 2px transparent;
           -webkit-border-radius: 10px;
@@ -966,7 +955,7 @@ html, body {
           -ms-border-radius: 10px;
           border-radius: 10px;
           padding: 5px;
-          margin: 0 5px; }
+          margin: 0 1px; }
           .player-wrapper .player-details .player-icon div:hover, .player-wrapper .player-details .player-icon div.active {
             border: solid 2px #ffffff;
             background-color: #808080; }
@@ -974,34 +963,33 @@ html, body {
             border: solid 2px #ffffff;
             background-color: none; }
         .player-wrapper .player-details .player-icon .RW {
-          background-position: 7px 8px; }
+          background-position: 8px 8px; }
         .player-wrapper .player-details .player-icon .RW-1 {
-          background-position: -263px 8px; }
+          background-position: -386px 8px; }
         .player-wrapper .player-details .player-icon .RW-2 {
-          background-position: -305px 8px; }
+          background-position: -447px 8px; }
         .player-wrapper .player-details .player-icon .RW-3 {
-          background-position: 7px 8px; }
+          background-position: 8px 8px; }
         .player-wrapper .player-details .player-icon .FF {
-          background-position: -63px 8px; }
+          background-position: -93px 8px; }
         .player-wrapper .player-details .player-icon .FF-1 {
-          background-position: -222px 8px; }
+          background-position: -324px 8px; }
         .player-wrapper .player-details .player-icon .FF-2 {
-          background-position: -180px 8px; }
+          background-position: -263px 8px; }
         .player-wrapper .player-details .player-icon .FF-3 {
-          background-position: -63px 8px; }
+          background-position: -93px 8px; }
         .player-wrapper .player-details .player-icon .play {
-          background-position: -144px 8px; }
+          background-position: -211px 8px; }
         .player-wrapper .player-details .player-icon .pause {
-          background-position: -28px 7px; }
+          background-position: -42px 7px; }
         .player-wrapper .player-details .player-icon .language {
-          background-position: -107px 8px; }
+          background-position: -157px 8px; }
       .player-wrapper .player-details h3 {
-        /* autoprefixer: off */
-        font-size: 1.5em;
+        font-size: 2em;
         color: #ffffff;
         text-align: center;
         line-height: 1.2;
-        height: 57px;
+        height: 77px;
         display: block;
         display: -webkit-box;
         max-width: 100%;
@@ -1012,52 +1000,51 @@ html, body {
         text-overflow: ellipsis; }
     .player-wrapper .audio-language {
       background: #000000;
-      padding: 20px 40px 15px;
-      width: 650px;
+      padding: 50px;
+      width: 900px;
       position: absolute;
-      right: 60px;
-      top: 280px;
-      height: 265px; }
+      right: 100px;
+      top: 363px; }
       .player-wrapper .audio-language .radio-container {
-        height: 225px;
+        height: 241px;
         overflow: hidden; }
       .player-wrapper .audio-language h3 {
-        font-size: 1.3em;
+        font-size: 1.8em;
         padding-bottom: 20px;
         line-height: 1; }
     .player-wrapper .progressbar-wrapper {
       width: 80%;
       position: absolute;
-      bottom: 70px;
+      bottom: 150px;
       z-index: 5;
       left: 10%; }
       .player-wrapper .progressbar-wrapper #progressBarPanasonic {
         border-radius: 12px;
         background: #ffffff;
-        box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.7); }
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.7); }
       .player-wrapper .progressbar-wrapper #currentTimeDiv {
         text-align: center;
-        padding-bottom: 20px; }
+        padding-bottom: 50px; }
         .player-wrapper .progressbar-wrapper #currentTimeDiv #timeView {
-          font-size: 1.3em;
+          font-size: 2em;
           text-shadow: 0 0 5px rgba(0, 0, 0, 0.7); }
       .player-wrapper .progressbar-wrapper #progressBarFillId {
         width: 0px;
         border-radius: 12px;
         transition: all 500ms linear;
-        height: 12px;
+        height: 15px;
         background: #656565;
-        box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.7);
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.7);
         position: relative; }
         .player-wrapper .progressbar-wrapper #progressBarFillId .progressbar-circle {
-          width: 24px;
-          height: 24px;
+          width: 30px;
+          height: 30px;
           border-radius: 50%;
           background: #656565;
-          box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.8);
+          box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.8);
           position: absolute;
           right: -15px;
-          top: -6px; } }
+          top: -8px; } }
 
 /* media queries */
 @media (min-width: 1920px) {
@@ -1308,9 +1295,7 @@ html, body {
   /* Left Menu */
   .bluureffects {
     filter: blur(10px);
-    -webkit-filter: blur(10px);
-    width: 1920px;
-    height: 1080px; }
+    -webkit-filter: blur(10px); }
   .menu {
     width: 600px;
     height: 1080px; }
@@ -1376,11 +1361,15 @@ html, body {
       .sub-menu .content p {
         font-size: 2em;
         line-height: 1.5; }
-    .sub-menu .movie-list ul li {
-      width: 320px;
-      height: 180px;
-      margin-right: 20px;
-      margin-bottom: 20px; }
+    .sub-menu .movie-list ul {
+      overflow: hidden; }
+      .sub-menu .movie-list ul li {
+        list-style: none;
+        width: 320px;
+        height: 180px;
+        float: left;
+        margin-right: 20px;
+        margin-bottom: 20px; }
     .sub-menu .checkbox-lists {
       overflow: hidden;
       padding: 0 50px; }
@@ -1406,27 +1395,41 @@ html, body {
     width: 1220px;
     height: 880px;
     padding: 50px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    background: #000000;
+    float: left;
     margin-top: 100px;
+    position: absolute;
+    z-index: 1;
     left: 601px;
     /* kids zone screen */ }
     .menu-mode-sub-menu .heading {
-      padding: 0px 0 50px 0; }
+      padding: 0px 0 50px 0;
+      text-align: center; }
       .menu-mode-sub-menu .heading h3 {
-        font-size: 2.5em; }
+        font-size: 2.5em;
+        color: #b7cfdb; }
     .menu-mode-sub-menu .content {
+      text-align: center;
       padding: 0 50px;
       height: 170px; }
       .menu-mode-sub-menu .content p {
         font-size: 2em;
         line-height: 1.5; }
-    .menu-mode-sub-menu .movie-list ul li {
-      width: 320px;
-      height: 180px;
-      margin-right: 20px;
-      margin-bottom: 20px; }
-      .menu-mode-sub-menu .movie-list ul li img {
+    .menu-mode-sub-menu .movie-list ul {
+      overflow: hidden; }
+      .menu-mode-sub-menu .movie-list ul li {
+        list-style: none;
         width: 320px;
-        height: 180px; }
+        height: 180px;
+        float: left;
+        margin-right: 20px;
+        margin-bottom: 20px; }
+        .menu-mode-sub-menu .movie-list ul li img {
+          width: 320px;
+          height: 180px; }
     .menu-mode-sub-menu .kids-zone {
       width: 1060px;
       height: 880px; }
@@ -1715,7 +1718,7 @@ html, body {
           -ms-border-radius: 10px;
           border-radius: 10px;
           padding: 5px;
-          margin: 0 5px; }
+          margin: 0 1px; }
           .player-wrapper .player-details .player-icon div:hover, .player-wrapper .player-details .player-icon div.active {
             border: solid 2px #ffffff;
             background-color: #808080; }
@@ -1761,10 +1764,9 @@ html, body {
       width: 900px;
       position: absolute;
       right: 100px;
-      top: 363px;
-      height: 322px; }
+      top: 363px; }
       .player-wrapper .audio-language .radio-container {
-        height: 265px; }
+        height: 241px; }
       .player-wrapper .audio-language h3 {
         font-size: 1.8em;
         padding-bottom: 20px;

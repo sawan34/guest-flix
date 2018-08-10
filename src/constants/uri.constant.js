@@ -19,6 +19,7 @@ const API_INTERFACE = {
     PurchaseCompelte: urlConstants.BASE_URL+"purchase/complete",
     USER_PREFERENCES:urlConstants.BASE_URL+"preferences",
     UPDATE_PLAYBACK_POSITION : urlConstants.BASE_URL+"bookmark/",
-    GET_BOOKMARKS:urlConstants.BASE_URL+"bookmarks"
+    GET_BOOKMARKS:urlConstants.BASE_URL+"bookmarks",
+    SEARCH_PROGRAMS:urlConstants.BASE_URL+"search/programs"
 }
 export default API_INTERFACE;

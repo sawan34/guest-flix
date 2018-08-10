@@ -22,7 +22,8 @@ const COMMON_UTILITIES = {
     refreshBookmarks,
     getUILanguagesAvailable,
     getDefaultUILanguage,
-    getBookmarksObjByProgramId
+    getBookmarksObjByProgramId,
+    getHorizontalHeight
 }
 
 
@@ -185,5 +186,26 @@ function getDefaultUILanguage(){
     }
     return (state.userPreferences.data.uiLanguage);
 }
+/**
+ * Description: Get WINDOW WIDTH
+ * @return {Number} 
+ */
+function getWindowWidth(){
+    return window.innerWidth;
+}
+
+/**
+ * Description: Get WINDOW WIDTH
+ * @return {Number} 
+ */
+function getHorizontalHeight(){
+    const width = getWindowWidth();
+    if(width > 1280){
+        return 690;
+    }else{
+        return 490;
+    }
+}
+
 
 export default COMMON_UTILITIES;

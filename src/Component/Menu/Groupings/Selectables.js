@@ -38,7 +38,7 @@ class Selectables extends React.Component {
     this.groupID = 0;
     this.gridProps = {
       entries: [],
-      wrapperHeight: 763,
+      wrapperHeight: 864,
       wrapperWidth: 1800,
       lazyCallback: this.lazyCallback,
       coloumns: 6,
@@ -87,7 +87,7 @@ class Selectables extends React.Component {
     };
 
     return (
-      <img style={styles} src={props.image_url} alt="Image Loading ...."></img>
+      <img style={styles} src={props.image_url} onError={Utility.onImageErrorHandler}></img>
     );
   }
 

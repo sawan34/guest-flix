@@ -15,7 +15,7 @@
   "choose_your_lang":"Choose Your Language",
   "key_action_details":"Press OK to view and order",
   "exit_and_bookmark":"Exit and Bookmark",
-  "kid_mode_description":"Kid-Friendly browsing with movies suitable for families with children aged 13 and below.",
+  "kids_mode_description":"Kid-Friendly browsing with movies suitable for families with children aged 13 and below.",
   "adult_mode_description":"The adult content section of GuestFlix is intended for adults only and may include content that some viewers may find offensive. If you are under the age of 18 (or majority in your area), or if you find this material offensive, please return to the main menu.",
 
   "exit_menu":"Exit Menu",
@@ -23,10 +23,12 @@
   "filter":"Filter",
   "by_language":"By Language",
   "by_rating":"By Rating",
-  "select_all":"Select all",
-  "select_none":"Select none",
+  "select_all":"Select All",
+  "select_none":"Deselect All",
   "kids_mode_title":"kids",
   "adult_mode_title":"adult",
-  "hollywood_mode_title":"hollywood"
+  "hollywood_mode_title":"hollywood",
+  "filter_screen_title": "Filter Available Titles",
+  "related_title_screen_title": "Titles Related to:"
 
 }

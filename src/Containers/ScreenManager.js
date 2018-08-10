@@ -11,6 +11,7 @@ import LoadingScreen from './Screens/LoadingScreen';
 import ProgramDetails from './Screens/ProgramDetails';
 import  Player from '../Component/Player/Player'
 import DataLoadingScreen from './Screens/DataLoadingScreen';
+import RelatedTitleScreen from './Screens/RelatedTitleScreeen';
 import { withRouter } from "react-router-dom";
 import { SCREENS } from '../constants/screens.constant';
 
@@ -56,6 +57,9 @@ class ScreenManager extends Component {
                 break;
             case SCREENS.dataloading:
                 Screen = <DataLoadingScreen routerData={this.props} />
+                break;
+            case SCREENS.relatedtitle:
+                Screen = <RelatedTitleScreen routerData={this.props} />
                 break;
             default:
                 Screen = <LoadingScreen routerData={this.props} />;

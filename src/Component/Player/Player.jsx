@@ -11,6 +11,7 @@ import KeyMap from '../../constants/keymap.constant';
 import LangMenuGridView from '../LangMenu/LangMenuGridView';
 import RoomUserService from '../../services/service.roomUser'
 import Utility from '../../commonUtilities'
+import PlayerControl from './PlayerControl'
 import { actionPlaybackBookmark } from "../../actions/action.bookmark"
 import { PlayerService } from './player.service';
 import { alertConstants } from '../../constants/alert.constant';
@@ -35,7 +36,8 @@ class Player extends BaseScreen {
     */
     constructor(props) {
         super(props);
-
+        this.HIDE_BAR = 10000;
+        this.scopeTimer = null;
         this.objPlayerService = {};
         this.objBookMark = {};
         this._hidePlayerControlBar = this._hidePlayerControlBar.bind(this);
@@ -47,21 +49,25 @@ class Player extends BaseScreen {
         this.onpauseFinish = this.onpauseFinish.bind(this);
         this.onforwardFinish = this.onforwardFinish.bind(this);
         this.onrewindFinish = this.onrewindFinish.bind(this);
+        this.onSelectBookmarkAndExit = this.onSelectBookmarkAndExit.bind(this);
+        this.onSelectLanguageMenu = this.onSelectLanguageMenu.bind(this);
         this.initialisePlayer = this.initialisePlayer.bind(this);
 
         this.playerControl = [];
         this.elementPlayPause = null;
         this.elementForward = null;
         this.elementRewind = null;
+        this.elementLanguage = null;
         this.pluginPlayer = null;
         this.timeView = null;
         this.progressBarFillId = null;
         this.playerMessageView = null;
         this.selectedControl = null;
+        this.progressContainer = null;
         this.bookMarkAndExitView = null;
         this.state = {
             init: true,
-            isLanguageMenuOpen: false
+            isLanguageMenuOpen: false,
         }
     }
 
@@ -71,6 +77,7 @@ class Player extends BaseScreen {
      */
     componentWillMount() {
         super.componentWillMount();
+        Utility.refreshBookmarks();
         this.objBookMark = Utility.getBookmarksObjByProgramId(_.toNumber(this.props.routerData.match.params.id));
     }
     //============================Start-----Player initialization phase===================// 
@@ -82,7 +89,31 @@ class Player extends BaseScreen {
     componentDidMount() {
         this.getDomElements();
         this.playerControl = _.map(this.playerControl);
+        const playerParams = this.getPlayerParams();
+        this.playerControlComponent.focus();
+        this.initialisePlayer(playerParams);
+        this.selectedControl = PlayerControls.PLAY;
+        this.elementPlayPause.className = "play active";
+    }
 
+    /**
+     * Hide the PlayerControl and Seek baar 
+     */
+    hideBarTimer() {
+        clearTimeout(this.scopeTimer);
+        this.scopeTimer = setTimeout(function () {
+            this.progressContainer.style.display = "none";
+        }, this.HIDE_BAR);
+    };
+
+    /**
+     * Show the PlayerControl and Seek baar 
+     */
+    showPlayerController() {
+        this.progressContainer.style.display = "block";
+    }
+
+    getPlayerParams() {
         let playerParams = {};
         playerParams["plugin"] = this.pluginPlayer;
         playerParams["timeView"] = this.timeView;
@@ -93,11 +124,9 @@ class Player extends BaseScreen {
         playerParams["onforwardFinish"] = this.onforwardFinish;
         playerParams["onrewindFinish"] = this.onrewindFinish;
         playerParams["playerSpeedLimit"] = 3;
-        this.initialisePlayer(playerParams);
-        this.selectedControl = PlayerControls.PLAY;
-        this.elementPlayPause.className = "play active";
-        Utility.refreshBookmarks();
+        return playerParams;
     }
+
 
     /**
     * Description: fetch player control's dom elements
@@ -109,10 +138,12 @@ class Player extends BaseScreen {
         this.elementPlayPause = document.getElementById("playpause");
         this.elementForward = document.getElementById("forward");
         this.elementRewind = document.getElementById("rewind");
+        this.elementLanguage = document.getElementById("language");
         this.pluginPlayer = document.getElementById("pluginPlayer");
         this.timeView = document.getElementById("timeView");
         this.progressBarFillId = document.getElementById("progressBarFillId");
         this.playerMessageView = document.getElementById("playerMessageView");
+        this.progressContainer = document.getElementById("progressContainer");
         this.bookMarkAndExitView = document.getElementsByClassName("btn-exit");
     }
 
@@ -121,70 +152,17 @@ class Player extends BaseScreen {
     * @param {playerParams} Object
     * @return {null}
     */
-   initialisePlayer(playerParams) {
-    this.objPlayerService = new PlayerService(playerParams);
-    this.objPlayerService.init(this._onFinish, this._hidePlayerControlBar);
-    if (!Utility.isEmpty(this.objBookMark)) {
-        this.objPlayerService.setSeekTime(this.objBookMark.positionInMs);
-        this.objPlayerService.setVideoURL(this.objBookMark.playbackMeta.url);
-        this.playAndResumeVideo();
+    initialisePlayer(playerParams) {
+        this.hideBarTimer()
+        this.objPlayerService = new PlayerService(playerParams);
+        this.objPlayerService.init(this._onFinish, this._hidePlayerControlBar);
+        if (!Utility.isEmpty(this.objBookMark)) {
+            this.objPlayerService.setSeekTime(this.objBookMark.positionInMs);
+            this.objPlayerService.setVideoURL(this.objBookMark.playbackMeta.url);
+            this.playAndResumeVideo();
+        }
     }
-}
     //============================End-----Player initialization phase===================// 
-
-    /**
-    * Description: reset player control button's css layout
-    * @param {null} 
-    * @return {null}
-    */
-    resetFocus() {
-        let selectedElement = this.playerControl.filter(elem => elem.classList.contains('active'));
-        for (let i = 0; i < selectedElement.length; i++) {
-            selectedElement[i].classList.remove('active');
-            selectedElement[i].classList.remove("open-menu");
-        }
-        this.elementForward.className = "FF";
-        this.elementRewind.className = "RW";
-        this.bookMarkAndExitView[0].classList.remove("active");
-    }
-    selectItem(keyCode) {
-        let selectedIndex = 0;
-        for (let i = 0; i < this.playerControl.length; i++) {
-            if (this.playerControl[i].classList.contains('active')) {
-                selectedIndex = i;
-                break;
-            }
-        }
-        if (keyCode === KeyMap.VK_RIGHT) {
-            if (selectedIndex >= 0 && selectedIndex < 3) {
-                this.setAttribute(selectedIndex + 1);
-            }
-        }
-        else if (keyCode === KeyMap.VK_LEFT) {
-            if (selectedIndex > 0 && selectedIndex <= 3) {
-                this.setAttribute(selectedIndex - 1);
-            }
-        }
-        else if (keyCode === KeyMap.VK_DOWN) {
-            this.resetFocus();
-            this.bookMarkAndExitView[0].classList.add("active");
-        }
-        else if (keyCode === KeyMap.VK_UP) {
-            this.setAttribute(selectedIndex)
-        }
-    }
-
-    setAttribute(index) {
-        this.resetFocus();
-        let nxtElement = this.playerControl[index];
-        nxtElement.classList.add("active");
-        this.selectedControl = nxtElement.dataset.id;
-    }
-
-    isBookMarkAndExitFocus() {
-        return this.bookMarkAndExitView[0].classList.contains("active");
-    }
-
 
     //============================Start-----Callback functions===================//
     /**
@@ -193,7 +171,7 @@ class Player extends BaseScreen {
     * @return {null}
     */
     onpauseFinish() {
-        this.resetFocus();
+        this.playerControlComponent.resetFocus();
         this.elementPlayPause.className = "play active";
     }
 
@@ -203,7 +181,7 @@ class Player extends BaseScreen {
     * @return {null}
     */
     onplayFinish() {
-        this.resetFocus();
+        this.playerControlComponent.resetFocus();
         this.elementPlayPause.className = "pause active";
         this.selectedControl = PlayerControls.PLAY;
     }
@@ -214,7 +192,7 @@ class Player extends BaseScreen {
     * @return {null}
     */
     onforwardFinish(speedstate) {
-        this.resetFocus();
+        this.playerControlComponent.resetFocus();
         this.elementPlayPause.className = "play";
         this.elementForward.className = "FF-" + speedstate + " active";
     }
@@ -225,7 +203,7 @@ class Player extends BaseScreen {
     * @return {null}
     */
     onrewindFinish(speedstate) {
-        this.resetFocus();
+        this.playerControlComponent.resetFocus();
         this.elementPlayPause.className = "play";
         this.elementRewind.className = "RW-" + speedstate + " active";
     }
@@ -238,16 +216,21 @@ class Player extends BaseScreen {
     _onFinish() {
         this.setState({ init: true });
         this.elementPlayPause.className = "play";
-        this.resetFocus();
-        this.elementPlayPause.className = "play active";
         this.selectedControl = PlayerControls.PLAY;
+        if (!this.state.isLanguageMenuOpen) {
+            this.playerControlComponent.resetFocus();
+            this.elementPlayPause.className = "play active";
+        }
+        console.log("OnFinish")
+        clearTimeout(this.scopeTimer);
+        this.objPlayerService.deinit();
+        this.handleBack();
     }
     //============================End-----Callback functions===================//
 
     _hidePlayerControlBar() {
 
     }
-
     //============================Start-----Player Events===================//
 
     /**
@@ -256,6 +239,7 @@ class Player extends BaseScreen {
     * @return {null}
     */
     playPause() {
+        this.setState({ init: true });
         this.objPlayerService.playVideo();
     }
     /**
@@ -267,10 +251,10 @@ class Player extends BaseScreen {
         this.objPlayerService.forward();
     }
     /**
-   * Description: fire rewind event for video player
-   * @param {null} 
-   * @return {null}
-   */
+     * Description: fire rewind event for video player
+     * @param {null} 
+     * @return {null}
+     */
     backward() {
         this.objPlayerService.rewind();
     }
@@ -280,16 +264,17 @@ class Player extends BaseScreen {
      */
     playAndResumeVideo() {
         this.objPlayerService.playVideo();
-        this.objPlayerService.resumeVideo();
     }
     /**
     * Open the Audio and Subtitle Menu
     */
-    openLanguageMenu() {
+    onSelectLanguageMenu() {
         if (!this.state.isLanguageMenuOpen) {
             this.setState({ isLanguageMenuOpen: true });
+            this.playerControlComponent.deFocus();
             let nxtElement = this.playerControl[3];
-            nxtElement.classList.replace("active", "open-menu");
+            nxtElement.classList.remove("active");
+            nxtElement.classList.add("open-menu");
         } else {
             this.setState({ isLanguageMenuOpen: false });
         }
@@ -299,14 +284,17 @@ class Player extends BaseScreen {
      */
     closeLangMenu = () => {
         this.setState({ isLanguageMenuOpen: false });
+        this.playerControlComponent.focus();
         let nxtElement = this.playerControl[3];
-        nxtElement.classList.replace("open-menu", "active");
+        nxtElement.classList.remove("open-menu");
+        nxtElement.classList.add("active");
+        this.langMenuComponent.deFocus();
     }
     /**
      *  On Exit and Bookmark the playback save the position in Ms.
      *  Get order Id behalf of Program ID  
      */
-    updatePlaybackPosition() {
+    onSelectBookmarkAndExit() {
         const playbackPositionMs = Utility.getMilliSeconds(Math.round(this.objPlayerService.plugin.currentTime));
         const programId = _.toNumber(this.props.routerData.match.params.id);
         const stayId = RoomUserService.getStayId();
@@ -320,49 +308,21 @@ class Player extends BaseScreen {
         }
     }
 
-    //============================End-----Player Events===================//
-
     /**
-    * Description: This Could handle Key Event Handle Key 
+    * Description: This Could handle sreens Key Event
     * @param {object}  Event 
     * @return {null}
     */
     handleKey(event) {
-        if (this.state.isLanguageMenuOpen) {
-            return;
-        }
         var keyCode = event.keyCode;
+        this.showPlayerController();
+        if ((this.objPlayerService.isFowrdingOrRewinding() == false)) {
+            this.hideBarTimer();
+        }
         switch (keyCode) {
             case KeyMap.VK_BACK:
+                clearTimeout(this.scopeTimer);
                 this.handleBack();
-                break;
-            case KeyMap.VK_ENTER:
-                if (this.isBookMarkAndExitFocus()) {
-                    this.updatePlaybackPosition();
-                } else if ((this.selectedControl === PlayerControls.PLAY || this.selectedControl === PlayerControls.PAUSE)) {
-                    this.playPause();
-                }
-                else if (this.selectedControl === PlayerControls.FORWARD) {
-                    this.forward();
-                }
-                else if (this.selectedControl === PlayerControls.REWIND) {
-                    this.backward();
-                }
-                else if (this.selectedControl === PlayerControls.LANGUAGE) {
-                    this.openLanguageMenu();
-                }
-                break;
-            case KeyMap.VK_RIGHT:
-                this.selectItem(KeyMap.VK_RIGHT);
-                break;
-            case KeyMap.VK_LEFT:
-                this.selectItem(KeyMap.VK_LEFT);
-                break;
-            case KeyMap.VK_UP:
-                this.selectItem(KeyMap.VK_UP);
-                break;
-            case KeyMap.VK_DOWN:
-                this.selectItem(KeyMap.VK_DOWN);
                 break;
             default:
                 break;
@@ -372,26 +332,23 @@ class Player extends BaseScreen {
     render() {
         return (
             <div className="container" id="playerContainer">
-
                 <div className="player-wrapper">
                     <video id="pluginPlayer" className='videoPlayer' width="100%" src="" poster="../images/player-poster.jpg">
                     </video>
                     <div id="progressContainer" className='progressContainer'>
 
-                        <div className="player-details">
-                            <h3>{this.props.programDetailsReducer.data.title}</h3>
-                            <div className="player-icon" id="playerCtrl">
-                                <div id="rewind" data-id={PlayerControls.REWIND} onClick={this.backward} className="RW"></div>
-                                <div id="playpause" data-id={PlayerControls.PLAY} onClick={this.playPause} className="play"> </div>
-                                <div id="forward" data-id={PlayerControls.FORWARD} onClick={this.forward} className="FF"> </div>
-                                <div id="language" data-id={PlayerControls.LANGUAGE} className="language"> </div>
-                            </div>
-                            <div className="text-center">
-                                <a href="#" className="btn-exit"><Trans i18nKey="exit_and_bookmark"></Trans></a>
-                            </div>
-                        </div>
+                        <PlayerControl
+                            title={this.props.programDetailsReducer.data.title}
+                            playPause={this.playPause}
+                            forward={this.forward}
+                            backward={this.backward}
+                            onSelectLanguageMenu={this.onSelectLanguageMenu}
+                            onSelectBookmarkAndExit={this.onSelectBookmarkAndExit}
+                            onRef={instance => (this.playerControlComponent = instance)}
+                        />
+
                         {
-                            this.state.isLanguageMenuOpen ? <LangMenuGridView onCloseLangMenu={this.closeLangMenu} audioLangData={this.props.programDetailsReducer.data.availableAudio} subtitleData={this.props.programDetailsReducer.data.availableSubtitles} /> : <div></div>
+                            this.state.isLanguageMenuOpen ? <LangMenuGridView onRef={instance => (this.langMenuComponent = instance)} onCloseLangMenu={this.closeLangMenu} audioLangData={this.props.programDetailsReducer.data.availableAudio} subtitleData={this.props.programDetailsReducer.data.availableSubtitles} /> : <div></div>
                         }
                         <div className="progressbar-wrapper">
                             <div id='currentTimeDiv'><span id='timeView'></span></div>
@@ -400,12 +357,9 @@ class Player extends BaseScreen {
                                     <div id="progressBarFillId" className='progressBarFillJS'><div className="progressbar-circle"></div></div>
                                 </div>
                             </div>
-
                         </div>
-
                     </div>
                 </div>
-
                 <div id="playerMessageView">
                     {this.props.message}
                 </div>

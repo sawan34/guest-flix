@@ -296,13 +296,14 @@ class PurchaseScreen extends React.Component {
   }
 
   render() {
+    console.log(this.props.data);
     return (
       <BaseOverlay myClass={'confirmation-popup'} keyhandler={this.keyHandler} closePopup={this.props.closePopup}>
         <h3>{this.props.data.title}</h3>
         <div className="col-container">
           <div className="col-left">
             <div className="poster"><img src={this.props.data.preferredImage.uri} onError={commonUtility.onImageErrorHandler} /></div>
-            <div className="price">${this.props.data.price} + <Trans i18nKey="tax">Tax</Trans></div>
+            <div className="price">${this.props.data.price} {this.props.data.isTaxIncluded ? <span>+ <Trans i18nKey="tax">Tax</Trans></span> : null}</div>
           </div>
           <div className="col-right">
             <div className="content">

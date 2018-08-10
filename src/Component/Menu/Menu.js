@@ -234,6 +234,9 @@ class Menu extends TvComponent {
     	try {
     		groupObj = this.createMenuInfo();
     		if (groupObj) {
+				if(groupObj.name === commonConstants.MENU_LANGUAGE || groupObj.name === commonConstants.MENU_FILTER){
+					this.deFocus();
+				}
     			this.props.onItemSelect(groupObj);
     		}
     	} catch (error) {
@@ -241,6 +244,30 @@ class Menu extends TvComponent {
     	}
     }
 
+	/**
+	 * This function is responsible for defocusing the current item in menu
+	 * @param {} none: 
+	 * @param {}  none: 
+	 */
+	deFocus = () => {
+		super.deFocus();
+		this.setState({
+			currIndex: null
+		});
+	}
+
+	/**
+	 * This function is responsible for focusing back the current item in menu
+	 * @param {} none: 
+	 * @param {}  none:
+	 */
+	focus = () => {
+		super.focus();
+		var currentPos = this.state.menuItems.indexOf(this.state.activeMenu) || null;
+		this.setState({
+			currIndex: currentPos
+		});
+	}
 
 	/**
 	 * This function is responsible for up or down movement for menu items

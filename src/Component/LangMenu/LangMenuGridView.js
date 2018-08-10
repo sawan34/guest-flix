@@ -77,7 +77,7 @@ class LangMenuGridView extends Component {
                     })
 
                     this.audioLangGrid.deFocus();
-          this.subtitleGrid.focus();
+                    this.subtitleGrid.focus();
           
                 }
                 break;
