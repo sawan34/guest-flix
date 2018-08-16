@@ -177,8 +177,8 @@ class BaseGrid extends Component {
     setDataSource() {
         if (!Utility.isEmpty(this.props.dataSource)) {
             this.dataSource = this.props.dataSource;
-            this.itemWidth = this.dataSource[0].dimension.width;
-            this.itemHeight = this.dataSource[0].dimension.height;
+            this.itemWidth = parseInt(this.dataSource[0].dimension.width,10) ;
+            this.itemHeight = parseInt(this.dataSource[0].dimension.height,10);
         }
     }
 
@@ -306,7 +306,7 @@ class BaseGrid extends Component {
      */
     sliderStyle() {
         var style = {
-            transform: "translate3d(" + this.scrollX + "px,0,0)",
+            WebkitTransform: "translate3d(" + this.scrollX + "px,0,0)",
             width: ((parseInt(this.getMaxVisibleItem())) * (this.itemWidth + this.itemPadding) + 'px'),
             transition: "all " + this.state.SCROOL_SPEED + "ms linear",
         }
@@ -350,9 +350,9 @@ class BaseGrid extends Component {
                 <ul id={this.gridId} className="slider" style={this.sliderStyle()} onTransitionEnd={this.onTransitionEnd}>
                     {this.renderItem()}
                 </ul>
-                {this.props.activeEvent &&
+                {this.props.activeEvent ?
                     <span>
-                        {this.state.scrollIndex === 0 && <div className="arrow left-arrow" style={this.leftArrowStyle()}></div>}
+                        {this.state.scrollIndex === 0 ? <div className="arrow left-arrow" style={this.leftArrowStyle()}></div>:""}
                         <div className="active-details" style={this.activeDetailStyle()}>
                             <div className="left-col">
                                 <div className="heading-row">
@@ -362,7 +362,7 @@ class BaseGrid extends Component {
                             </div>
                             <div className="key-action-details"><Trans i18nKey="key_action_details">Press OK <br />to view and <br />order</Trans></div>
                         </div>
-                    </span>
+                    </span>:""
                 }
             </Hoc>
         )

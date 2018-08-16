@@ -29,6 +29,15 @@
   "adult_mode_title":"volwassen",
   "hollywood_mode_title":"hollywood",
   "filter_screen_title": "Filter Beschikbare Titels",
-  "related_title_screen_title": "Titels met betrekking tot:"
+  "related_title_screen_title": "Titels met betrekking tot:",
+
+  "promo_image_group_title":"Promo Image Group-titel",
+  "new_releases":"Nieuwe uitgaven",
+  "action":"Actie",
+  "oscar_nominated":"Oscar genomineerd",
+  "classics":"Classics",
+  "men_in_black_package": "Heren in zwart pakket",
+  "storyline":"Verhaallijn",
+  "gay": "homoseksueel"
 
 }

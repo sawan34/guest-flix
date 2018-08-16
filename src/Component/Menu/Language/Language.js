@@ -184,7 +184,7 @@ class Language extends Component {
   render() {
     return (
       <div className="sub-menu language">
-        {<div>{this.state.error && this.state.errorMessage}</div>}
+        {<div>{this.state.error ? this.state.errorMessage:""}</div>}
         <div className="heading"><h3><Trans i18nKey="choose_your_lang">Choose Your Language</Trans></h3></div>
         <div className="checkbox-lists">
           <div className="col-2">

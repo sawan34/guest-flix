@@ -29,6 +29,14 @@
   "adult_mode_title":"adult",
   "hollywood_mode_title":"hollywood",
   "filter_screen_title": "Filter Available Titles",
-  "related_title_screen_title": "Titles Related to:"
+  "related_title_screen_title": "Titles Related to:",
 
+  "promo_image_group_title":"Promo Image Group Title",
+  "new_releases":"New Releases",
+  "action":"Action",
+  "oscar_nominated":"Oscar Nominated",
+  "classics":"Classics",
+  "men_in_black_package": "Men in Black Package",
+  "storyline":"Storyline",
+  "gay": "Gay"
 }

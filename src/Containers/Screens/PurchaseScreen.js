@@ -278,12 +278,12 @@ class PurchaseScreen extends React.Component {
   componentWillMount() {
     if (this.props.data) {
       _objAudiolang = this.props.data.availableAudio.map((item, i) => {
-        return this.init(item, i)
+        return this.init(commonUtility.getLanguageName(item), i)
       })
 
       _objSubtitle = this.props.data.availableSubtitles.map((item, i) => {
         return {
-          value: item,
+          value: commonUtility.getLanguageName(item),
           id: 'subtitle-' + i,
           status: false
         }
@@ -296,7 +296,6 @@ class PurchaseScreen extends React.Component {
   }
 
   render() {
-    console.log(this.props.data);
     return (
       <BaseOverlay myClass={'confirmation-popup'} keyhandler={this.keyHandler} closePopup={this.props.closePopup}>
         <h3>{this.props.data.title}</h3>
@@ -358,7 +357,7 @@ class PurchaseScreen extends React.Component {
               </div>
             </div>
             <div className="menu-button-row purchase-button">
-              <div className="confirmation-error-message">{this.props.reducerPurchaseStart && this.props.reducerPurchaseStart.error}</div>
+              <div className="confirmation-error-message">{this.props.reducerPurchaseStart ? this.props.reducerPurchaseStart.error:""}</div>
               <ButtonGrid
                 onRef={instance => (this.buttonGrid = instance)}
                 data={button}

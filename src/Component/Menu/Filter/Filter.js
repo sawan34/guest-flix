@@ -494,7 +494,7 @@ componentDidMount() {
   render() {
     return (
       <div className="sub-menu filter">
-        {<div>{this.state.error && this.state.errorMessage}</div>}
+        {<div>{this.state.error ? this.state.errorMessage:""}</div>}
         <div className="heading"><h3><Trans i18nKey="filter_screen_title">Filter Available Titles</Trans></h3></div>
         <div className="checkbox-lists">
              <div className="sub-heading"><Trans i18nKey="by_rating">BY RATING</Trans></div>

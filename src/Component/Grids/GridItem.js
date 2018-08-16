@@ -9,8 +9,8 @@ import commonUtility from '../../commonUtilities';
 
 export default function GridItem(props) {
   var itemstyle = {
-    width: props.data.dimension.width,
-    height: props.data.dimension.height
+    width: parseInt(props.data.dimension.width,10),
+    height: parseInt(props.data.dimension.height,10)
   }
   return (
     <li key={props.i} id={props.i} className={props.i === props.active ? props.data.dimension.width > props.data.dimension.height ? "list-item active-landscape" : "list-item active" : "list-item"} style={itemstyle}>

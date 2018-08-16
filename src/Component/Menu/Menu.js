@@ -1,52 +1,56 @@
-import React, {Component} from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from "react-redux";
-import BaseOverlay from '../Overlay/BaseOevrlay';
 import { Trans } from 'react-i18next';
 import KeyMap from '../../constants/keymap.constant';
-import {commonConstants} from '../../constants/common.constants'
+import { commonConstants } from '../../constants/common.constants'
 import TvComponent from '../TvComponent';
+import COMMON_UTILITIES from '../../commonUtilities';
 
-const MENULANG = "exit_menu";
+const MENU_TYPE = {
+	FILTER: 'filter',
+	LANGUAGE: 'language',
+	MODE: 'mode',
+	GROUPING: 'grouping',
+	EXIT: 'exit'
+};
 var upDownKeyTimeOut = null;
 class Menu extends TvComponent {
-    constructor(){
-        super();
-        //initial setup of props and state
-        this.state = {
-			menuItems:[],
-			showMenu:{display:false},
-			scrollStyle:{transform:'translate3d(0,0,0)'},
-			currIndex:0,
-			activeMenu:""
+	constructor() {
+		super();
+		//initial setup of props and state
+		this.state = {
+			menuItems: [],
+			scrollStyle: { transform: 'translate3d(0,0,0)' },
+			currIndex: 0,
 		}
-		
-		this.onKeyDown= this.onKeyDown.bind(this);
+		this.exitPos = 0;
+		this.lastActiveItemIndex = 0;
+		this.onKeyDown = this.onKeyDown.bind(this);
 	}
-	
+
 	/**
 	 * This function creates the menu from mode (like adult,kid or hollywood)
 	 * @param {object} metaData: contains the information about menu items 
 	 */
 	createMenuFromMode = (metaData) => {
-		let modeMenu = [];
-		this.modeMenuMetaInfo = [];
 		if (metaData.modes && metaData.modes.length > 0) {
 			let modesNo = this.uiConfigData.modes ? this.uiConfigData.modes.length : 0;
 			let availableModeNo = metaData.modes.length;
 			if (modesNo > 0) {
-				for (var i = 0; i < modesNo; i++) {
+				for (var i = 0; i < availableModeNo; i++) {
 					for (var j = 0; j < availableModeNo; j++) {
 						if (this.uiConfigData.modes[i].id === metaData.modes[j]) {
-							this.modeMenuMetaInfo.push(this.uiConfigData.modes[i]);
-							modeMenu.push(this.uiConfigData.modes[i].i8nLabel)
+							if (!COMMON_UTILITIES.isEmptyObject(this.uiConfigData.modes[i])) {
+								var tempOBJ = Object.assign({}, this.uiConfigData.modes[i]);
+								tempOBJ.label = this.uiConfigData.modes[i].i8nLabel;
+								this.defineMenuType(MENU_TYPE.MODE, tempOBJ);
+								this.state.menuItems.push(tempOBJ);
+								break;
+							}
 						}
 					}
 				}
-				// rendering mode related menu
-				this.setState({
-					menuItems: [...this.state.menuItems, ...modeMenu]
-				});
 			}
 		}
 	}
@@ -55,24 +59,24 @@ class Menu extends TvComponent {
 	 * This function creates the menu from grouping (like 2001,2002)
 	 * @param {object} metaData: contains the information about menu items 
 	 */
+	//done removed unwanted code
 	createMenuFromGroup = (metaData) => {
 		if (metaData.groupings && metaData.groupings.length > 0) {
 			let groupNo = (this.props && this.props.getGroupings && this.props.getGroupings.message) ? this.props.getGroupings.message.data.length : 0;
 			let availableGroupNo = metaData.groupings.length;
-			var groupmenu = [];
 			if (groupNo > 0) {
-				for (var j = 0; j <availableGroupNo ; j++) {
+				for (var j = 0; j < availableGroupNo; j++) {
 					for (var i = 0; i < groupNo; i++) {
 						if (this.props.getGroupings.message.data[i].id === metaData.groupings[j]) {
-							groupmenu.push(this.props.getGroupings.message.data[i].label);
+							if (!COMMON_UTILITIES.isEmptyObject(this.props.getGroupings.message.data[i])) {
+								var tempOBJ = Object.assign({}, this.props.getGroupings.message.data[i]);
+								this.defineMenuType(MENU_TYPE.GROUPING, tempOBJ);
+								this.state.menuItems.push(tempOBJ);
+								break;
+							}
 						}
 					}
 				}
-				// rendering grouping related menu
-				this.setState({
-					menuItems: [...this.state.menuItems, ...groupmenu]
-				});
-				
 			}
 		}
 	}
@@ -82,28 +86,53 @@ class Menu extends TvComponent {
 	 * @param {object} metaData: contains the information about menu items 
 	 */
 	createMenuFromAttr = (metaData) => {
-	 	if (metaData.languageEnabled) {
-	 		this.setState({
-	 			menuItems: [...this.state.menuItems, commonConstants.MENU_LANGUAGE]
-	 		});
-	 	}
-	 	if (metaData.filterEnabled) {
-	 		this.setState({
-	 			menuItems: [...this.state.menuItems, commonConstants.MENU_FILTER]
-	 		});
-	 	}
+		var tempOBJ = {};
+		if (metaData.languageEnabled) {
+			tempOBJ = {};
+			tempOBJ.label = commonConstants.MENU_LANGUAGE;
+			this.defineMenuType(MENU_TYPE.LANGUAGE, tempOBJ);
+			this.state.menuItems.push(tempOBJ);
+		}
+		if (metaData.filterEnabled) {
+			tempOBJ = {};
+			tempOBJ.label = commonConstants.MENU_FILTER;
+			this.defineMenuType(MENU_TYPE.FILTER, tempOBJ);
+			this.state.menuItems.push(tempOBJ);
+		}
 	}
 
+	defineMenuType = (menuName, obj) => {
+		obj.isMode = false;
+		obj.isGrouping = false;
+		obj.isExit = false;
+		obj.isFilter = false;
+		obj.isLanguage = false;
+		switch (menuName) {
+			case MENU_TYPE.MODE:
+				obj.isMode = true;
+				break;
+			case MENU_TYPE.GROUPING:
+				obj.isGrouping = true;
+				break;
+			case MENU_TYPE.FILTER:
+				obj.isFilter = true;
+				break;
+			case MENU_TYPE.LANGUAGE:
+				obj.isLanguage = true;
+				break;
+			case MENU_TYPE.EXIT:
+				obj.isExit = true;
+				break;
+		}
+	}
 	/**
 	 * This function makes default focus item in menu list (i.e exit menu)
 	 * @param {object} none:
 	 */
 	focusDefaultMenu = () => {
 		try {
-			this.setState({
-				activeMenu: commonConstants.MENU_EXIT,
-				currIndex: this.state.menuItems.indexOf(commonConstants.MENU_EXIT)
-			})
+			this.state.currIndex = this.exitPos;
+			this.focus();
 		} catch (error) {
 
 		}
@@ -117,7 +146,7 @@ class Menu extends TvComponent {
 		if (metaData) {
 			//creating the menus from data in order 
 			this.createMenuFromMode(metaData);
-			this.setState({menuItems: [...this.state.menuItems, commonConstants.MENU_EXIT]}); 
+			this.createExitMenuItem();
 			this.createMenuFromAttr(metaData);
 			this.defaultMenuNo = this.state || this.state.menuItems ? this.state.menuItems.length : 5;
 			this.createMenuFromGroup(metaData);
@@ -126,123 +155,60 @@ class Menu extends TvComponent {
 	}
 
 	/**
+	 * This function creates the exit menu item
+	 */
+	createExitMenuItem = () => {
+		this.exitPos = this.state.menuItems.length;
+		var tempOBJ = {};
+		tempOBJ.label = commonConstants.MENU_EXIT;
+		this.defineMenuType(MENU_TYPE.EXIT, tempOBJ);
+		this.state.menuItems.push(tempOBJ);
+	}
+
+	/**
 	 * This function is responsible for getting the menu information through server call
 	 * @param {none} : 
 	 */
-    getMenuMetaData = () => {
-    	let getResponse = this.props.getUiConfig;
-    	if (getResponse && getResponse.message && getResponse.message.data) {
-    		var menuMetadata = getResponse.message.data.leftMenu;
-    		this.uiConfigData = getResponse.message.data;
-    		this.createMenuItem(menuMetadata);
-    	}
-	}
-
-	/**
-	 * This function is making menu active and background as blurr
-	 * @param {} null: 
-	 */
-	makeMenuActive = () => {
-		localStorage.isMenuActive = true;
-		let showOtherEle;
-		showOtherEle = document.querySelector("div [data-show]");
-		this.setState({
-			showMenu: {
-				display: true
-			}
-		});
-	}
-
-	/**
-	 * This function return the current index of focused item in menu
-	 * @param {number} currMenuPos: the current index of menu  
-	 */
-	getCurrentIndex = () => {
-		var currMenuPos = null;
-		if (this.state && this.state.menuItems && this.state.menuItems.length > 0) {
-			currMenuPos = this.state.menuItems.indexOf(this.state.activeMenu);
+	getMenuMetaData = () => {
+		let getResponse = this.props.getUiConfig;
+		if (getResponse && getResponse.message && getResponse.message.data) {
+			var menuMetadata = getResponse.message.data.leftMenu;
+			this.uiConfigData = getResponse.message.data;
+			this.createMenuItem(menuMetadata);
 		}
-		return currMenuPos;
 	}
 
-	/**
-	 * This function return the current index of focused item in grouping menu list
-	 * @param {number} currGroupingId: the current index of grouping menu  
-	 */
-    getGroupingInfo = () => {
-        var currMenuPos = this.getCurrentIndex();
-        var currGroupingId = null
-        var totalAvailableGroup = this.props.getUiConfig.message.data.leftMenu.groupings
-        if (currMenuPos + 1 > this.defaultMenuNo) {
-            currGroupingId = totalAvailableGroup[currMenuPos - this.defaultMenuNo];
-        }
-        return currGroupingId;
-	}
-	
 	/**
 	 * This function is responsible for creating the information for focused item in menu
 	 * @param {} none:
 	 * @return {obj} groupingObj: contains the information about the focused or selected item
 	    in menu list.
 	 */
-	createMenuInfo = () => {
-		var currGroupingId = null;
-		var groupObj = {};
-		groupObj.id = null;
-		currGroupingId = this.getGroupingInfo();
-		if (currGroupingId) {
-			groupObj.id = currGroupingId;
-			groupObj.type = commonConstants.MENU_GROUPING_TYPE;
-			groupObj.name = this.state.activeMenu;
-		} else {
-			if (this.state.currIndex < this.modeMenuMetaInfo.length) {
-				groupObj = this.modeMenuMetaInfo[this.state.currIndex];
-				groupObj.isMode = true;
-			} else if (this.state.currIndex > this.modeMenuMetaInfo.length) {
-				groupObj.name = this.state.activeMenu;
-			}
-			groupObj.type = commonConstants.MENU_DEFAULT_TYPE;
-		}
-		return groupObj
+	getCurrentActiveMenuInfo = () => {
+		return this.state.menuItems[this.state.currIndex];
 	}
 
 	/**
-	 * This function is gets execute whenever user treverse up and down in menu list
+	 * This function is gets execute whenever user select or focus any item in menu list
 	 * @param {} none:
 	 * @return none
 	 */
-	onItemFocus = () => {
+	onItemActive = (itemFocused) => {
+		//call the callback function when selected item is
 		try {
-			//call the callback function when selected item is
-			var groupObj = this.createMenuInfo();
-			if (groupObj) {
-				this.props.onFocus(groupObj);
+			var menuItemObj = this.getCurrentActiveMenuInfo();
+			if (!COMMON_UTILITIES.isEmptyObject(menuItemObj)) {
+				if (itemFocused) {
+					this.props.onFocus(menuItemObj);
+				} else {
+					this.deFocus();
+					this.props.onItemSelect(menuItemObj);
+				}
 			}
 		} catch (error) {
 
 		}
 	}
-
-	/**
-	 * This function is gets execute whenever user select any item in menu list
-	 * @param {} none:
-	 * @return none
-	 */
-    onItemSelected = () => {
-    	//call the callback function when selected item is
-    	var groupObj = null;
-    	try {
-    		groupObj = this.createMenuInfo();
-    		if (groupObj) {
-				if(groupObj.name === commonConstants.MENU_LANGUAGE || groupObj.name === commonConstants.MENU_FILTER){
-					this.deFocus();
-				}
-    			this.props.onItemSelect(groupObj);
-    		}
-    	} catch (error) {
-
-    	}
-    }
 
 	/**
 	 * This function is responsible for defocusing the current item in menu
@@ -251,6 +217,7 @@ class Menu extends TvComponent {
 	 */
 	deFocus = () => {
 		super.deFocus();
+		this.lastActiveItemIndex = this.state.currIndex;
 		this.setState({
 			currIndex: null
 		});
@@ -261,9 +228,10 @@ class Menu extends TvComponent {
 	 * @param {} none: 
 	 * @param {}  none:
 	 */
+	//need to work
 	focus = () => {
 		super.focus();
-		var currentPos = this.state.menuItems.indexOf(this.state.activeMenu) || null;
+		var currentPos = this.state.currIndex || this.lastActiveItemIndex || null;
 		this.setState({
 			currIndex: currentPos
 		});
@@ -276,61 +244,49 @@ class Menu extends TvComponent {
 	 */
 	handleUpDown = (isDown, currentPos) => {
 		let dirVal = 1;
-		const currNode = ReactDOM.findDOMNode(this);
+		const CURRENT_NODE = ReactDOM.findDOMNode(this);
 		if (isDown) {
-			this.prevPos = (this.state.currIndex === currentPos) ? currentPos : this.state.currIndex ;
-			currentPos = this.prevPos + 1;
+			currentPos = currentPos + 1;
 			dirVal = -1;
 		} else {
-			this.prevPos = (this.state.currIndex === currentPos) ? currentPos : this.state.currIndex ;
-			currentPos = this.prevPos - 1
+			currentPos = currentPos - 1
 		}
-		let nextActivemenu = this.state.menuItems[currentPos];
-		// here checking if last item is out of page
-		let itemPos = 0,
-			activeElem = null,
-			menuHeight = 0,
+		let activeElem = null,
 			itemHeight = 0;
-		activeElem = currNode.querySelector('.active');
-		if(activeElem){
+		activeElem = CURRENT_NODE.querySelector('.active');
+		if (activeElem) {
 			itemHeight = Math.ceil(activeElem.scrollHeight);
 		}
 		let scrollNum = 1;
-		var scrollStyle = {...this.state.scrollStyle};
+		var scrollStyle = { ...this.state.scrollStyle };
 		var lastIndex = 8;
-		var nextIndex = (currentPos + 1) ;
+		var nextIndex = (currentPos + 1);
 		var menuElem = activeElem.parentElement;
-		
-		if(nextIndex > lastIndex && isDown){
+		if (nextIndex > lastIndex && isDown) {
 			scrollNum = nextIndex - lastIndex;
-			scrollStyle.transform = `translate3d(0,${itemHeight*dirVal*scrollNum}px,0)`;
-		}else if(!isDown && menuElem && menuElem.style && menuElem.style.transform && this.prevPos > lastIndex - 1){
+			scrollStyle.transform = `translate3d(0,${itemHeight * dirVal * scrollNum}px,0)`;
+		} else if (!isDown && menuElem && menuElem.style && menuElem.style.transform && this.prevPos > lastIndex - 1) {
 			var checkForPos = parseInt(activeElem.parentElement.style.transform.split(",")[1]);
-			var yPos = 0;
-			if(checkForPos < 0){
+			if (checkForPos < 0) {
 				checkForPos = checkForPos + itemHeight;
 				scrollStyle.transform = `translate3d(0,${checkForPos}px,0)`;
 			}
-		}else{
+		} else {
 			scrollStyle.transform = `translate3d(0,0,0)`;
 		}
-
-		
-		
 		this.setState({
-			activeMenu: nextActivemenu,
-			currIndex:currentPos,
-			scrollStyle:scrollStyle
+			currIndex: currentPos,
+			scrollStyle: scrollStyle
 		});
-		if (this.getGroupingInfo()) {
+		if (this.state.menuItems[this.state.currIndex].isGrouping) {
 			if (upDownKeyTimeOut) {
 				clearTimeout(upDownKeyTimeOut)
 			}
 			upDownKeyTimeOut = setTimeout(function () {
-				this.onItemFocus();
+				this.onItemActive(true);
 			}.bind(this), 500);
 		} else {
-			this.onItemFocus();
+			this.onItemActive(true);
 		}
 	}
 
@@ -339,38 +295,30 @@ class Menu extends TvComponent {
 	 * @param {object} event: this object contains the keycode for traversing
 	 */
 	handleKeyPress(event) {
-		if(this.props.subMenuActiveStatus){ // if sub menu active then no action on menu
-			return ; 
-		}
 		try {
 			var keyCode = event.keyCode;
 			var currentPos = null;
-			currentPos = this.state.menuItems.indexOf(this.state.activeMenu);
+			currentPos = this.state.currIndex;
 			switch (keyCode) {
 				case KeyMap.VK_ENTER:
 				case KeyMap.VK_RIGHT:
-					if(this.state.activeMenu === commonConstants.MENU_EXIT){
-						this.setState({showMenu:{display:false}});
-						var menuNode = ReactDOM.findDOMNode(this);
-						document.removeEventListener("keydown", this.onKeyDown);
-						localStorage.isMenuActive = false;
+					if (this.state.menuItems[currentPos].isExit) {
 						this.props.changeMenuStatus(event);
-					}else{
-						this.onItemSelected();						
-                    }
-					break;		
+					} else {
+						this.onItemActive(false);
+					}
+					break;
 				case KeyMap.VK_UP:
-					
-					if (currentPos === 0 || !this.state.showMenu.display) {
+					if (currentPos === 0) {
 						return;
 					}
-					this.handleUpDown(false,currentPos);
+					this.handleUpDown(false, currentPos);
 					break;
 				case KeyMap.VK_DOWN:
-					if (currentPos === this.state.menuItems.length-1 || !this.state.showMenu.display) {
+					if (currentPos === this.state.menuItems.length - 1) {
 						return;
 					}
-					this.handleUpDown(true,currentPos);
+					this.handleUpDown(true, currentPos);
 					break;
 				default:
 					break;
@@ -384,69 +332,51 @@ class Menu extends TvComponent {
 	 * This function is responsible for calling the server action and binding the key action
 	 * @param {} none: 
 	 */
-    componentDidMount() {
+	// need to work on
+	componentDidMount() {
 		super.componentDidMount();
-    	//fetching the menu items
-    	setTimeout(() => {
-    		this.getMenuMetaData();
-    		this.makeMenuActive();
-		}, 0);
-		this.focus();
-    }
+		this.getMenuMetaData();
+	}
 
-	
 	/**
 	 * This function is responsible for rendering the menu UI eact time it get calls
 	 * @param {} none: 
 	 */
-    render() {
-		var submenuShow = {
-			display:'none'
-		}
-		if(this.state.activeMenu && this.state.activeMenu.toLowerCase() !== commonConstants.MENU_EXIT.toLowerCase()){
-			submenuShow.display = 'block';
-		}
-
-		var leftMenu = "left-menu hide";
-		if(this.state.showMenu.display){
-			leftMenu = "left-menu show";
-		}
-        return(
-		<div className={leftMenu} >
-			<div className="menu">
-				<div className="logo"><img src={"images/logo-menu.jpg"} /></div>
-				<nav className="scrollMenu">
-					<ul style={this.state.scrollStyle}>
-						{this.state.menuItems.map((item,i)=>{
-							var listClassName = "";
-							var modeStyle = "";
-							if(i < this.modeMenuMetaInfo.length){
-								modeStyle = "modeGrey ";
-							}else if(item === commonConstants.MENU_EXIT) {
-								modeStyle = "exit ";
-							}
-							if(i === this.state.currIndex){
-								listClassName = "active ";
-							}
-							return (<li key={i+"id"} className={listClassName + modeStyle}><a href="#">
-										<Trans i18nKey={item === commonConstants.MENU_EXIT ? MENULANG :item.toLowerCase()}>{item}</Trans>
-								    <i className={(item && item.toLowerCase() === commonConstants.MENU_EXIT.toLowerCase())?"fa fa-caret-left":"fa fa-caret-right"} aria-hidden="true"></i></a></li>)
-						})}
-					</ul>
-				</nav>
+	render() {
+		var leftMenu = "left-menu show";
+		return (
+			<div className={leftMenu} >
+				<div className="menu">
+					<div className="logo"><img src={"images/logo-menu.jpg"} /></div>
+					<nav className="scrollMenu">
+						<ul style={this.state.scrollStyle}>
+							{this.state.menuItems.map((item, i) => {
+								var listClassName = "";
+								var modeStyle = "";
+								if (item.isMode) {
+									modeStyle = "modeGrey ";
+								} else if (item.isExit) {
+									modeStyle = "exit ";
+								}
+								if (i === this.state.currIndex) {
+									listClassName = "active ";
+								}
+								return (<li key={i + "id"} className={listClassName + modeStyle}><a href="#">
+									<Trans i18nKey={item.label.toLowerCase()}>{item.label}</Trans>
+									<i className={(item.label && item.isExit) ? "fa fa-caret-left" : "fa fa-caret-right"} aria-hidden="true"></i></a></li>)
+							})}
+						</ul>
+					</nav>
+				</div>
 			</div>
-			<BaseOverlay show={submenuShow}/>
-		</div>
-        )
-    }
+		)
+	}
 }
 
 const mapStateToProps = state => ({
-	getUiConfig:state.getUiConfig,
-	getGroupings:state.getGroupings
+	getUiConfig: state.getUiConfig,
+	getGroupings: state.getGroupings
 });
 
-
 //export default Menu;
-
 export default connect(mapStateToProps)(Menu);

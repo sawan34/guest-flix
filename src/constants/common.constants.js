@@ -16,7 +16,7 @@ export const commonConstants = {
     MENU_GROUPING_TYPE:"GROUPING_MENU",
     MENU_LANGUAGE:"Language",
     MENU_FILTER:"Filter",
-    MENU_EXIT:"Exit Menu",
+    MENU_EXIT:"Exit_Menu",
     MODE_KIDS:"kids",
     MODE_ADULT:"adult"
 };

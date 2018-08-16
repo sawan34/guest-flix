@@ -19,8 +19,8 @@ export default class BaseOverlay extends Component {
         return (
             <div className="sub-menu" style={this.props.show} className={this.props.myClass}>
                 <div className="movie-list">
-                    {this.props.children &&
-                        this.props.children
+                    {this.props.children ?
+                        this.props.children:""
                     }
                 </div>
             </div>

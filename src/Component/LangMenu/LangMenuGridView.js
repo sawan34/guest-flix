@@ -7,7 +7,8 @@
 import React, { Component } from 'react';
 import RadioGrid from '../../Component/FocusElement/RadioGrid';
 import { Trans } from 'react-i18next';
-import { commonConstants } from '../../constants/common.constants'
+import { commonConstants } from '../../constants/common.constants';
+import commonUtility from '../../commonUtilities';
 let _objAudiolang = null;
 let _objSubtitle = null;
 
@@ -155,12 +156,12 @@ class LangMenuGridView extends Component {
     componentWillMount() {
 
         _objAudiolang = this.availableAudio.map((item, i) => {
-            return this.init(item, i)
+            return this.init(commonUtility.getLanguageName(item), i)
         })
 
         _objSubtitle = this.availableSubtitles.map((item, i) => {
             return {
-                value: item,
+                value: commonUtility.getLanguageName(item),
                 id: 'subtitle-' + i,
                 status: false
               }

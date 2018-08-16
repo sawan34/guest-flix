@@ -5,20 +5,18 @@
 * @date  04.07.2018
 */
 import React from 'react';
-import commonUtility from '../../commonUtilities';
 import BaseScreen,{invokeConnect} from './BaseScreen';
 import KeyMap from '../../constants/keymap.constant';
 import { Trans } from 'react-i18next';
 import { SCREENS } from '../../constants/screens.constant';
 import {getProgramDetails} from '../../actions';
 import purchaseStartCompleteAction from '../../actions/action.purchaseStart';
-
 import PurchaseScreen from './PurchaseScreen';
 import { alertConstants } from '../../constants/alert.constant';
 import Utilities from '../../commonUtilities';
 
 /** 
-     * Description:This is constant object to define the Keyname
+    * Description:This is constant object to define the Keyname
  */
 const KEY =  {"UP": "UP","DOWN":"DOWN"};
 const OPEN_SCREEN = {"PURCHASE":"purchase","RELATED_TITLE":"relatedTitles","RESUME":"resume"};
@@ -78,7 +76,6 @@ class ProgramDetails extends BaseScreen {
         if(this.buttonList[this.state.active-1].id === OPEN_SCREEN.PURCHASE){
             this.setState({overlay:true});
         }else  if(this.buttonList[this.state.active-1].id === OPEN_SCREEN.RELATED_TITLE){
-             //  console.log(this.state.data);
                this.goToScreen(SCREENS.relatedtitle+"/"+this.state.data.data.title, null);
             return;
         }else if(this.buttonList[this.state.active-1].id === OPEN_SCREEN.RESUME){
@@ -199,7 +196,7 @@ class ProgramDetails extends BaseScreen {
     /** 
      * Description: render html on the page
     */
-    render() {        
+    render() {
         if(Utilities.isEmptyObject(this.state.data)){
             return false;
         }
@@ -212,23 +209,25 @@ class ProgramDetails extends BaseScreen {
         return (
             <div className="container">
                 {
-                    this.state.overlay &&
+                    this.state.overlay ?
                     <div ref="overlay">
                         <PurchaseScreen data={this.state.data.data} closePopup={this.closePopup} purchaseStartAction={this.props.purchaseStartAction} pmsPurchaseAction={this.props.pmsPurchaseAction} purchaseCompleteAction={this.props.purchaseCompleteAction} reducerPurchaseStart = {this.props.reducerPurchaseStart}  programId = {this.state.data.data.id} goToScreen = {this.goToScreen} />
-                    </div>
+                    </div>:""
                 }
                 <div className={this.state.overlay ? "bluureffects-overlay" : null}>
                 <div className="home-top-poster-details">
-                    <img src={this.state.data.data.preferredImage.uri} onError={commonUtility.onImageErrorHandler} />
+                    <img src={this.state.data.data.preferredImage.uri} onError={Utilities.onImageErrorHandler} />
                 </div>
                 <div className="product-details-wrapper">
                     <div className="left-col">
                         <div className="poster">
-                            <img src={this.state.data.data.preferredImage.uri} onError={commonUtility.onImageErrorHandler} />
+                            <img src={this.state.data.data.preferredImage.uri} onError={Utilities.onImageErrorHandler} />
                         </div>
                         <div id="left-button">
-                            {!this.state.data.data.isPurchased && <button id="purchase" className={this.getActiveClass(1)} ><span><Trans i18nKey="purchase">Purchase</Trans><br /> ${this.state.data.data.price}</span></button>}
-                            {this.state.data.data.isPurchased && <button id="resume" className={this.getActiveClass(1)} ><span><Trans i18nKey="resume">Resume</Trans></span></button>}
+                            {!this.state.data.data.isPurchased ? <button id="purchase" className={this.getActiveClass(1)} ><span><Trans i18nKey="purchase">Purchase</Trans><br /> ${this.state.data.data.price}</span></button>:null}
+
+                            {this.state.data.data.isPurchased ? <button id="resume" className={this.getActiveClass(1)} ><span><Trans i18nKey="resume">Resume</Trans></span></button>:null}
+
                             <button id="relatedTitles" className={this.getActiveClass(2)} ><span><Trans i18nKey="related_titles">Related <br />Titles</Trans></span></button>
                         </div>
                     </div>
@@ -247,9 +246,9 @@ class ProgramDetails extends BaseScreen {
                                 <div className="list">
                                     <h4><Trans i18nKey="director">Director</Trans>:</h4>
                                     <ul className="director">
-                                        {this.state.data.data.directors && this.state.data.data.directors.map((directors, index) => {
+                                        {this.state.data.data.directors ? this.state.data.data.directors.map((directors, index) => {
                                             return this.directorList(directors,index)
-                                        })}
+                                        }):""}
                                     </ul>
                                 </div>
                                 <div className="list">

@@ -4,9 +4,9 @@
 * @date  12.07.2018
 */
 import store from './store';
-import {ACTION} from './constants/action.constant';
 import { actionGetBoookmarks } from './actions/action.bookmark';
 import roomUser from './services/service.roomUser';
+import languageCodeName from './constants/language.constants';
 
 import _ from  'lodash';
 
@@ -23,7 +23,8 @@ const COMMON_UTILITIES = {
     getUILanguagesAvailable,
     getDefaultUILanguage,
     getBookmarksObjByProgramId,
-    getHorizontalHeight
+    getHorizontalHeight,
+    getLanguageName
 }
 
 
@@ -207,5 +208,18 @@ function getHorizontalHeight(){
     }
 }
 
+/**
+ * Description: Get Language Name
+ * @param {String} langCode
+ * @return {String}
+ */
+function getLanguageName(langCode) {
+    const languageName = languageCodeName[langCode];
+    if (isEmpty(languageName)) {
+        return langCode;
+    } else {
+        return languageName;
+    }
+}
 
 export default COMMON_UTILITIES;

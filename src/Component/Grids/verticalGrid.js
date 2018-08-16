@@ -9,6 +9,7 @@ import PropTypes from 'prop-types';
 import VerticalGridItem from './VerticalGriditem';
 import KeyMap from '../../constants/keymap.constant';
 import TvComponenet from '../TvComponent';
+import COMMON_UTILITIES from '../../commonUtilities';
 
 // Focus direction Constant
 const FOCUS_DIRECTION = { "UP": "UP", "DOWN": "DOWN", "LEFT": "LEFT", "RIGHT": "RIGHT" }
@@ -324,12 +325,12 @@ export default class VerticalGrid extends TvComponenet {
 						if ((currentIndex + 1) > this.scrollAfterIndex) {
 							currentScroll = this.state.scrollY + this._itemHeight();
 							this.setState((prevState) => {
-								return {activeIndex: currentIndex, scrollY: currentScroll }
+								return { activeIndex: currentIndex, scrollY: currentScroll }
 							});
 							this._scrollListener();
 						} else {
 							this.setState((prevState) => {
-								return {activeIndex: currentIndex, scrollY: currentScroll }
+								return { activeIndex: currentIndex, scrollY: currentScroll }
 							});
 						}
 					} else {
@@ -345,7 +346,7 @@ export default class VerticalGrid extends TvComponenet {
 							if ((currentIndex + 1) > this.scrollAfterIndex) {
 								currentScroll = this.state.scrollY + this._itemHeight();
 								this.setState((prevState) => {
-									return {activeIndex: currentIndex, scrollY: currentScroll }
+									return { activeIndex: currentIndex, scrollY: currentScroll }
 								});
 								this._scrollListener();
 							} else {
@@ -356,7 +357,7 @@ export default class VerticalGrid extends TvComponenet {
 
 						} else {
 							this.setState((prevState) => {
-								return {activeIndex: currentIndex }
+								return { activeIndex: currentIndex }
 							});
 						}
 					} else {
@@ -372,17 +373,17 @@ export default class VerticalGrid extends TvComponenet {
 							if ((currentIndex + 1) > this.scrollAfterIndex) {
 								currentScroll = this.state.scrollY - this._itemHeight();
 								this.setState((prevState) => {
-									return {activeIndex: currentIndex, scrollY: currentScroll }
+									return { activeIndex: currentIndex, scrollY: currentScroll }
 								});
 								this._scrollListener();
 							} else {
 								this.setState((prevState) => {
-									return {activeIndex: currentIndex }
+									return { activeIndex: currentIndex }
 								});
 							}
 						} else {
 							this.setState((prevState) => {
-								return {activeIndex: currentIndex }
+								return { activeIndex: currentIndex }
 							});
 						}
 					} else {
@@ -396,12 +397,12 @@ export default class VerticalGrid extends TvComponenet {
 						if ((currentIndex + 1) > this.scrollAfterIndex) {
 							currentScroll = this.state.scrollY - this._itemHeight();
 							this.setState((prevState) => {
-								return {activeIndex: currentIndex, scrollY: currentScroll }
+								return { activeIndex: currentIndex, scrollY: currentScroll }
 							});
 							this._scrollListener();
 						} else {
 							this.setState((prevState) => {
-								return {activeIndex: currentIndex }
+								return { activeIndex: currentIndex }
 							});
 						}
 					} else {
@@ -419,12 +420,12 @@ export default class VerticalGrid extends TvComponenet {
 							if ((currentIndex + 1) > this.scrollAfterIndex) {
 								currentScroll = this.state.scrollY - this._itemHeight();
 								this.setState((prevState) => {
-									return {activeIndex: currentIndex, scrollY: currentScroll }
+									return { activeIndex: currentIndex, scrollY: currentScroll }
 								});
 								this._scrollListener();
 							} else {
 								this.setState((prevState) => {
-									return {activeIndex: currentIndex }
+									return { activeIndex: currentIndex }
 								});
 							}
 						} else {
@@ -435,6 +436,11 @@ export default class VerticalGrid extends TvComponenet {
 				case KeyMap.VK_ENTER:
 					this.props.data.enterPressed(this.state.activeIndex);
 					break;
+				case KeyMap.VK_BACK:
+					if (typeof (this.props.onBackKeyPressed) === "function") {
+						this.props.onBackKeyPressed();
+					}
+					break;
 				default:
 					break;
 			}
@@ -444,15 +450,15 @@ export default class VerticalGrid extends TvComponenet {
 		//this.props.focusedItemIndex(this.state.activeIndex);
 	}
 
-	
-	focus(){
+
+	focus() {
 		super.focus();
-		this.setState({isActive : true});
+		this.setState({ isActive: true });
 	}
 
-	deFocus(){
+	deFocus() {
 		super.deFocus();
-		this.setState({isActive : false});
+		this.setState({ isActive: false });
 	}
 
 	// RENDER

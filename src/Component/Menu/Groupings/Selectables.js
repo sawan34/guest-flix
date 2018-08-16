@@ -55,7 +55,7 @@ class Selectables extends React.Component {
 
     };
 
-    if(window.innerWidth <= 1280){
+    if (window.innerWidth <= 1280) {
       this.gridProps.wrapperHeight = (this.gridProps.wrapperHeight * .66);
       this.gridProps.paddingBottom = (this.gridProps.paddingBottom * .66);
       this.gridProps.coloumns = 4;
@@ -121,7 +121,7 @@ class Selectables extends React.Component {
       this.setState({ noData: true });
     }
 
-    if(!Utility.isEmptyObject(this.verticalGrid) && this.props.isFocus){
+    if (!Utility.isEmptyObject(this.verticalGrid) && this.props.isFocus) {
       this.verticalGrid.focus();
     }
   }
@@ -171,12 +171,12 @@ class Selectables extends React.Component {
                 if (this.props.getGroupings.message.data[this.groupingID].imageType === getResponse.message.data[selectableIndex].images[imageTypeId].type) {
                   var itemObj = {
                     image_url: getResponse.message.data[selectableIndex].images[imageTypeId].url,
-                    width: getResponse.message.data[selectableIndex].images[imageTypeId].width,
-                    height: getResponse.message.data[selectableIndex].images[imageTypeId].height
+                    width: parseInt(getResponse.message.data[selectableIndex].images[imageTypeId].width,10),
+                    height: parseInt(getResponse.message.data[selectableIndex].images[imageTypeId].height ,10)
                   };
                   this.state.items.push(this.selectableItem(itemObj));
-                  this.gridProps.itemHeight = getResponse.message.data[selectableIndex].images[imageTypeId].height;
-                  this.gridProps.itemWidth = getResponse.message.data[selectableIndex].images[imageTypeId].width;
+                  this.gridProps.itemHeight = parseInt(getResponse.message.data[selectableIndex].images[imageTypeId].height,10);
+                  this.gridProps.itemWidth = parseInt(getResponse.message.data[selectableIndex].images[imageTypeId].width,10);
                   break;
                 }
               }
@@ -224,6 +224,19 @@ class Selectables extends React.Component {
         this.setState({ noData: true });
       }
     }
+    //// Back key code fixed ///////////////
+    if (!Utility.isEmptyObject(this.verticalGrid) && this.props.isFocus) {
+      this.verticalGrid.focus();
+    }
+    //// Back key code fixed ///////////////
+  }
+
+  /**
+    * Description: This is callback method for back key pressed in vertical grid
+    *
+  */
+  onBackKeyPressed = () => {
+    this.props.onBackKeyPressed();
   }
 
   /**
@@ -233,7 +246,7 @@ class Selectables extends React.Component {
 
   renderGrid = () => {
     if (this.gridProps.entries.length > 0) {
-      return <VerticalGrid onRef={instance => ( this.verticalGrid = instance )} data={this.gridProps} />;
+      return <VerticalGrid onRef={instance => (this.verticalGrid = instance)} data={this.gridProps} onBackKeyPressed={this.onBackKeyPressed} />;
     } else if (this.state.noData === true) {
       return <div> <Trans i18nKey="no_data_message">No Data here</Trans></div>;
     } else {
@@ -242,18 +255,29 @@ class Selectables extends React.Component {
   }
 
 
-  focus () {
-    if(!Utility.isEmptyObject(this.verticalGrid)){
-    this.verticalGrid.focus();
+  /**
+    * Description: This method add focus on vertical grid
+    *
+  */
+  focus() {
+    if (!Utility.isEmptyObject(this.verticalGrid)) {
+      this.verticalGrid.focus();
     }
   }
 
+  /**
+    * Description: This method remove focus on vertical grid
+    *
+  */
   deFocus = () => {
     this.verticalGrid.deFocus();
   }
 
+  /**
+    * Description: This method return weather grid is focused or not
+    * @return {boolean}
+  */
   isFocused = () => {
-
     return ((!Utility.isEmptyObject(this.verticalGrid)) && this.verticalGrid.isFocused());
   }
 
@@ -271,7 +295,7 @@ class Selectables extends React.Component {
     return (
       <div className='slide-container-wrapper selectable-related-title'>
         <div className="title-related-top">
-          <h3>{this.menuName}</h3>
+          <h3><Trans i18nKey ={this.menuName}>this.menuName</Trans></h3>
         </div>
         <this.renderGrid />
       </div>
@@ -279,7 +303,7 @@ class Selectables extends React.Component {
   }
 }
 
-
+// default grouping id
 Selectables.defaultProps = {
   groupingID: 2002
 }
