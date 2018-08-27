@@ -31,7 +31,6 @@ export default function (state = [], action) {
                 }
             }
             return state = Object.assign({}, fecthedData);
-            break;
             default:
             break;
     }

@@ -9,15 +9,15 @@ export const ACTION ={
     
     GET_GROUPINGS :'getGroupings',
     GET_UI_CONFIG : 'getUiConfig',
-    SAVE_PREVIOUS:'saveprevious',
-    GET_SELECTABLES:"getselectables",
-    PROGRAM_DETAILS:'programdetails',
-    PURCHASE_START:'purchasestart',
-    PURCHASE_PMS:'purchasepms',
-    PURCHASE_COMPLETE:'purchasecomplete',
+    SAVE_PREVIOUS:'savePrevious',
+    GET_SELECTABLES:"getSelectables",
+    PROGRAM_DETAILS:'programDetails',
+    PURCHASE_START:'purchaseStart',
+    PURCHASE_PMS:'purchasePms',
+    PURCHASE_COMPLETE:'purchaseComplete',
     GET_BOOKMARKS:'getBookMarks',
     GET_USER_PREFERENCES:'getUserPreferences',
     SAVE_USER_PREFERENCES:'saveUserPreferences',
-    BOOKMARK_PLAYBACK:'bookmarkplayback',
+    BOOKMARK_PLAYBACK:'bookmarkPlayback',
     REFRESH_SELECTABLE:'refreshSelectable'
 }

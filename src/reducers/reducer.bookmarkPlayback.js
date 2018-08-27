@@ -4,7 +4,6 @@
 * @date  30.07.2018
 */
 import { ACTION } from '../constants/action.constant';
-import { alertConstants } from '../constants/alert.constant';
 /**
     * Description: reducer Saving Data on Exit
     * @param {object} state  
@@ -21,7 +20,6 @@ import { alertConstants } from '../constants/alert.constant';
                     data:action.payload.message.data,
                 }
             }
-        break;   
         default:
         break;
     }

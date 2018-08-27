@@ -17,7 +17,6 @@ export default function(state = {},action){
             return state = Object.assign(state,{
                 [ action.payload.screen]:action.payload
             }); 
-        break;
         default:
         break;
     }

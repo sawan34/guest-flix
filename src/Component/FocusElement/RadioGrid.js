@@ -9,14 +9,6 @@ import FocusElement from "./FocusElement";
 import RadioItem from './RadioItem';
 
 class RadioGrid extends FocusElement {
-    /**
-    * Description: class initialization 
-    * @param {null} 
-    * @return {null}
-    */
-    constructor(props) {
-        super(props);
-    }
 
     /** Description: prepare grid item
      * @param {item} object

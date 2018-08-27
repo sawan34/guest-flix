@@ -16,6 +16,7 @@ import { actionPlaybackBookmark } from "../../actions/action.bookmark"
 import { PlayerService } from './player.service';
 import { alertConstants } from '../../constants/alert.constant';
 import { validCodes } from '../../constants/error.constant'
+import DrmService from '../../drm/service.drm.playback';
 import _ from 'lodash';
 require('font-awesome/css/font-awesome.min.css');
 
@@ -43,7 +44,7 @@ class Player extends BaseScreen {
         this._onFinish = this._onFinish.bind(this);
         this.playPause = this.playPause.bind(this);
         this.forward = this.forward.bind(this);
-        this.backward = this.backward.bind(this);
+        this.rewind = this.rewind.bind(this);
         this.onplayFinish = this.onplayFinish.bind(this);
         this.onpauseFinish = this.onpauseFinish.bind(this);
         this.onforwardFinish = this.onforwardFinish.bind(this);
@@ -51,6 +52,7 @@ class Player extends BaseScreen {
         this.onSelectBookmarkAndExit = this.onSelectBookmarkAndExit.bind(this);
         this.onSelectLanguageMenu = this.onSelectLanguageMenu.bind(this);
         this.initialisePlayer = this.initialisePlayer.bind(this);
+        this.getDomElements = this.getDomElements.bind(this);
 
         this.playerControl = [];
         this.elementPlayPause = null;
@@ -78,6 +80,7 @@ class Player extends BaseScreen {
         super.componentWillMount();
         Utility.refreshBookmarks();
         this.objBookMark = Utility.getBookmarksObjByProgramId(_.toNumber(this.props.routerData.match.params.id));
+
     }
     //============================Start-----Player initialization phase===================// 
     /**
@@ -131,6 +134,7 @@ class Player extends BaseScreen {
     */
     getDomElements() {
         this.pluginPlayer = document.getElementById("pluginPlayer");
+
         this.timeView = document.getElementById("timeView");
         this.progressBarFillId = document.getElementById("progressBarFillId");
         this.playerMessageView = document.getElementById("playerMessageView");
@@ -146,8 +150,9 @@ class Player extends BaseScreen {
         this.hideBarTimer()
         this.objPlayerService = new PlayerService(playerParams);
         this.objPlayerService.init(this._onFinish, this._hidePlayerControlBar);
-        if (!Utility.isEmpty(this.objBookMark)) {
+        if (!Utility.isEmpty(this.objBookMark) && DrmService.isOKtoPlay()) {
             this.objPlayerService.setSeekTime(this.objBookMark.positionInMs);
+            DrmService.setMediaSource();
             this.objPlayerService.setVideoURL(this.objBookMark.playbackMeta.url);
             this.playAndResumeVideo();
         }
@@ -198,14 +203,25 @@ class Player extends BaseScreen {
     */
     _onFinish() {
         this.setState({ init: true });
+        this.deinitPlayer();
+
+    }
+    //============================End-----Callback functions===================//
+   /**
+   * Description: destroy player Screen instance
+   * @param {null} 
+   * @return {null}
+   */
+    deinitPlayer() {
         clearTimeout(this.scopeTimer);
         this.objPlayerService.deinit();
+        DrmService.unloadDrmClient();
         if (this.isBack) {
             this.handleBack();
         }
         this.isBack = false;
     }
-    //============================End-----Callback functions===================//
+
 
     _hidePlayerControlBar() {
     }
@@ -233,7 +249,7 @@ class Player extends BaseScreen {
      * @param {null} 
      * @return {null}
      */
-    backward() {
+    rewind() {
         this.objPlayerService.rewind();
     }
 
@@ -288,12 +304,15 @@ class Player extends BaseScreen {
      *  @param {String} selected control name
      */
     onSelectedPlayerControl = (controlerName) => {
+        if(this.objPlayerService.state === this.objPlayerService.Error){
+            return;
+        }
         switch (controlerName) {
             case PlayerControls.PLAY_PAUSE:
                 this.playPause();
                 break;
             case PlayerControls.REWIND:
-                this.backward();
+                this.rewind();
                 break;
             case PlayerControls.FORWARD:
                 this.forward();
@@ -317,13 +336,12 @@ class Player extends BaseScreen {
     handleKey(event) {
         var keyCode = event.keyCode;
         this.showPlayerController();
-        if ((this.objPlayerService.isFowrdingOrRewinding() == false)) {
+        if ((this.objPlayerService.isFowrdingOrRewinding() === false)) {
             this.hideBarTimer();
         }
         switch (keyCode) {
             case KeyMap.VK_BACK:
-                clearTimeout(this.scopeTimer);
-                this.handleBack();
+                this.deinitPlayer();
                 break;
             case KeyMap.VK_PAUSE:
             case KeyMap.VK_PLAY:
@@ -342,13 +360,15 @@ class Player extends BaseScreen {
                 break;
         }
     }
-  
+
     render() {
         return (
             <div className="container" id="playerContainer">
                 <div className="player-wrapper">
-                    <video id="pluginPlayer" className='videoPlayer' width="100%" src="" poster="../images/player-poster.jpg">
+                    <video id="pluginPlayer" className='videoPlayer' width="100%" poster="../images/player-poster.jpg">
+                        <source id="soruceId" type="video/mp4" />
                     </video>
+
                     <div id="progressContainer" className='progressContainer'>
                         <PlayerControl
                             title={this.props.programDetailsReducer.data.title}
@@ -369,7 +389,7 @@ class Player extends BaseScreen {
                     </div>
                 </div>
                 <div id="playerMessageView">
-                    {this.props.message?this.props.message:null}
+                    {this.props.message ? this.props.message : null}
                 </div>
             </div>
         )

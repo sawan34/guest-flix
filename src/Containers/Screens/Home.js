@@ -13,7 +13,6 @@ import BaseScreen, { invokeConnect } from './BaseScreen';
 //constants
 import { SCREENS } from '../../constants/screens.constant';
 import { alertConstants } from '../../constants/alert.constant';
-import { commonConstants } from '../../constants/common.constants';
 import roomUser from '../../services/service.roomUser';
 //common uitilities
 import Utilities from '../../commonUtilities';
@@ -94,6 +93,7 @@ class Home extends BaseScreen {
                 } catch (e) {
                     mode = '';
                 }
+                this.props.actionRefreshtSelectables();
                 this.goToScreen(SCREENS.dataloading + "/?mode=" + mode, null);
             }
         });
@@ -171,7 +171,7 @@ class Home extends BaseScreen {
                         </div>
                     </div>
                 </BaseOverlay>);
-        }else{
+        } else {
             return "";
         }
     }
@@ -205,11 +205,15 @@ class Home extends BaseScreen {
         } else {
             if (!menuObj.isMode) {
                 this.setState({ modeOverLayActive: false, selectableOn: false, });
-                this.gridSelectables.deFocus();
+                if (!Utilities.isEmptyObject(this.gridSelectables) && this.gridSelectables.isComponentLoaded()) {
+                    this.gridSelectables.deFocus();
+                }
             } else {
                 this.modeID = menuObj.id;
                 this.setState({ modeOverLayActive: true, selectableOn: false });
-                this.gridSelectables.deFocus();
+                if (!Utilities.isEmptyObject(this.gridSelectables) && this.gridSelectables.isComponentLoaded()) {
+                    this.gridSelectables.deFocus();
+                }
             }
         }
     }
@@ -219,16 +223,19 @@ class Home extends BaseScreen {
      * @return {null}
      */
     onSelectMenuGrouping(menuObj) { // on menu enter or right
-        if (menuObj.isGrouping) {
+        if (menuObj.isGrouping && !Utilities.isEmptyObject(this.gridSelectables) && this.gridSelectables.isComponentLoaded()) {
+            // this.menuComponent.deFocus();
             this.gridSelectables.focus();
             this.changeMenuStatus();
         } else {
             if (menuObj.isMode) {
                 this.props.actionRefreshtSelectables();
                 this.goToScreen(SCREENS.dataloading + "/?mode=" + menuObj.id, null);
-            } else if (menuObj.isLanguage) {
+            } else if (menuObj.isLanguage && !Utilities.isEmptyObject(this.menuLangGrid) && this.menuLangGrid.isComponentLoaded()) {
+                this.menuComponent.deFocus();
                 this.menuLangGrid.focus();
-            } else if (menuObj.isFilter) {
+            } else if (menuObj.isFilter && !Utilities.isEmptyObject(this.menuFilterGrid) && this.menuFilterGrid.isComponentLoaded()) {
+                this.menuComponent.deFocus();
                 this.menuFilterGrid.focus();
             }
         }
@@ -262,7 +269,12 @@ class Home extends BaseScreen {
     * @returns {undefined}
     */
     deactivateSubMenu = () => {
-        this.menuLangGrid.deFocus();
+        if (!Utilities.isEmpty(this.menuLangGrid) && this.menuLangGrid.isComponentLoaded()) {
+            this.menuLangGrid.deFocus();
+        }
+        if (!Utilities.isEmpty(this.menuFilterGrid) && this.menuFilterGrid.isComponentLoaded()) {
+            this.menuFilterGrid.deFocus();
+        }
         this.menuComponent.focus();
     }
 
@@ -343,10 +355,9 @@ class Home extends BaseScreen {
                 <div className="container" >
                     {this.state.menuOn ? <Menu onRef={instance => (this.menuComponent = instance)} openMenu={this.state.menuOn} changeMenuStatus={this.changeMenuStatus.bind(this)} onFocus={this.showSelectable} onItemSelect={this.onSelectMenuGrouping} changeSubMenuActiveStatus={this.changeSubMenuActiveStatus} subMenuActiveStatus={this.state.isSubMenuActive} /> : ""}
 
-                     {showMenuLanguage ? <MenuLanguage onRef={instance => (this.menuLangGrid = instance)} removeSubMenu={this.deactivateSubMenu} actionSaveUserPreferences={this.props.actionSaveUserPreferences} getUserPreferences={this.props.reducerGetUserPreferences} stayId={this.stayId} changeLanguage={this.changeLanguage} /> : ""}
+                    {showMenuLanguage ? <MenuLanguage onRef={instance => (this.menuLangGrid = instance)} removeSubMenu={this.deactivateSubMenu} actionSaveUserPreferences={this.props.actionSaveUserPreferences} getUserPreferences={this.props.reducerGetUserPreferences} stayId={this.stayId} changeLanguage={this.changeLanguage} /> : ""}
 
-                      {showMenuFilter ? <MenuFilter onRef={instance => (this.menuFilterGrid = instance)} removeSubMenu={this.deactivateSubMenu} actionSaveUserPreferences={this.props.actionSaveUserPreferences} getUserPreferences={this.props.reducerGetUserPreferences} configUserPreference={this.props.reducerUiConfig.message.data.programFilters} filterChangeStatus={this.filterChangeStatus} /> : ""}
-
+                    {showMenuFilter ? <MenuFilter onRef={instance => (this.menuFilterGrid = instance)} removeSubMenu={this.deactivateSubMenu} actionSaveUserPreferences={this.props.actionSaveUserPreferences} getUserPreferences={this.props.reducerGetUserPreferences} configUserPreference={this.props.reducerUiConfig.message.data.programFilters} filterChangeStatus={this.filterChangeStatus} stayId={this.stayId} /> : ""}
                     {this.renderModeMenu(this.modeID)}
                     {this.toggleHomeSelectable()}
                 </div>

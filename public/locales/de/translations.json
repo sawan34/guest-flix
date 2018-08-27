@@ -10,6 +10,7 @@
   "cancel":"Annuleer",
   "resume":"Hervat",
   "purchase_confirm_description":"De titel die u hebt geselecteerd, is beschikbaar om met audio en ondertitels in alternatieve talen te bekijken. Selecteer de gewenste taalopties en druk op Bevestigen om uw selectie te spelen.",
+  "purchase_confirm_description_default_audio":"De titel die u hebt geselecteerd, heeft geen audio of ondertitels in alternatieve talen. Bevestig alstublieft om te beginnen met het spelen van uw selectie.",
   "loading_data_message":"Bezig met laden ......",
   "no_data_message":"Geen gegevens",
   "choose_your_lang":"Kies je taal",
@@ -38,6 +39,8 @@
   "classics":"Classics",
   "men_in_black_package": "Heren in zwart pakket",
   "storyline":"Verhaallijn",
-  "gay": "homoseksueel"
+  "gay": "homoseksueel",
+  "no_rating_available":"Geen beoordeling beschikbaar",
+  "no_language_available":"Geen taal beschikbaar"
 
 }

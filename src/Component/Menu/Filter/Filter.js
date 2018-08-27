@@ -9,10 +9,11 @@ import _ from 'lodash';
 import CommonUtility from '../../../commonUtilities';
 import { alertConstants } from '../../../constants/alert.constant';
 import { Trans } from 'react-i18next';
-import UTILITY from "../../../commonUtilities";
 import CheckboxGrid from '../../FocusElement/CheckboxGrid';
+import {commonConstants} from '../../../constants/common.constants';
 
 const selection = ["select_all","select_none"];
+const Hoc = (props) => props.children;
 
 /**
 * Description: Define constant to visible Component Row
@@ -48,10 +49,10 @@ const SELECT_ID = {
 * Description: Define constant for the Key LEFT, RIGHT, UP, DOWN
 */
 const KEY = {
-  "LEFT": "LEFT",
-  "RIGHT": "RIGHT",
-  "UP": "UP",
-  "DOWN": "DOWN"
+  "LEFT": commonConstants.DIRECTION_LEFT,
+  "RIGHT": commonConstants.DIRECTION_RIGHT,
+  "UP": commonConstants.DIRECTION_UP,
+  "DOWN": commonConstants.DIRECTION_DOWN
 }
 class Filter extends Component {
   constructor(props) {
@@ -75,12 +76,14 @@ class Filter extends Component {
     this.preSelectedLangIndex = 0;
     this.numberOfColumn = 5;
     this.filters = "";
+    this.LanguageName = []
     
     this.enterEvent = this.enterEvent.bind(this);
     this.defaultUIlang = CommonUtility.getDefaultUILanguage();
     this.focus = this.focus.bind(this);
     this.deFocus = this.deFocus.bind(this);
     this.isFocused = this.isFocused.bind(this);
+    this.isComponentLoaded = this.isComponentLoaded.bind(this);
   }
 
   /**
@@ -134,11 +137,11 @@ class Filter extends Component {
                 item.status = !item.status;
                 if(item.status){
                     if(_.indexOf(selectedData,item) < 0){
-                         selectedData.push(item.value);
+                         selectedData.push(item.langKey);
                     }
                 }else{
                     selectedData = selectedData.filter((item)=>{
-                        return item !==name.value
+                        return item !==name.langKey
                     })
                 }
             }
@@ -237,8 +240,8 @@ class Filter extends Component {
   componentWillMount() {
     let languageData = [] ,selectRating = [],selectlang=[],ratings=[];
     this.filters =  this.props.configUserPreference;
-    const filtersRating =this.filters.ratings;    
-    const filtersLanguage = this.filters.languages;
+    const filtersRating =this.filters.ratings || [];    
+    const filtersLanguage = this.filters.languages || [];
     const selectedPreferenceRating = this.props.getUserPreferences.data.programFilters.ratings;
     const selectedPreferenceLanguage = this.props.getUserPreferences.data.programFilters.languages;
 
@@ -266,6 +269,7 @@ class Filter extends Component {
       [COMPONENT_NAME.LANGUAGE_SELECT]:{data:selectlang,selected:[]}
     })
   }
+
   init(item, i,component,value=null) {
     let obj = null;
     if(_.isArray(value)){
@@ -273,13 +277,15 @@ class Filter extends Component {
             obj = {
                 value: item,
                 id: component + i,
-                status: true
+                status: true,
+                langKey:item
               }
         }else{
             obj = {
                 value: item,
                 id: component + i,
-                status: false
+                status: false,
+                langKey:item
               }
         }
     }else if (item === value) {
@@ -287,21 +293,23 @@ class Filter extends Component {
       obj = {
         value: item,
         id: component + i,
-        status: true
+        status: true,
+        langKey:item
       }
     }
     else {
       obj = {
         value: item,
         id: component + i,
-        status: false
+        status: false,
+        langKey:item
       }
     }
     return obj
   }
 
 componentDidMount() {
-    if (!UTILITY.isEmptyObject(this.props.onRef)) {
+    if (!CommonUtility.isEmptyObject(this.props.onRef)) {
       this.props.onRef(this);
     }
   }
@@ -378,6 +386,9 @@ componentDidMount() {
               });
          break;    
          case KEY.DOWN:
+             if(this.LanguageName.length <=0){
+                 return;
+             }
               this.ratingData.deFocus();
               this.languageSelect.focus();
               this.setState({
@@ -386,8 +397,9 @@ componentDidMount() {
                   scrolledRowIndex: scrolledRowIndex,
                   direction: direction
               });    
-        break;    
-     
+        break;
+        default:
+        break;
       }
       return;
   }
@@ -406,6 +418,9 @@ componentDidMount() {
             this.props.removeSubMenu();
             break;
         case KEY.UP:
+            if(this.state[COMPONENT_NAME.RATING].data.length <=0){
+                return;
+            }
             this.languageSelect.deFocus();
             this.ratingData.focus();
             this.setState({
@@ -424,6 +439,8 @@ componentDidMount() {
                 scrolledRowIndex: scrolledRowIndex,
                 direction: direction
             });
+        break;
+        default:
         break;    
 
     }
@@ -455,6 +472,7 @@ componentDidMount() {
           break;
           case KEY.DOWN:
              return;
+          default:
           break;
       }
   }
@@ -464,8 +482,16 @@ componentDidMount() {
    * @return {null}
    */  
   focus() {
-      this.ratingSelect.focus();
-      this.setState({activeGrid: 1});
+      
+      if(this.state[COMPONENT_NAME.RATING].data.length > 0){
+        this.ratingSelect.focus();
+        this.ratingSelect.resetCurrentFocus(0);  
+        this.setState({activeGrid: 1});
+      }else{
+        this.languageSelect.focus();
+        this.languageSelect.resetCurrentFocus(0);    
+        this.setState({activeGrid: 3});
+      }
       this.isFilterFocused = true;
   }
  /**
@@ -474,10 +500,15 @@ componentDidMount() {
    */
   deFocus() {
     this.isFilterFocused = false;  
-    this.ratingSelect.deFocus();
-    this.ratingData.deFocus();
-    this.languageSelect.deFocus();
-    this.languageData.deFocus();    
+    if(this.state[COMPONENT_NAME.RATING].data.length > 0){
+        this.ratingSelect.deFocus();
+        this.ratingData.deFocus();
+    }
+    if(this.LanguageName.length > 0){
+        this.languageSelect.deFocus();
+        this.languageData.deFocus();   
+    }
+
     this.setState({activeGrid: -1});
   }
 /**
@@ -487,56 +518,69 @@ componentDidMount() {
   isFocused() {
     return this.isFilterFocused;  
   }
+
+  isComponentLoaded(){
+      return((!CommonUtility.isEmptyObject(this.ratingSelect)  && this.ratingSelect.isComponentLoaded() && this.ratingData.isComponentLoaded()) || ( !CommonUtility.isEmptyObject(this.languageSelect) && this.languageSelect.isComponentLoaded() && this.languageData.isComponentLoaded()) );
+  }
+
   /**
    * Description: Check Focus from home
    * @return {JSX}
    */
   render() {
+    this.LanguageName = JSON.parse(JSON.stringify(this.state[COMPONENT_NAME.LANGUAGE].data)); 
+    this.LanguageName.map((item)=>{
+                  item.value = CommonUtility.getLanguageName(item.value);
+                  return item;
+             }); 
     return (
       <div className="sub-menu filter">
         {<div>{this.state.error ? this.state.errorMessage:""}</div>}
         <div className="heading"><h3><Trans i18nKey="filter_screen_title">Filter Available Titles</Trans></h3></div>
         <div className="checkbox-lists">
              <div className="sub-heading"><Trans i18nKey="by_rating">BY RATING</Trans></div>
-          <div className="checkbox-header">
-          <CheckboxGrid
-                    onRef={instance => (this.ratingSelect = instance)}
-                    data={this.state[COMPONENT_NAME.RATING_SELECT].data}
-                    enterEvent={this.enterEvent}
-                    gridNo={1}
-                    gridName={COMPONENT_NAME.RATING_SELECT}
-                    col={this.numberOfColumn}
-                    leftNotMove={false}
-                    isKeyEvent={this.state.activeGrid === 1}
-                    eventCallback={this.eventCallbackSelectFilter.bind(this)}
-                    onChange={this.onChange}
-                    activeIndex={0}
-                    currentRowIndex={this.state.currentRowIndex}
-                    scrolledRowIndex={this.state.scrolledRowIndex}
-                    focusDirection={this.state.direction}
-                    visibleRow={ROW_VISIBLE.RADIO_BUTTON}
-            />
-          </div>
-          <div className={"col-"+this.numberOfColumn}>
-                    <CheckboxGrid
-                        onRef={instance => (this.ratingData = instance)}
-                        data={this.state[COMPONENT_NAME.RATING].data}
-                        enterEvent={this.enterEvent}
-                        gridNo={2}
-                        gridName={COMPONENT_NAME.RATING}
-                        col={this.numberOfColumn}
-                        leftNotMove={false}
-                        isKeyEvent={this.state.activeGrid === 2}
-                        eventCallback={this.eventCallbackFilters.bind(this)}
-                        onChange={this.onChange}
-                        activeIndex={0}
-                        currentRowIndex={this.state.currentRowIndex}
-                        scrolledRowIndex={this.state.scrolledRowIndex}
-                        focusDirection={this.state.direction}
-                        visibleRow={ROW_VISIBLE.RADIO_BUTTON}
-                    />
-            </div>
+          {this.state[COMPONENT_NAME.RATING].data.length >0 ? <Hoc>
+                    <div className="checkbox-header">
+                        <CheckboxGrid
+                                    onRef={instance => (this.ratingSelect = instance)}
+                                    data={this.state[COMPONENT_NAME.RATING_SELECT].data}
+                                    enterEvent={this.enterEvent}
+                                    gridNo={1}
+                                    gridName={COMPONENT_NAME.RATING_SELECT}
+                                    col={this.numberOfColumn}
+                                    leftNotMove={false}
+                                    isKeyEvent={this.state.activeGrid === 1}
+                                    eventCallback={this.eventCallbackSelectFilter.bind(this)}
+                                    onChange={this.onChange}
+                                    activeIndex={0}
+                                    currentRowIndex={this.state.currentRowIndex}
+                                    scrolledRowIndex={this.state.scrolledRowIndex}
+                                    focusDirection={this.state.direction}
+                                    visibleRow={ROW_VISIBLE.RADIO_BUTTON}
+                            />
+                    </div>
+                    <div className={"col-"+this.numberOfColumn}>
+                        <CheckboxGrid
+                            onRef={instance => (this.ratingData = instance)}
+                            data={this.state[COMPONENT_NAME.RATING].data}
+                            enterEvent={this.enterEvent}
+                            gridNo={2}
+                            gridName={COMPONENT_NAME.RATING}
+                            col={this.numberOfColumn}
+                            leftNotMove={false}
+                            isKeyEvent={this.state.activeGrid === 2}
+                            eventCallback={this.eventCallbackFilters.bind(this)}
+                            onChange={this.onChange}
+                            activeIndex={0}
+                            currentRowIndex={this.state.currentRowIndex}
+                            scrolledRowIndex={this.state.scrolledRowIndex}
+                            focusDirection={this.state.direction}
+                            visibleRow={ROW_VISIBLE.RADIO_BUTTON}
+                        />
+                    </div>
+            </Hoc>:<Trans i18nKey="no_rating_available">No rating available</Trans>}  
           <div className="sub-heading"><Trans i18nKey="by_language">BY LANGUAGE</Trans></div>  
+          {this.LanguageName.length >0 ? <Hoc>
           <div className="checkbox-header">
           <CheckboxGrid
                     onRef={instance => (this.languageSelect = instance)}
@@ -559,7 +603,7 @@ componentDidMount() {
           <div className={"col-"+this.numberOfColumn}>
                     <CheckboxGrid
                         onRef={instance => (this.languageData = instance)}
-                        data={this.state[COMPONENT_NAME.LANGUAGE].data}
+                        data={this.LanguageName}
                         enterEvent={this.enterEvent}
                         gridNo={4}
                         gridName={COMPONENT_NAME.LANGUAGE}
@@ -575,7 +619,7 @@ componentDidMount() {
                         visibleRow={ROW_VISIBLE.RADIO_BUTTON}
                     />
             </div>
-          
+           </Hoc>:<Trans i18nKey="no_language_available">No language available</Trans>}
         </div>
       </div>
     )

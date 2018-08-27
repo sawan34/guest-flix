@@ -34,8 +34,9 @@ export default function (state = {}, action) {
         }else {
             fecthedData.data = action.payload.message;
         } 
+        break;
         default:
-            break;
+        break;
     }
     return state;
 }

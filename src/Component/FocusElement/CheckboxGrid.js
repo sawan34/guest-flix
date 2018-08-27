@@ -9,15 +9,6 @@ import FocusElement from "./FocusElement";
 import CheckboxItem from './CheckboxItem';
 
 class CheckboxGrid extends FocusElement {
-    /**
-    * Description: class initialization 
-    * @param {null} 
-    * @return {null}
-    */
-    constructor(props) {
-        super(props);
-    }
-
     /** Description: prepare grid item
      * @param {item} object
      * @param {colindex} number

@@ -9,7 +9,6 @@ import PropTypes from 'prop-types';
 import VerticalGridItem from './VerticalGriditem';
 import KeyMap from '../../constants/keymap.constant';
 import TvComponenet from '../TvComponent';
-import COMMON_UTILITIES from '../../commonUtilities';
 
 // Focus direction Constant
 const FOCUS_DIRECTION = { "UP": "UP", "DOWN": "DOWN", "LEFT": "LEFT", "RIGHT": "RIGHT" }
@@ -120,7 +119,7 @@ export default class VerticalGrid extends TvComponenet {
 			marginTop: (this.props.data.padding || this.props.padding),
 			marginLeft: (this.props.data.padding || this.props.padding),
 			minHeight: this._getGridHeight(),
-			transform: "translate3d(0px," + this.state.scrollY + "px,0)",
+			WebkitTransform: "translate3d(0px," + this.state.scrollY + "px,0)",
 			transition: 'all ' + ANIM_TIME + 'ms ease-in-out'
 		};
 	}
@@ -278,6 +277,7 @@ export default class VerticalGrid extends TvComponenet {
 		super.componentDidMount();
 		this._updateItemDimensions();
 		this._visibleIndexes();
+		this.componentLoaded =true;
 	}
 
 	componentWillReceiveProps(nextProps) {
@@ -294,6 +294,7 @@ export default class VerticalGrid extends TvComponenet {
 		if (typeof this.props.data.renderRangeCallback === 'function') {
 			this.props.data.renderRangeCallback(this.state.minItemIndex, this.state.maxItemIndex);
 		}
+		this.componentLoaded = true;
 	}
 
 	// LISTENERS
@@ -338,8 +339,14 @@ export default class VerticalGrid extends TvComponenet {
 					}
 					break;
 				case KeyMap.VK_LEFT:
-					this.scrollAfterIndex = this._itemsPerRow() * (this._numVisibleRows() - 1);
-					var isFirstElementofRow = (((currentIndex + 1) % (this._itemsPerRow())) === 1) ? true : false;
+					var isFirstElementofRow
+					if (this._itemsPerRow() === 1) {
+						this.scrollAfterIndex = 1;
+						isFirstElementofRow = true;
+					} else {
+						this.scrollAfterIndex = this._itemsPerRow() * (this._numVisibleRows() - 1);
+						isFirstElementofRow = (((currentIndex + 1) % (this._itemsPerRow())) === 1) ? true : false;
+					} 
 					currentIndex = currentIndex - 1;
 					if (currentIndex >= 0) {
 						if (isFirstElementofRow) {

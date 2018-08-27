@@ -202,9 +202,9 @@ function getWindowWidth(){
 function getHorizontalHeight(){
     const width = getWindowWidth();
     if(width > 1280){
-        return 690;
+        return 280;
     }else{
-        return 490;
+        return 200;
     }
 }
 

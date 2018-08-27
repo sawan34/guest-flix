@@ -20,8 +20,7 @@ export default function (state = {}, action) {
                     status:action.payload.message.status,
                     data:action.payload.message.data,
                 }
-            }
-        break;   
+            }  
         case ACTION.GET_BOOKMARKS:
         const fecthedData = {};
         if (action.payload) {
@@ -46,7 +45,6 @@ export default function (state = {}, action) {
             fecthedData.data = action.payload.message;
         }   
         return state = fecthedData;
-        break;
         default:
         break;
     }

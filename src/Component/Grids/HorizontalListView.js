@@ -25,7 +25,7 @@ class HorizontalListView extends BaseGrid {
             case KeyMap.VK_RIGHT:
 
                 if (this.state.scrollIndex >= this.dataSource.length - 1) {
-                    if (!this.isScrollWrap || this.dataSource.length<2) {
+                    if (!this.isScrollWrap || this.dataSource.length < 2) {
                         return;
                     }
                     this.state.scrollIndex = -1;
@@ -56,6 +56,8 @@ class HorizontalListView extends BaseGrid {
             case KeyMap.VK_UP:
             case KeyMap.VK_DOWN:
                 this.focusChange();
+                break;
+            default:
                 break;
         }
     }

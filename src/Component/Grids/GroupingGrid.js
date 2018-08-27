@@ -1,12 +1,11 @@
 import React from 'react';
 import _ from 'lodash';
+import { Trans } from 'react-i18next';
+import { invokeConnect } from "../../Containers/Screens/BaseScreen";
 import HomeHorizontalView from '../../Component/Grids/HorizontalListView';
-import { invokeConnect } from '../../Containers/Screens/BaseScreen';
 import { alertConstants } from '../../constants/alert.constant';
 import { commonConstants } from '../../constants/common.constants';
-import { actionGetUserPreferences, actionSaveUserPreferences } from '../../actions/action.userPreferences';
-import { actionGetBoookmarks } from '../../actions/action.bookmark';
-import { actionGetSelectables, actionRefreshtSelectables } from '../../actions';
+import { actionGetSelectables} from '../../actions';
 import TvComponent from '../TvComponent'
 import KeyMap from '../../constants/keymap.constant';
 
@@ -49,12 +48,11 @@ class GroupingGrid extends TvComponent {
         this.topPosition = 0;
         this.numberTofetchSeletables = 10; //number of seletables to fetch at time
         this.gridrowLoad = 4;
-        this.groupingHeight = 320;
-        // Utilities.getHorizontalHeight();
+        this.groupingHeight = Utilities.getHorizontalHeight();
         this.isFilterValueChange = false;
         this.prevGridHeight = 0;
-        this.currentGridHeight = 0;
-        this.nextGridHeight = 0;
+        this.scrollHeightDown = 0;
+        this.scrollHeightUp = 0;
 
         this.loadNextData = this.loadNextData.bind(this);
         this.handleFocusChange = this.handleFocusChange.bind(this);
@@ -166,10 +164,25 @@ class GroupingGrid extends TvComponent {
             }); //getting data for all request
         })).then(function (values) {
             selfThis.setState((prevState) => {
+                let height =0;
                 let newSelectables = selfThis.state.homeGroupings.map((item) => {
                     const GROUP_ID = item.id;
+                    const IMAGE_TYPE = item.imageType;
                     return selfThis.props.reducerRetSelectables.filter((dataItem) => {
-                        return dataItem.groupId === GROUP_ID;
+                        if (dataItem.groupId === GROUP_ID) {
+                            let imageHeight = dataItem.data[0].images.filter((imageData) => {
+                                if (imageData.type === IMAGE_TYPE) {
+                                    return true;
+                                }else{
+                                    return false;
+                                }
+                            });
+                            height = height + selfThis.groupingHeight + parseInt(imageHeight[0].height,10);                            
+                            dataItem.scrollHeight = height;
+                            return true;
+                        } else {
+                            return false;
+                        }
                     });
                 });
                 newSelectables = _.flatten(newSelectables);
@@ -203,7 +216,7 @@ class GroupingGrid extends TvComponent {
             let selfThis = this;
             let selectablesToCall = [];
 
-            if (CURRENT_ACTIVE_DATA.currentPage + 1 < CURRENT_ACTIVE_DATA.totalPages) {
+            if (CURRENT_ACTIVE_DATA.currentPage + 1 < CURRENT_ACTIVE_DATA.TOTAL_PAGES) {
                 CURRENT_ACTIVE_DATA.currentPage = CURRENT_ACTIVE_DATA.currentPage + 1;
                 selectablesToCall = CURRENT_ACTIVE_DATA.seletablesPageWise[CURRENT_ACTIVE_DATA.currentPage];
                 let promise = new Promise((resolve, reject) => {
@@ -247,7 +260,7 @@ class GroupingGrid extends TvComponent {
             if (direction === commonConstants.DIRECTION_UP) {
                 if (this.state.gridPositionRow > 0) {
                     this.setState((prevState) => {
-                        return { gridPositionRow: prevState.gridPositionRow - 1, scrollY: prevState.scrollY + 690, keyEvent: event, startIndex: prevState.startIndex - 1, endIndex: prevState.endIndex - 1, timeInterval: event.timeStamp };
+                        return { gridPositionRow: prevState.gridPositionRow - 1, scrollY:-this.scrollHeightUp , keyEvent: event, startIndex: prevState.startIndex - 1, endIndex: prevState.endIndex - 1, timeInterval: event.timeStamp };
                     });
                 }
             }
@@ -255,7 +268,7 @@ class GroupingGrid extends TvComponent {
             if (direction === commonConstants.DIRECTION_DOWN) {
                 if (this.state.gridPositionRow < this.state.numberOfGrouping - 1) {
                     this.setState((prevState) => {
-                        return { gridPositionRow: prevState.gridPositionRow + 1, scrollY: prevState.scrollY - 690, keyEvent: event, startIndex: prevState.startIndex + 1, endIndex: prevState.endIndex + 1, prefixGroup: prevState.startIndex, timeInterval: event.timeStamp };
+                        return { gridPositionRow: prevState.gridPositionRow + 1, scrollY:- this.scrollHeightDown, keyEvent: event, startIndex: prevState.startIndex + 1, endIndex: prevState.endIndex + 1, prefixGroup: prevState.startIndex, timeInterval: event.timeStamp };
                     });
                 }
             }
@@ -293,6 +306,8 @@ class GroupingGrid extends TvComponent {
                     });
                 }
                 break
+                default:
+                break;
         }
     }
 
@@ -329,15 +344,18 @@ class GroupingGrid extends TvComponent {
     getGroupNameById(groupId) {
         const ARR = [...this.state.homeGroupings];
         let groupName = "";
-
         ARR.some((item) => {
             if (item.id === groupId) {
-                groupName = item.label;
+                if(item.i8nLabel){
+                    groupName = item.i8nLabel;
+                }else{
+                    groupName = item.label;
+                }
                 return true;
             }
             return false;
         });
-        return groupName;
+       return <Trans i18nKey = {groupName}>{groupName} </Trans>;
     }
 
     /**
@@ -378,33 +396,6 @@ class GroupingGrid extends TvComponent {
         return scrollWrap;
     }
 
-    /**
-     * 
-     */
-    getPreviousGroupingHeight(index){
-        if(index < 1) return;        
-        let data =  this.state.groupWiseSelectables[index-1];
-        let imageType = this.getGroupImageType(data.groupId);
-        let dimensionImage = data.data.map((item, index) => {
-            let imageUrl = "", dimension = {};
-            item.images.some(element => {
-                if (element.type === imageType) {
-                    imageUrl = element.url;
-                    dimension = {
-                        height: element.height,
-                        width: element.width
-                    }
-                    return true;
-                }
-                return false;
-            });
-            return {
-                dimension: dimension
-            }
-        });
-        return dimensionImage;
-
-    }
     /**
      * Description: Prepare Data for Grid
      */
@@ -467,8 +458,7 @@ class GroupingGrid extends TvComponent {
                             }else{
                                 return "";
                             }
-                            return;
-                        })
+                         })
                     }
                 </div>
             </div>
@@ -494,37 +484,32 @@ class GroupingGrid extends TvComponent {
         }
         let wrapperActive = index === this.state.gridPositionRow ? "slider-wrapper active" : "slider-wrapper";
         let top = { top: 0 };   
-        let imageHeight =  parseInt(selectablesData[0].dimension.height,10);
-       
-
-        //setting grid heights
-        this.prevGridHeight = index < 1 ? 0:this.prevGridHeight+
-        parseInt(this.getPreviousGroupingHeight.call(this,index)[0].dimension.height)+this.groupingHeight ;
-        console.log(this.prevGridHeight);
-      //  this.currentGridHeight = 0;
-      //  this.nextGridHeight = 0;
-
-       // this.position = this.position + this.groupingHeight 
-        //* index;
+		//setting grid heights
+        this.prevGridHeight = index < 1 ? 0:this.state.groupWiseSelectables[index-1].scrollHeight ;
         if(index > 0){
             top = { top: this.prevGridHeight + 'px' };
         }
  
+        if(index === this.state.gridPositionRow){
+            this.scrollHeightDown = this.state.groupWiseSelectables[index].scrollHeight;
+            this.scrollHeightUp = index>1 ? this.state.groupWiseSelectables[index-2].scrollHeight :0;
+            if(index-1===0){
+                this.scrollHeightUp = 0;
+            }
+        }
+
         return (<div key={index} className="slider-row" style={top} > <h2>{this.getGroupNameById(id)}</h2>
-            <div className={wrapperActive}><HomeHorizontalView dataSource={selectablesData} key={"hori" + index} defaultSelectedPosition={ACTIVE_GRID} onItemSelected={this.itemSelected} maxVisibleItem={this.numberTofetchSeletables} keyEvent={this.state.keyEvent} onFocusChange={this.handleFocusChange} activeEvent={index === this.state.gridPositionRow} loadNextData={this.loadNextData} id={id} isScrollWrap={this.getGroupScrollWrap(id)} />
+            <div className={wrapperActive}  ><HomeHorizontalView dataSource={selectablesData} key={"hori" + index} defaultSelectedPosition={ACTIVE_GRID} onItemSelected={this.itemSelected} maxVisibleItem={this.numberTofetchSeletables} keyEvent={this.state.keyEvent} onFocusChange={this.handleFocusChange} activeEvent={index === this.state.gridPositionRow} loadNextData={this.loadNextData} id={id} isScrollWrap={this.getGroupScrollWrap(id)} />
             </div></div>);
     }
 
 } export default invokeConnect(GroupingGrid, null, 'getGroupings',
     {   //actions
         actionGetSelectables: actionGetSelectables,
-        actionGetBoookmarks: actionGetBoookmarks,
-        actionGetUserPreferences: actionGetUserPreferences,
-        actionSaveUserPreferences: actionSaveUserPreferences,
-        actionRefreshtSelectables: actionRefreshtSelectables
     },
     {  //reducers
         reducerRetSelectables: 'getSelectables',
         reducerUiConfig: 'getUiConfig',
         reducerGetUserPreferences: 'userPreferences'
     });
+

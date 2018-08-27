@@ -13,7 +13,7 @@ import Method from '../../../services/services';
 import API_INTERFACE from '../../../constants/uri.constant';
 import { responseActions } from '../../../actions/action.response';
 import Utility from '../../../commonUtilities';
-const SELECTABLE_TYPE = { "BUTTON": "button", "PROGRAM": "program" }
+const SELECTABLE_TYPE = { "BUTTON": "button", "PROGRAM": "program" , "MOVIE" : "movie"}
 
 class Selectables extends React.Component {
   /**
@@ -32,6 +32,7 @@ class Selectables extends React.Component {
       noData: false
     }
     this.gridItemSelected = this.gridItemSelected.bind(this);
+    this.isComponentLoaded = this.isComponentLoaded.bind(this);
     this.selectableIds = [];
     this.selectableData = [];
     this.menuName = "";
@@ -55,6 +56,7 @@ class Selectables extends React.Component {
 
     };
 
+    this.dataLoaded = false;
     if (window.innerWidth <= 1280) {
       this.gridProps.wrapperHeight = (this.gridProps.wrapperHeight * .66);
       this.gridProps.paddingBottom = (this.gridProps.paddingBottom * .66);
@@ -87,7 +89,7 @@ class Selectables extends React.Component {
     };
 
     return (
-      <img style={styles} src={props.image_url} onError={Utility.onImageErrorHandler}></img>
+      <img style={styles} src={props.image_url} onError={Utility.onImageErrorHandler} alt=""></img>
     );
   }
 
@@ -99,7 +101,7 @@ class Selectables extends React.Component {
    */
   gridItemSelected(index) {
     if (!Utility.isEmptyObject(this.props.selectableItemClicked)) {
-      if (this.selectableData[index].type === SELECTABLE_TYPE.PROGRAM) {
+      if (this.selectableData[index].type === SELECTABLE_TYPE.PROGRAM || this.selectableData[index].type === SELECTABLE_TYPE.MOVIE) {
         this.props.selectableItemClicked(this.selectableData[index].programId);
       }
     }
@@ -116,7 +118,6 @@ class Selectables extends React.Component {
     this.getGroupingData();
     if (this.selectableIds.length > 0) {
       this.dataForSelctable(this.selectableIds);
-      this.state.noData = false;
     } else {
       this.setState({ noData: true });
     }
@@ -132,17 +133,23 @@ class Selectables extends React.Component {
    * @return {null}
    */
   getGroupingData = () => {
+    this.dataLoaded = false;
     let groupNo = (this.props && this.props.getGroupings && this.props.getGroupings.message) ? this.props.getGroupings.message.data.length : 0;
     if (groupNo > 0) {
       for (var groupIndex = 0; groupIndex < groupNo; groupIndex++) {
         if (this.props.groupingID === this.props.getGroupings.message.data[groupIndex].id) {
           this.groupID = groupIndex;
           this.groupingID = groupIndex;
-          this.menuName = this.props.getGroupings.message.data[groupIndex].label;
+          this.menuName = this.props.getGroupings.message.data[groupIndex].i8nLabel;
+          this.menuLable = this.props.getGroupings.message.data[groupIndex].label;
           this.selectableIds = this.props.getGroupings.message.data[groupIndex].selectables;
         }
       }
     }
+  }
+
+  isComponentLoaded(){
+    return (this.verticalGrid.isComponentLoaded() && this.dataLoaded);
   }
 
   /**
@@ -171,12 +178,12 @@ class Selectables extends React.Component {
                 if (this.props.getGroupings.message.data[this.groupingID].imageType === getResponse.message.data[selectableIndex].images[imageTypeId].type) {
                   var itemObj = {
                     image_url: getResponse.message.data[selectableIndex].images[imageTypeId].url,
-                    width: parseInt(getResponse.message.data[selectableIndex].images[imageTypeId].width,10),
-                    height: parseInt(getResponse.message.data[selectableIndex].images[imageTypeId].height ,10)
+                    width: parseInt(getResponse.message.data[selectableIndex].images[imageTypeId].width, 10),
+                    height: parseInt(getResponse.message.data[selectableIndex].images[imageTypeId].height, 10)
                   };
                   this.state.items.push(this.selectableItem(itemObj));
-                  this.gridProps.itemHeight = parseInt(getResponse.message.data[selectableIndex].images[imageTypeId].height,10);
-                  this.gridProps.itemWidth = parseInt(getResponse.message.data[selectableIndex].images[imageTypeId].width,10);
+                  this.gridProps.itemHeight = parseInt(getResponse.message.data[selectableIndex].images[imageTypeId].height, 10);
+                  this.gridProps.itemWidth = parseInt(getResponse.message.data[selectableIndex].images[imageTypeId].width, 10);
                   break;
                 }
               }
@@ -190,8 +197,9 @@ class Selectables extends React.Component {
               this.gridProps.coloumns = 6;
             }
             this.gridProps.entries = this.state.items;
-            this.setState({ isLoading: false });
-
+            
+            this.setState({ isLoading: false ,noData:false});
+            this.dataLoaded = true;
           }
         }
       },
@@ -219,8 +227,7 @@ class Selectables extends React.Component {
       this.getGroupingData();
       if (this.selectableIds.length > 0) {
         this.dataForSelctable(this.selectableIds);
-        this.state.noData = false;
-      } else {
+     } else {
         this.setState({ noData: true });
       }
     }
@@ -265,6 +272,8 @@ class Selectables extends React.Component {
     }
   }
 
+
+
   /**
     * Description: This method remove focus on vertical grid
     *
@@ -295,7 +304,7 @@ class Selectables extends React.Component {
     return (
       <div className='slide-container-wrapper selectable-related-title'>
         <div className="title-related-top">
-          <h3><Trans i18nKey ={this.menuName}>this.menuName</Trans></h3>
+          <h3><Trans i18nKey={this.menuName}>{this.menuLable}</Trans></h3>
         </div>
         <this.renderGrid />
       </div>

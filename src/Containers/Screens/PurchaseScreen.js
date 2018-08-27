@@ -6,6 +6,7 @@
 */
 import React from 'react';
 import commonUtility from '../../commonUtilities';
+import {commonConstants} from '../../constants/common.constants';
 import { Trans } from 'react-i18next';
 import BaseOverlay from '../../Component/Overlay/BaseOevrlay';
 import RadioGrid from '../../Component/FocusElement/RadioGrid';
@@ -22,16 +23,6 @@ const PREVGRID = { AUDIOGRID: 1, SUBTITLEGRID: 2 }
 * Description: Defind Button Name
 */
 const button = [{ id: "confirm", label: 'confirm' }, { id: "cancel", label: 'cancel' }];
-
-/**
-* Description: Define constant for the Key LEFT, RIGHT, UP, DOWN
-*/
-const KEY = {
-  "LEFT": "LEFT",
-  "RIGHT": "RIGHT",
-  "UP": "UP",
-  "DOWN": "DOWN"
-}
 
 /**
 * Description: Define constant Button List Object
@@ -83,6 +74,7 @@ class PurchaseScreen extends React.Component {
     this.currentActiveGrid = 1;
     this.eventCallbackFunction = this.eventCallbackFunction.bind(this);
     this.enterEvent = this.enterEvent.bind(this);
+    this.defaultAudioSubtitleStatus = true;
   }
 
   /**
@@ -92,7 +84,7 @@ class PurchaseScreen extends React.Component {
   */
   eventCallbackFunction(direction, currentRowIndex, scrolledRowIndex) {
     switch (direction) {
-      case KEY.LEFT:
+      case commonConstants.DIRECTION_LEFT:
         if (this.state.activeGrid !== 3) {
           this.setState({
             activeGrid: 1,
@@ -106,7 +98,7 @@ class PurchaseScreen extends React.Component {
         }
         break;
 
-      case KEY.RIGHT:
+      case commonConstants.DIRECTION_RIGHT:
         if (this.state.activeGrid !== 3) {
           this.setState({
             activeGrid: 2,
@@ -123,7 +115,7 @@ class PurchaseScreen extends React.Component {
         }
         break;
 
-      case KEY.UP:
+      case commonConstants.DIRECTION_UP:
         if (this.audioLangGrid.isFocused() || this.subtitleGrid.isFocused()) {
           return false;
         }
@@ -144,10 +136,12 @@ class PurchaseScreen extends React.Component {
             this.audioLangGrid.deFocus();
             this.buttonGrid.deFocus();
             break;
+          default:
+          break;  
         }
         break;
 
-      case KEY.DOWN:
+      case commonConstants.DIRECTION_DOWN:
         if (!this.buttonGrid.isFocused()) {
           this.currentActiveGrid = this.state.activeGrid;
         }
@@ -163,6 +157,8 @@ class PurchaseScreen extends React.Component {
             this.subtitleGrid.deFocus();
             this.audioLangGrid.deFocus();
             this.buttonGrid.focus();
+        break;
+        default:
         break;
     }
   }
@@ -208,7 +204,7 @@ class PurchaseScreen extends React.Component {
   * @return {null}
   */
   enterEvent(gridname, name, rowIndex, colIndex, col) {
-    if (gridname != COMPONENT_NAME.BUTTON) {
+    if (gridname !== COMPONENT_NAME.BUTTON) {
       let index = rowIndex * col + colIndex;
       let updateArray = [...this.state[gridname]];
 
@@ -270,30 +266,41 @@ class PurchaseScreen extends React.Component {
     }
     return obj
   }
-  /**
+   /**
   * Description: Convert Audio Language and Subtitle Array into Object and Set into State
   * @param {null}
   * @return {null}
   */
-  componentWillMount() {
+ componentWillMount() {
+  let _objSubtitle = [];
+   
     if (this.props.data) {
-      _objAudiolang = this.props.data.availableAudio.map((item, i) => {
-        return this.init(commonUtility.getLanguageName(item), i)
-      })
-
-      _objSubtitle = this.props.data.availableSubtitles.map((item, i) => {
-        return {
-          value: commonUtility.getLanguageName(item),
-          id: 'subtitle-' + i,
-          status: false
-        }
-      })
+      if(commonUtility.isEmpty(this.props.data.availableAudio) ){
+        _objAudiolang = ['en'].map((item, i) => {
+          return this.init(commonUtility.getLanguageName(item), i)
+        })
+        this.defaultAudioSubtitleStatus = false; 
+      }else{
+        _objAudiolang = this.props.data.availableAudio.map((item, i) => {
+          return this.init(commonUtility.getLanguageName(item), i)
+        })
+      }
+       
+      if(!commonUtility.isEmpty(this.props.data.availableSubtitles) ){
+         _objSubtitle = this.props.data.availableSubtitles.map((item, i) => {return {
+            value: commonUtility.getLanguageName(item),
+            id: 'subtitle-' + i,
+            status: false
+          }
+        });
+        this.defaultAudioSubtitleStatus = true;
+      }
     }
     this.setState({
       subtitle: [...this.state.subtitle, ..._objSubtitle],
       audiolang: _objAudiolang
     })
-  }
+}
 
   render() {
     return (
@@ -301,12 +308,12 @@ class PurchaseScreen extends React.Component {
         <h3>{this.props.data.title}</h3>
         <div className="col-container">
           <div className="col-left">
-            <div className="poster"><img src={this.props.data.preferredImage.uri} onError={commonUtility.onImageErrorHandler} /></div>
-            <div className="price">${this.props.data.price} {this.props.data.isTaxIncluded ? <span>+ <Trans i18nKey="tax">Tax</Trans></span> : null}</div>
+            <div className="poster"><img alt="" src={this.props.data.preferredImage.uri} onError={commonUtility.onImageErrorHandler} /></div>
+            <div className="price">${this.props.data.price} {this.props.data.isTaxIncluded ? <span>+ <Trans i18nKey="tax">Tax</Trans></span> : ""}</div>
           </div>
           <div className="col-right">
             <div className="content">
-              <p><Trans i18nKey="purchase_confirm_description">Tax</Trans></p>
+              <p>{this.defaultAudioSubtitleStatus ? <Trans i18nKey="purchase_confirm_description"></Trans> :<Trans i18nKey="purchase_confirm_description_default_audio"></Trans>}</p>
             </div>
             <div className="row">
               <div className="lang-col">

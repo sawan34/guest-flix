@@ -10,6 +10,7 @@
   "cancel":"Cancel",
   "resume":"Resume",
   "purchase_confirm_description":"The title you have selected is available to view with alternate language audio and subtitles. Please choose your desired language options and press Confirm to begin playing your selection.",
+  "purchase_confirm_description_default_audio":"The title you have selected has no alternative language audio or subtitles. Please press confirm to begin playing your selection.",
   "loading_data_message":"Loading ......",
   "no_data_message":"No Data",
   "choose_your_lang":"Choose Your Language",
@@ -38,5 +39,7 @@
   "classics":"Classics",
   "men_in_black_package": "Men in Black Package",
   "storyline":"Storyline",
-  "gay": "Gay"
+  "gay": "Gay",
+  "no_rating_available":"No rating available",
+  "no_language_available":"No language available"
 }

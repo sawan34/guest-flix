@@ -92,7 +92,7 @@ class BaseScreen extends Component {
     }
 
     /** 
-     * Description:This is component life cycle method which also invoke handlekey method 
+     * Description:This is component life cycle method 
     */
     componentWillReceiveProps(nextProps) {
         this.onReduxDataLoad(nextProps);
@@ -105,7 +105,7 @@ class BaseScreen extends Component {
     onReduxDataLoad = (nextProps) => {
         if ( nextProps.networkData && this.state.data.length <=0) {
             if (Object.keys(nextProps.networkData).length > 0) {
-                this.state.data = nextProps.networkData;
+                this.setState({data:nextProps.networkData})
             } 
         }
     }

@@ -38,12 +38,12 @@ class Menu extends TvComponent {
 			let modesNo = this.uiConfigData.modes ? this.uiConfigData.modes.length : 0;
 			let availableModeNo = metaData.modes.length;
 			if (modesNo > 0) {
-				for (var i = 0; i < availableModeNo; i++) {
-					for (var j = 0; j < availableModeNo; j++) {
-						if (this.uiConfigData.modes[i].id === metaData.modes[j]) {
-							if (!COMMON_UTILITIES.isEmptyObject(this.uiConfigData.modes[i])) {
-								var tempOBJ = Object.assign({}, this.uiConfigData.modes[i]);
-								tempOBJ.label = this.uiConfigData.modes[i].i8nLabel;
+				for (var mode_Id = 0; mode_Id < availableModeNo; mode_Id++) {
+					for (var available_mode_Id = 0; available_mode_Id < modesNo; available_mode_Id++) {
+						if (this.uiConfigData.modes[available_mode_Id].id === metaData.modes[mode_Id]) {
+							if (!COMMON_UTILITIES.isEmptyObject(this.uiConfigData.modes[available_mode_Id])) {
+								var tempOBJ = Object.assign({}, this.uiConfigData.modes[available_mode_Id]);
+								tempOBJ.label = this.uiConfigData.modes[available_mode_Id].i8nLabel;
 								this.defineMenuType(MENU_TYPE.MODE, tempOBJ);
 								this.state.menuItems.push(tempOBJ);
 								break;
@@ -65,11 +65,11 @@ class Menu extends TvComponent {
 			let groupNo = (this.props && this.props.getGroupings && this.props.getGroupings.message) ? this.props.getGroupings.message.data.length : 0;
 			let availableGroupNo = metaData.groupings.length;
 			if (groupNo > 0) {
-				for (var j = 0; j < availableGroupNo; j++) {
-					for (var i = 0; i < groupNo; i++) {
-						if (this.props.getGroupings.message.data[i].id === metaData.groupings[j]) {
-							if (!COMMON_UTILITIES.isEmptyObject(this.props.getGroupings.message.data[i])) {
-								var tempOBJ = Object.assign({}, this.props.getGroupings.message.data[i]);
+				for (var group_Id = 0; group_Id < availableGroupNo; group_Id++) {
+					for (var total_Group_Id = 0; total_Group_Id < groupNo; total_Group_Id++) {
+						if (this.props.getGroupings.message.data[total_Group_Id].id === metaData.groupings[group_Id]) {
+							if (!COMMON_UTILITIES.isEmptyObject(this.props.getGroupings.message.data[total_Group_Id])) {
+								var tempOBJ = Object.assign({}, this.props.getGroupings.message.data[total_Group_Id]);
 								this.defineMenuType(MENU_TYPE.GROUPING, tempOBJ);
 								this.state.menuItems.push(tempOBJ);
 								break;
@@ -122,6 +122,8 @@ class Menu extends TvComponent {
 				break;
 			case MENU_TYPE.EXIT:
 				obj.isExit = true;
+				break;
+			default:
 				break;
 		}
 	}
@@ -201,7 +203,7 @@ class Menu extends TvComponent {
 				if (itemFocused) {
 					this.props.onFocus(menuItemObj);
 				} else {
-					this.deFocus();
+					//this.deFocus();
 					this.props.onItemSelect(menuItemObj);
 				}
 			}
@@ -231,7 +233,7 @@ class Menu extends TvComponent {
 	//need to work
 	focus = () => {
 		super.focus();
-		var currentPos = this.state.currIndex || this.lastActiveItemIndex || null;
+		var currentPos = this.state.currIndex || this.lastActiveItemIndex || 0;
 		this.setState({
 			currIndex: currentPos
 		});
@@ -266,7 +268,7 @@ class Menu extends TvComponent {
 			scrollNum = nextIndex - lastIndex;
 			scrollStyle.transform = `translate3d(0,${itemHeight * dirVal * scrollNum}px,0)`;
 		} else if (!isDown && menuElem && menuElem.style && menuElem.style.transform && this.prevPos > lastIndex - 1) {
-			var checkForPos = parseInt(activeElem.parentElement.style.transform.split(",")[1]);
+			var checkForPos = parseInt(activeElem.parentElement.style.transform.split(",")[1],10);
 			if (checkForPos < 0) {
 				checkForPos = checkForPos + itemHeight;
 				scrollStyle.transform = `translate3d(0,${checkForPos}px,0)`;
@@ -278,16 +280,13 @@ class Menu extends TvComponent {
 			currIndex: currentPos,
 			scrollStyle: scrollStyle
 		});
-		if (this.state.menuItems[this.state.currIndex].isGrouping) {
-			if (upDownKeyTimeOut) {
+		if (upDownKeyTimeOut) {
 				clearTimeout(upDownKeyTimeOut)
 			}
 			upDownKeyTimeOut = setTimeout(function () {
 				this.onItemActive(true);
-			}.bind(this), 500);
-		} else {
-			this.onItemActive(true);
-		}
+			}.bind(this), 100);
+		
 	}
 
 	/**
@@ -332,7 +331,6 @@ class Menu extends TvComponent {
 	 * This function is responsible for calling the server action and binding the key action
 	 * @param {} none: 
 	 */
-	// need to work on
 	componentDidMount() {
 		super.componentDidMount();
 		this.getMenuMetaData();
@@ -347,7 +345,7 @@ class Menu extends TvComponent {
 		return (
 			<div className={leftMenu} >
 				<div className="menu">
-					<div className="logo"><img src={"images/logo-menu.jpg"} /></div>
+					<div className="logo"><img src={"images/logo-menu.jpg"} alt = ""/></div>
 					<nav className="scrollMenu">
 						<ul style={this.state.scrollStyle}>
 							{this.state.menuItems.map((item, i) => {
@@ -361,7 +359,7 @@ class Menu extends TvComponent {
 								if (i === this.state.currIndex) {
 									listClassName = "active ";
 								}
-								return (<li key={i + "id"} className={listClassName + modeStyle}><a href="#">
+								return (<li key={i + "id"} className={listClassName + modeStyle}><a href="#menu-item">
 									<Trans i18nKey={item.label.toLowerCase()}>{item.label}</Trans>
 									<i className={(item.label && item.isExit) ? "fa fa-caret-left" : "fa fa-caret-right"} aria-hidden="true"></i></a></li>)
 							})}

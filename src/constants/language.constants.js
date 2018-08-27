@@ -9,7 +9,6 @@
 	"es":"Espanol",
 	"pt":"Português",
 	"fr":"Français",
-	"de":"Deutsch",	
 	"bg":"български",
 	"zh":"中文",	
 	"de":"Deutsch",

@@ -21,15 +21,15 @@ class BaseGrid extends Component {
         this.itemPadding = 20;
         this.scrollIndex = 0;
         this.SCROLL_SPEED = 300;
-        this.scrollDirection;
+        this.scrollDirection="";
         this.timeStamp = 310;
         this.keyStopper = false;
         this.circulateCount = 0;
         this.isScrollWrap = false;
+        this.listedData = [];
         this.state = {
             activeIndex: 0,
             focusLostItemPosition: -1,
-            listedData: [],
             scrollIndex: 0,
             transitionSpeed: this.SCROLL_SPEED,
             timeInterval: 0
@@ -44,7 +44,7 @@ class BaseGrid extends Component {
     */
     initData = () => {
         this.setDataSource();
-        this.isScrollWrapping ();
+        this.isScrollWrapping();
         let toVisibleIndex = this.getMaxVisibleItem() - 1;
         this.loadData(0, toVisibleIndex);
     }
@@ -55,9 +55,9 @@ class BaseGrid extends Component {
      * @param {*} toPos 
      */
     loadData(fromPos, toPos) {
-        this.state.listedData = [];
+        this.listedData = [];
         for (var i = fromPos, j = 0; i <= toPos; i++ , j++) {
-            this.state.listedData[j] = this.dataSource[i];
+            this.listedData[j] = this.dataSource[i];
         }
     }
 
@@ -81,30 +81,30 @@ class BaseGrid extends Component {
                     })
                 }
             }
-            if(fromVisibleIndex !== -1){
-            this.loadData(fromPos, toPos)
-            this.circulateCount=0;
-            if (this.state.activeIndex !== 0) {
-                this.scrollInit(1)
+            if (fromVisibleIndex !== -1) {
+                this.loadData(fromPos, toPos)
+                this.circulateCount = 0;
+                if (this.state.activeIndex !== 0) {
+                    this.scrollInit(1)
+                }
             }
-        }
         } else if ((fromVisibleIndex + (this.getMaxVisibleItem() - 1)) >= (this.dataSource.length) && this.isScrollWrap) {
-            if(this.getMaxVisibleItem() >=this.circulateCount){
-                this.circulateListedData(this.state.listedData, 1);
+            if (this.getMaxVisibleItem() >= this.circulateCount) {
+                this.circulateListedData(this.listedData, 1);
                 this.scrollInit(1)
             }
-            
+
         }
     }
-    
+
     circulateListedData = (array, times) => {
         array = array.slice();
         while (times--) {
             var temp = array.shift();
             array.push(temp)
         }
-        this.state.listedData = array;
-        this.state.listedData[this.getMaxVisibleItem() - 1] = this.dataSource[this.circulateCount]
+        this.listedData = array;
+        this.listedData[this.getMaxVisibleItem() - 1] = this.dataSource[this.circulateCount]
         this.circulateCount++;
     }
 
@@ -166,7 +166,7 @@ class BaseGrid extends Component {
      */
     getScrollIndex = () => {
         if (!Utility.isEmpty(this.props.defaultSelectedPosition))
-            return parseInt(this.props.defaultSelectedPosition);
+            return parseInt(this.props.defaultSelectedPosition, 10);
         else
             return 0;
     }
@@ -177,8 +177,8 @@ class BaseGrid extends Component {
     setDataSource() {
         if (!Utility.isEmpty(this.props.dataSource)) {
             this.dataSource = this.props.dataSource;
-            this.itemWidth = parseInt(this.dataSource[0].dimension.width,10) ;
-            this.itemHeight = parseInt(this.dataSource[0].dimension.height,10);
+            this.itemWidth = parseInt(this.dataSource[0].dimension.width, 10);
+            this.itemHeight = parseInt(this.dataSource[0].dimension.height, 10);
         }
     }
 
@@ -188,7 +188,7 @@ class BaseGrid extends Component {
      */
     getMaxVisibleItem = () => {
         if (!Utility.isEmpty(this.props.maxVisibleItem) && (this.dataSource.length >= this.props.maxVisibleItem))
-            return parseInt(this.props.maxVisibleItem);
+            return parseInt(this.props.maxVisibleItem, 10);
         else
             return this.dataSource.length;
     }
@@ -205,12 +205,12 @@ class BaseGrid extends Component {
      */
     scrollInit = (scrollIndex) => {
         this.scrollX = 0;
-        this.state.activeIndex = 0;
+        let activeState = 0;
         for (var i = 0; i < scrollIndex; i++) {
-            this.state.activeIndex = this.state.activeIndex + 1;
+            activeState = activeState + 1;
             this.scrollX = this.scrollX - (this.itemWidth + this.itemPadding);
         }
-        this.setState({ activeIndex: this.state.activeIndex, SCROOL_SPEED: 0 })
+        this.setState({ activeIndex: activeState, SCROOL_SPEED: 0 })
     }
 
     /**
@@ -289,15 +289,19 @@ class BaseGrid extends Component {
      * Return the Rendered View Items
      * if the active event true will pass the active Index for focus, otherwise grid will be not focus
      */
-    renderItem = () => {
+    renderItem=()=> {
         return (
-            this.state.listedData.map((item, i) => {
-                if (i < this.getMaxVisibleItem())
+            this.listedData.map((item, i) => {
+                if (i < this.getMaxVisibleItem()) {
                     if (this.props.activeEvent) {
                         return this.getView(i, this.state.activeIndex, item);
                     } else {
                         return this.getView(i, -1, item);
                     }
+                }
+                else {
+                    return false;
+                }
             }))
     }
 
@@ -307,7 +311,7 @@ class BaseGrid extends Component {
     sliderStyle() {
         var style = {
             WebkitTransform: "translate3d(" + this.scrollX + "px,0,0)",
-            width: ((parseInt(this.getMaxVisibleItem())) * (this.itemWidth + this.itemPadding) + 'px'),
+            width: ((parseInt(this.getMaxVisibleItem(), 10)) * (this.itemWidth + this.itemPadding) + 'px'),
             transition: "all " + this.state.SCROOL_SPEED + "ms linear",
         }
         return style;
@@ -327,15 +331,11 @@ class BaseGrid extends Component {
     }
 
     activeDetailStyle() {
-        if (this.itemHeight === 300)
-            return { height: "190px" };
-        else if (this.itemHeight === 180)
-            return { height: "290px" };
+        return { height: "100px", top: (this.itemHeight + 50) + "px", position: "relative" };
     }
 
     leftArrowStyle() {
-        if (this.itemHeight === 180)
-            return { top: "90px" };
+        return { top: (this.itemHeight / 2) - 14 + "px" };
     }
 
 
@@ -351,18 +351,25 @@ class BaseGrid extends Component {
                     {this.renderItem()}
                 </ul>
                 {this.props.activeEvent ?
-                    <span>
-                        {this.state.scrollIndex === 0 ? <div className="arrow left-arrow" style={this.leftArrowStyle()}></div>:""}
+                    <Hoc>
+                        {this.state.scrollIndex === 0 ? <div className="arrow left-arrow" style={this.leftArrowStyle()}></div> : ""}
                         <div className="active-details" style={this.activeDetailStyle()}>
                             <div className="left-col">
                                 <div className="heading-row">
-                                    <h3>{this.dataSource[this.state.scrollIndex].title}</h3> <span className="btn-style">{this.dataSource[this.state.scrollIndex].rating}</span> <span className="time">{Utility.timeFormat (this.dataSource[this.state.scrollIndex].runTime)}</span> <span className="price">{this.dataSource[this.state.scrollIndex].amount}</span>
+                                    <h3>{this.dataSource[this.state.scrollIndex].title}</h3>
+                                    {
+                                        this.dataSource[this.state.scrollIndex].rating ?
+                                            <span className="btn-style">{this.dataSource[this.state.scrollIndex].rating}</span> : ""
+                                    }
+
+                                    <span className="time">{Utility.timeFormat(this.dataSource[this.state.scrollIndex].runTime)}</span> <span className="price">{this.dataSource[this.state.scrollIndex].amount}</span>
                                 </div>
                                 <p>{this.dataSource[this.state.scrollIndex].description}</p>
                             </div>
                             <div className="key-action-details"><Trans i18nKey="key_action_details">Press OK <br />to view and <br />order</Trans></div>
                         </div>
-                    </span>:""
+                    </Hoc> : ""
+
                 }
             </Hoc>
         )

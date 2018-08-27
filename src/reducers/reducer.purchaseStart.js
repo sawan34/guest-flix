@@ -30,7 +30,6 @@ export default function (state = [], action) {
                 }
             }
             return state = Object.assign({}, fetchedData);
-            break;
 
         case ACTION.PURCHASE_PMS:
             fetchedData = {
@@ -48,8 +47,6 @@ export default function (state = [], action) {
             }
             return state = Object.assign({}, fetchedData);
 
-            break;
-
         case ACTION.PURCHASE_COMPLETE:
             fetchedData = {
                 error: "",
@@ -65,8 +62,6 @@ export default function (state = [], action) {
                 }
             }
             return state = Object.assign({}, fetchedData);
-
-            break;
 
         default:
             break;

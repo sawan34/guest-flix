@@ -14,11 +14,12 @@ import purchaseStartCompleteAction from '../../actions/action.purchaseStart';
 import PurchaseScreen from './PurchaseScreen';
 import { alertConstants } from '../../constants/alert.constant';
 import Utilities from '../../commonUtilities';
+import {commonConstants} from '../../constants/common.constants';
+
 
 /** 
     * Description:This is constant object to define the Keyname
  */
-const KEY =  {"UP": "UP","DOWN":"DOWN"};
 const OPEN_SCREEN = {"PURCHASE":"purchase","RELATED_TITLE":"relatedTitles","RESUME":"resume"};
 const MAX_ACTOR_LENGTH = 6;
 const MAX_DIRECTOR_LENGTH = 3;
@@ -31,7 +32,6 @@ class ProgramDetails extends BaseScreen {
         this.state = {
             ...this.state,
             screen: SCREENS.programdetails,//This is mandatory for all the screens 
-            keyEvent:{},
             active:1,
             overlay:false,
         }
@@ -52,10 +52,10 @@ class ProgramDetails extends BaseScreen {
         if(!this.state.overlay){
             switch(keycode){
                 case KeyMap.VK_UP:
-                this.focusChange(KEY.UP);
+                this.focusChange(commonConstants.DIRECTION_UP);
                 break;
                 case KeyMap.VK_DOWN:
-                this.focusChange(KEY.DOWN);
+                this.focusChange(commonConstants.DIRECTION_DOWN);
                 break;
                 case KeyMap.VK_BACK:
                 this.handleBack();
@@ -96,12 +96,12 @@ class ProgramDetails extends BaseScreen {
      * @return {null}
      */    
     focusChange(_direction) {
-        if(_direction === KEY.UP){
+        if(_direction === commonConstants.DIRECTION_UP){
             if(this.state.active > 1){
                 this.setState({active:this.state.active-1});
             }
         }
-        if(_direction === KEY.DOWN){
+        if(_direction === commonConstants.DIRECTION_DOWN){
             if(this.state.active <  this.buttonList.length){
                 this.setState({active:this.state.active+1});
             }
@@ -129,7 +129,7 @@ class ProgramDetails extends BaseScreen {
      */
     componentDidUpdate(){
         if(document.getElementById('left-button')){
-            this.buttonList = document.getElementById('left-button').childNodes;
+            this.buttonList = document.getElementById('left-button').children;
         }  
     }
 
@@ -140,7 +140,7 @@ class ProgramDetails extends BaseScreen {
      */
     componentDidMount(){
         if(document.getElementById('left-button')){
-            this.buttonList = document.getElementById('left-button').childNodes;
+            this.buttonList = document.getElementById('left-button').children;
         }
     }
     /**
@@ -151,12 +151,14 @@ class ProgramDetails extends BaseScreen {
      actorList(actorData) {
         if(actorData){
             return  actorData.filter((Obj,index)=>{
-                if(Obj.role===CAST_NAME.Actor)
-                return true
+                if(Obj.role===CAST_NAME.Actor){return true}else{return false;}
             }).map((cast, index)=>{
                 if(index <= (MAX_ACTOR_LENGTH-1)){
-                    return <li key={cast.nameId + index}>{cast.name}</li>
-                }
+                    if(index!==0 && cast.name !== '' && cast.name.charAt(0) !== ","){
+                        cast.name = ", " + cast.name;
+                    }
+                    return <span key={cast.nameId + index}>{cast.name}</span>
+                }else{return false;}
             })
         }
      }
@@ -214,21 +216,22 @@ class ProgramDetails extends BaseScreen {
                         <PurchaseScreen data={this.state.data.data} closePopup={this.closePopup} purchaseStartAction={this.props.purchaseStartAction} pmsPurchaseAction={this.props.pmsPurchaseAction} purchaseCompleteAction={this.props.purchaseCompleteAction} reducerPurchaseStart = {this.props.reducerPurchaseStart}  programId = {this.state.data.data.id} goToScreen = {this.goToScreen} />
                     </div>:""
                 }
-                <div className={this.state.overlay ? "bluureffects-overlay" : null}>
+                <div className={this.state.overlay ? "bluureffects-overlay" : ""}>
                 <div className="home-top-poster-details">
-                    <img src={this.state.data.data.preferredImage.uri} onError={Utilities.onImageErrorHandler} />
+                    <img src={this.state.data.data.preferredImage.uri} onError={Utilities.onImageErrorHandler} alt="" />
                 </div>
                 <div className="product-details-wrapper">
                     <div className="left-col">
                         <div className="poster">
-                            <img src={this.state.data.data.preferredImage.uri} onError={Utilities.onImageErrorHandler} />
+                            <img src={this.state.data.data.preferredImage.uri} onError={Utilities.onImageErrorHandler} alt="" />
                         </div>
                         <div id="left-button">
-                            {!this.state.data.data.isPurchased ? <button id="purchase" className={this.getActiveClass(1)} ><span><Trans i18nKey="purchase">Purchase</Trans><br /> ${this.state.data.data.price}</span></button>:null}
+                            {!this.state.data.data.isPurchased ? <button id="purchase" className={this.getActiveClass(1)} ><span><Trans i18nKey="purchase">Purchase</Trans><br /> ${this.state.data.data.price}</span></button>:""}
 
-                            {this.state.data.data.isPurchased ? <button id="resume" className={this.getActiveClass(1)} ><span><Trans i18nKey="resume">Resume</Trans></span></button>:null}
+                            {this.state.data.data.isPurchased ? <button id="resume" className={this.getActiveClass(1)} ><span><Trans i18nKey="resume">Resume</Trans></span></button>:""}
 
                             <button id="relatedTitles" className={this.getActiveClass(2)} ><span><Trans i18nKey="related_titles">Related <br />Titles</Trans></span></button>
+
                         </div>
                     </div>
                     <div className="right-col">
@@ -236,7 +239,7 @@ class ProgramDetails extends BaseScreen {
                             <h3>{this.state.data.data.title}</h3>
                             <div className="heading-row">
                             {
-                                !Utilities.isEmpty(this.state.data.data.rating) ? <span className="btn-style">{this.state.data.data.rating}</span> : null
+                                !Utilities.isEmpty(this.state.data.data.rating) ? <span className="btn-style">{this.state.data.data.rating}</span> : ""
                             }
                             <span className="text">{this.state.data.data.releaseYear}</span> <span className="text">{this.timeFormat(this.state.data.data.runTime)}</span></div>
                             <div className="descriptions">
@@ -253,9 +256,9 @@ class ProgramDetails extends BaseScreen {
                                 </div>
                                 <div className="list">
                                     <h4><Trans i18nKey="actors">Actors</Trans>:</h4>
-                                    <ul className="list actors">
+                                    <div className="list actors">
                                         {this.actorList(this.state.data.data.cast)}
-                                    </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>

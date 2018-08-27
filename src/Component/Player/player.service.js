@@ -22,6 +22,7 @@ export class PlayerService {
         this.PAUSED = 2;
         this.FORWARD = 3;
         this.REWIND = 4;
+        this.Error = -1;
         this.SEEK_INTERVAL = 10;
         this.duration = 0;
         this.speedForwardRewind = 0;
@@ -48,6 +49,7 @@ export class PlayerService {
         this.onFinish = null;
         this.url = null;
         this.speedState = 1;
+        this.source = this.plugin.childNodes[0];
     }
 
     /**
@@ -151,16 +153,17 @@ export class PlayerService {
    */
     setVideoURL = function (url) {
         this.url = url;
+
     }
 
 
-  /**
-  * Description: set seek Time in sec for resume playback
-  * @param {url} int
-  * @return {null}
-  */
+    /**
+    * Description: set seek Time in sec for resume playback
+    * @param {url} int
+    * @return {null}
+    */
     setSeekTime = function (seekPosition) {
-        this.seekTime = seekPosition/1000;
+        this.seekTime = seekPosition / 1000;
     }
 
 
@@ -175,23 +178,20 @@ export class PlayerService {
             // Buffering is in process, ignoring play request.
         }
         else {
-            if (this.url == null) {
-                //No videos to play
+            if (this.state === -1) {
+                // this.plugin.src = this.url;
+                //this.plugin.style.src = this.url;
+                this.plugin.setAttribute('autoplay', true);
+                this.source.setAttribute('src', this.url);
+                this.playStream();
+            } else if (!this.plugin.paused) {
+                this.pauseVideo();
             }
-            else {
-                if (this.state === -1) {
-                    this.plugin.src = this.url;
-                    this.plugin.style.src = this.url;
+            else if (this.plugin.paused) {
+                if (this.state === this.FORWARD || this.state === this.REWIND) {
+                    this.resumeVideo();
+                } else {
                     this.playStream();
-                } else if (!this.plugin.paused) {
-                    this.pauseVideo();
-                }
-                else if (this.plugin.paused) {
-                    if (this.state === this.FORWARD || this.state === this.REWIND) {
-                        this.resumeVideo();
-                    } else {
-                        this.playStream();
-                    }
                 }
             }
         }
@@ -204,7 +204,7 @@ export class PlayerService {
   */
     playStream() {
         this.plugin.play();
-        this.state = this.PLAYING;
+
         this.onplayFinish();
     }
 
@@ -254,7 +254,7 @@ export class PlayerService {
   * @return {null}
   */
     resumeVideo = function () {
-        if ((this.stateForwardOrRewind === this.FORWARD) || (this.stateForwardOrRewind === this.REWIND) || (this.pauseAfterFFRR === true) || this.seekTime!==0) {
+        if ((this.stateForwardOrRewind === this.FORWARD) || (this.stateForwardOrRewind === this.REWIND) || (this.pauseAfterFFRR === true) || this.seekTime !== 0) {
             // Resume video... clear timer
             clearInterval(this.timerForwardRewind);
             this.manualProgressUpdate();
@@ -540,14 +540,12 @@ export class PlayerService {
                 }
             }
             if (that.plugin.duration && that.plugin.duration > 0) {
-
                 that.onTimeChange();
                 if (that.plugin.currentTime >= that.duration) {
                     //Manually fire onComplete event if not available 
                     that.onComplete();
                 }
             }
-
         }, 100);
     }
 
@@ -565,11 +563,17 @@ export class PlayerService {
         this.plugin.onerror = this.onError.bind(this);
         this.plugin.onloadedmetadata = this.onMetaData.bind(this);
         this.plugin.onplaying = function () {
-            // this.showMessage('.......pppppplayyyyy');
+            this.state = this.PLAYING;
+            this.showMessage('');
             this.isBuffering = false;
         }.bind(this);
         this.plugin.onloadeddata = function () {
-            // this.showMessage('....starrrrrrr....');
+            this.showMessage('');
+        this.showMessage('');
+            this.isBuffering = false;
+        }.bind(this);
+        this.plugin.onloadeddata = function () {
+             this.showMessage('');
             this.isBuffering = false;
         }.bind(this);
         this.plugin.onwaiting = this.onWaiting.bind(this);
@@ -582,7 +586,7 @@ export class PlayerService {
   */
     updateUITime = function (_currentTime, _duration) {
         function pad(n, width) {
-            var n = n + '';
+            n = n + '';
             return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
         }
 

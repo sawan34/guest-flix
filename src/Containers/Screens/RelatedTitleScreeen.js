@@ -106,7 +106,7 @@ class RelatedTitle extends BaseScreen {
         };
 
         return (
-            <img style={styles} src={props.image_url} onError={Utility.onImageErrorHandler}></img>
+            <img style={styles} src={props.image_url} onError={Utility.onImageErrorHandler} alt =""></img>
         );
     }
 
@@ -167,12 +167,12 @@ class RelatedTitle extends BaseScreen {
                             this.selectableData.push(getResponse.message.data[relatedItemNo]);
                             var itemObj = {
                                 image_url: getResponse.message.data[relatedItemNo].preferredImage.uri,
-                                width: parseInt(getResponse.message.data[relatedItemNo].preferredImage.width),
-                                height: parseInt(getResponse.message.data[relatedItemNo].preferredImage.height)
+                                width: parseInt(getResponse.message.data[relatedItemNo].preferredImage.width,10) || 200,
+                                height: parseInt(getResponse.message.data[relatedItemNo].preferredImage.height,10) || 300
                             };
                             this.state.items.push(this.selectableItem(itemObj));
-                            this.gridProps.itemHeight = parseInt(getResponse.message.data[relatedItemNo].preferredImage.height);
-                            this.gridProps.itemWidth = parseInt(getResponse.message.data[relatedItemNo].preferredImage.width);
+                            this.gridProps.itemHeight = parseInt(getResponse.message.data[relatedItemNo].preferredImage.height,10) || 300;
+                            this.gridProps.itemWidth = parseInt(getResponse.message.data[relatedItemNo].preferredImage.width,10) || 200;
                         }
                         var gridWidth = (this.gridProps.itemWidth + (10)) * 6;
                         if (gridWidth > selectableWrapperWidth) {

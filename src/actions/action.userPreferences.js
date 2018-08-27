@@ -30,9 +30,9 @@ export function actionGetUserPreferences(stayId){
  */
 export function actionSaveUserPreferences(stayId,data){
     //Fetch 
-    var data =  userPreferenceService.saveUserPreferences(stayId,data);
+    var dataFetch =  userPreferenceService.saveUserPreferences(stayId,data);
     return {
         type:ACTION.SAVE_USER_PREFERENCES,
-        payload:data
+        payload:dataFetch
     }
 }  

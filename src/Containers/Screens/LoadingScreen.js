@@ -16,13 +16,13 @@ import { Md5 } from 'ts-md5/dist/md5';
 import { validCodes } from '../../constants/error.constant'
 import { alertConstants } from '../../constants/alert.constant';
 import { commonConstants } from '../../constants/common.constants'
-
+import DrmService from '../../drm/service.drm.playback';
 class LoadingScreen extends BaseScreen {
 
     constructor() {
         super();
-        this.roomId;
-        this.siteId;
+        this.roomId="";
+        this.siteId="";
         this.state = {
             ...this.state,
             screen: SCREENS.loading,//This is mandatory for all the screens 
@@ -35,6 +35,7 @@ class LoadingScreen extends BaseScreen {
      */
     init() {
         this.getAuthTokenRequest();
+        DrmService.loadDrmClient();
     }
 
     /**
@@ -79,8 +80,6 @@ class LoadingScreen extends BaseScreen {
     * Request the AUTH Service to get the AUTH API and store in session Storage in String format
     * Calling Action for UiConfig Data
     * check if Access Token Length is greater than 10 , procceed to UiConfig call
-    * @param {*} siteId 
-    * @param {*} roomId 
     */
     getAuthTokenRequest() {
         this.siteId = utility.getQueryStringValue('siteId');

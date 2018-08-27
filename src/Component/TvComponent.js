@@ -4,7 +4,7 @@
 * @author Amit Singh Tomar
 * @date  03.08.2018
 */
-import React, { Component } from 'react';
+import { Component } from 'react';
 import UTILITY from "../commonUtilities";
 
 // Animation time Constant
@@ -22,6 +22,8 @@ class TvComponent extends Component {
         this.onKeyDown = this.onKeyDown.bind(this);
         this.handleKeyPress = this.handleKeyPress.bind(this);
         this.keyPressTime = new Date().getTime();
+        this.isComponentLoaded = this.isComponentLoaded.bind(this);
+        this.componentLoaded = false;
     }
 
 
@@ -51,6 +53,11 @@ class TvComponent extends Component {
 
     componentWillUnmount() {
        this.deregisterKeyListener();
+       this.componentLoaded = false;
+    }
+
+    isComponentLoaded (){
+        return this.componentLoaded;
     }
 
     /**
@@ -63,6 +70,14 @@ class TvComponent extends Component {
         this.registerKeyListener();
     }
 
+    componentWillMount(){
+        this.componentLoaded = false;
+    }
+    
+
+    componentWillUpdate(){
+        this.componentLoaded = false;
+    }
      /**
     * Description: This method disable key Listener for the component
     *  @param {null}   

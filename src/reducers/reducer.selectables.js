@@ -18,7 +18,7 @@ export default function (state = [], action) {
         
         case ACTION.REFRESH_SELECTABLE:
         return state = [];
-        break;
+        
         case ACTION.GET_SELECTABLES:
             if (action.payload === "cached") {
                 return state;
@@ -64,7 +64,6 @@ export default function (state = [], action) {
             }else{
                     return state = state.concat(fecthedData);                
             }
-            break;
             default:
             break;
     }

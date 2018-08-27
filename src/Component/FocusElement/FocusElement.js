@@ -73,6 +73,8 @@ class FocusElement extends TvComponent {
                 case KeyMap.VK_ENTER:
                     this.getActiveDetails();
                     break;
+                default:
+                break;
             }
         } catch (e) {
             console.log(e);
@@ -115,6 +117,8 @@ class FocusElement extends TvComponent {
                 if (this.state.selectedRow === (this.totalRow - 1) || !this.rowData()[this.state.selectedRow + 1][this.state.selectedItemIndex]) {
                     this.props.eventCallback(KEY.DOWN, this.state.selectedRow, this.state.scrolledRow, this.state.selectedItemIndex)
                 }
+                break;
+            default:
                 break;
         }
     }
@@ -178,8 +182,21 @@ class FocusElement extends TvComponent {
                         selectedItemIndex: 0
                     });
                     break;
+                default:
+                    break;
             }
         }
+
+        this.componentLoaded = true;
+    }
+
+    /**
+     * Description:set focus of elment Focus 
+     * @param {Number} index
+     * @return {null}
+     */
+    resetCurrentFocus(index){
+        this.setState({selectedItemIndex:index});
     }
 
     /**
@@ -193,6 +210,7 @@ class FocusElement extends TvComponent {
             this.totalItem = this.props.data.length;
         }
         this.rowHeight = document.getElementsByClassName('data-list')[0].children[0].clientHeight;
+        this.componentLoaded = true;
     }
 
     /**
@@ -302,7 +320,7 @@ class FocusElement extends TvComponent {
 
     render() {
         var style = {
-            transform: "translate3d(0px," + this.state.scrollY + "px,0)",
+            WebkitTransform: "translate3d(0px," + this.state.scrollY + "px,0)",
             transition: 'all 300ms ease-in-out'
         }
         return (

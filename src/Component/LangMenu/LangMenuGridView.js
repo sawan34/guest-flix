@@ -28,11 +28,11 @@ class LangMenuGridView extends Component {
             scrolledRowIndex: 0,
             direction: "",
             firsttimeActive: true,
-            subtitle: [{value: "None", id: "none", status: true}],
+            subtitle: [{ value: "None", id: "none", status: true }],
             audiolang: _objAudiolang,
             errorMessage: ''
         }
-        this.ROW_VISIBLE=5;
+        this.ROW_VISIBLE = 5;
         this.purchase = { gfOrderId: '', localTxId: '' };
         this.currentActiveGrid = 1;
         this.availableAudio = this.props.audioLangData;
@@ -49,7 +49,7 @@ class LangMenuGridView extends Component {
     eventCallbackFunction(direction, currentRowIndex, scrolledRowIndex) {
         switch (direction) {
             case commonConstants.DIRECTION_LEFT:
-                
+
                 if (this.state.activeGrid === 1) {
                     this.noFocusEvent()
                 }
@@ -62,8 +62,8 @@ class LangMenuGridView extends Component {
                     })
 
                     this.audioLangGrid.focus();
-          this.subtitleGrid.deFocus();
-         
+                    this.subtitleGrid.deFocus();
+
                 }
                 break;
 
@@ -79,15 +79,17 @@ class LangMenuGridView extends Component {
 
                     this.audioLangGrid.deFocus();
                     this.subtitleGrid.focus();
-          
+
                 }
                 break;
             case commonConstants.DIRECTION_UP:
                 this.noFocusEvent()
                 break;
+            default:
+                break;
 
         }
-       
+
     }
 
     /**
@@ -105,15 +107,13 @@ class LangMenuGridView extends Component {
         let updateArray = [...this.state[gridname]];
 
         updateArray.map((val, i) => {
-
-            Object.keys(val).map((innerValue) => {
-                val.status = false;
-                if (i === index) {
-                    val.status = true;
-                  }
-                return val;
-            })
-        })
+            val.status = false;
+            if (i === index) {
+              val.status = true;
+            }
+            return val;
+          });
+         
         this.setState({ updateArray });
     }
     /**
@@ -132,21 +132,21 @@ class LangMenuGridView extends Component {
     init(item, i) {
         let obj = null;
         if (i === 0) {
-          obj = {
-            value: item,
-            id: 'audiolang-' + i,
-            status: true
-          }
+            obj = {
+                value: item,
+                id: 'audiolang-' + i,
+                status: true
+            }
         }
         else {
-          obj = {
-            value: item,
-            id: 'audiolang-' + i,
-            status: false
-          }
+            obj = {
+                value: item,
+                id: 'audiolang-' + i,
+                status: false
+            }
         }
         return obj
-      }
+    }
 
     /**
     * Description: Convert Audio Language and Subtitle Array into Object and Set into State
@@ -164,7 +164,7 @@ class LangMenuGridView extends Component {
                 value: commonUtility.getLanguageName(item),
                 id: 'subtitle-' + i,
                 status: false
-              }
+            }
         })
 
         this.setState({
@@ -173,19 +173,19 @@ class LangMenuGridView extends Component {
         })
     }
 
-    componentDidMount(){
+    componentDidMount() {
         this.audioLangGrid.focus();
-      }
+    }
 
     render() {
         return (
             <div className="audio-language">
                 <div className="row">
                     <div className="lang-col">
-                    <h3><Trans i18nKey="audio_language"></Trans>:</h3>
+                        <h3><Trans i18nKey="audio_language"></Trans>:</h3>
                         <div className="col-2 radio-container">
                             <RadioGrid
-                             onRef={instance => (this.audioLangGrid = instance)}
+                                onRef={instance => (this.audioLangGrid = instance)}
                                 data={this.state.audiolang}
                                 enterEvent={this.enterEvent}
                                 gridNo={1}
@@ -205,11 +205,11 @@ class LangMenuGridView extends Component {
                         </div>
                     </div>
                     <div className="lang-col">
-                    <h3><Trans i18nKey="subtitles"></Trans>:</h3>
+                        <h3><Trans i18nKey="subtitles"></Trans>:</h3>
                         <div className="col-2  radio-container">
 
                             <RadioGrid
-                             onRef={instance => (this.subtitleGrid = instance)}
+                                onRef={instance => (this.subtitleGrid = instance)}
                                 data={this.state.subtitle}
                                 enterEvent={this.enterEvent}
                                 gridNo={2}

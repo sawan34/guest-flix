@@ -9,9 +9,8 @@ import CommonUtility from '../../../commonUtilities';
 
 import { alertConstants } from '../../../constants/alert.constant';
 import { Trans } from 'react-i18next';
-import UTILITY from "../../../commonUtilities";
 import RadioGrid from '../../FocusElement/RadioGrid';
-
+import { commonConstants } from '../../../constants/common.constants';
 
 /**
 * Description: Define constant to visible Component Row
@@ -21,16 +20,16 @@ const ROW_VISIBLE = {
 }
 const COMPONENT_NAME = {
   "LANGUAGE": "language"
-  
+
 }
 /**
 * Description: Define constant for the Key LEFT, RIGHT, UP, DOWN
 */
 const KEY = {
-  "LEFT": "LEFT",
-  "RIGHT": "RIGHT",
-  "UP": "UP",
-  "DOWN": "DOWN"
+  "LEFT": commonConstants.DIRECTION_LEFT,
+  "RIGHT": commonConstants.DIRECTION_RIGHT,
+  "UP": commonConstants.DIRECTION_UP,
+  "DOWN": commonConstants.DIRECTION_DOWN
 }
 class Language extends Component {
   constructor(props) {
@@ -56,6 +55,7 @@ class Language extends Component {
     this.focus = this.focus.bind(this);
     this.deFocus = this.deFocus.bind(this);
     this.isFocused = this.isFocused.bind(this);
+    this.isComponentLoaded = this.isComponentLoaded.bind(this);
   }
 
   /**
@@ -68,7 +68,7 @@ class Language extends Component {
     * @return {null}
     */
   enterEvent(gridname, name, rowIndex, colIndex, col) {
-    if (gridname != COMPONENT_NAME.BUTTON) {
+    if (gridname !== COMPONENT_NAME.BUTTON) {
       let index = rowIndex * col + colIndex;
       let updateArray = [...this.state[gridname]];
 
@@ -88,12 +88,12 @@ class Language extends Component {
         if (userPreferance.type === alertConstants.SUCCESS) {
           toSendData.stayId = userPreferance.data.stayId;
           toSendData.preferences = {
-            uiLanguage: name.value,
+            uiLanguage: name.lang_Code,
             programFilters: userPreferance.data.programFilters
           }
           this.props.actionSaveUserPreferences(this.props.stayId, toSendData);
-          this.props.changeLanguage(name.value);
-          return { selectedLang: name.value, error: false };
+          this.props.changeLanguage(name.lang_Code);
+          return { selectedLang: name.lang_Code, error: false };
         } else { // on error
           this.setState(
             {
@@ -124,23 +124,25 @@ class Language extends Component {
     if (item === this.defaultUIlang) {
       this.preSelectedLangIndex = i;
       obj = {
-        value: item,
+        value: CommonUtility.getLanguageName(item),
         id: COMPONENT_NAME.LANGUAGE + i,
-        status: true
+        status: true,
+        lang_Code: item
       }
     }
     else {
       obj = {
-        value: item,
+        value: CommonUtility.getLanguageName(item),
         id: COMPONENT_NAME.LANGUAGE + i,
-        status: false
+        status: false,
+        lang_Code: item
       }
     }
     return obj
   }
 
   componentDidMount() {
-    if (!UTILITY.isEmptyObject(this.props.onRef)) {
+    if (!CommonUtility.isEmptyObject(this.props.onRef)) {
       this.props.onRef(this);
     }
   }
@@ -163,47 +165,53 @@ class Language extends Component {
         this.deFocus();
         this.props.removeSubMenu();
         break;
+      default:
+        break;
     }
     return;
   }
 
   focus() {
     this.audioLangGrid.focus();
-    this.setState({activeGrid: 1});
+    this.setState({ activeGrid: 1 });
   }
 
   deFocus() {
     this.audioLangGrid.deFocus();
-    this.setState({activeGrid: -1});
+    this.setState({ activeGrid: -1 });
   }
 
   isFocused() {
     return this.audioLangGrid.isFocused();
   }
 
+  isComponentLoaded() {
+    return (this.audioLangGrid.isComponentLoaded());
+  }
+
   render() {
     return (
       <div className="sub-menu language">
-        {<div>{this.state.error ? this.state.errorMessage:""}</div>}
+        {<div>{this.state.error ? this.state.errorMessage : ""}</div>}
         <div className="heading"><h3><Trans i18nKey="choose_your_lang">Choose Your Language</Trans></h3></div>
         <div className="checkbox-lists">
           <div className="col-2">
-          <RadioGrid
-                    onRef={instance => (this.audioLangGrid = instance)}
-                    data={this.state.language}
-                    enterEvent={this.enterEvent}
-                    gridNo={1}
-                    gridName={'language'}
-                    col={2}
-                    leftNotMove={false}
-                    isKeyEvent={this.state.activeGrid === 1}
-                    eventCallback={this.eventCallbackFunction}
-                    onChange={this.onChange}
-                    activeIndex={0}
-                    currentRowIndex={this.state.currentRowIndex}
-                    scrolledRowIndex={this.state.scrolledRowIndex}
-                    focusDirection={this.state.direction}
-                    visibleRow={ROW_VISIBLE.RADIO_BUTTON}
+            <RadioGrid
+              onRef={instance => (this.audioLangGrid = instance)}
+              data={this.state.language}
+              enterEvent={this.enterEvent}
+              gridNo={1}
+              gridName={'language'}
+              col={2}
+              leftNotMove={false}
+              isKeyEvent={this.state.activeGrid === 1}
+              eventCallback={this.eventCallbackFunction}
+              onChange={this.onChange}
+              activeIndex={0}
+              currentRowIndex={this.state.currentRowIndex}
+              scrolledRowIndex={this.state.scrolledRowIndex}
+              focusDirection={this.state.direction}
+              visibleRow={ROW_VISIBLE.RADIO_BUTTON}
             />
 
           </div>

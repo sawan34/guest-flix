@@ -9,20 +9,14 @@ import React, { Component } from 'react';
 import Home from './Screens/Home';
 import LoadingScreen from './Screens/LoadingScreen';
 import ProgramDetails from './Screens/ProgramDetails';
-import  Player from '../Component/Player/Player'
+import Player from '../Component/Player/Player'
 import DataLoadingScreen from './Screens/DataLoadingScreen';
 import RelatedTitleScreen from './Screens/RelatedTitleScreeen';
+import Demo from '../virtual-slider/demo';
 import { withRouter } from "react-router-dom";
 import { SCREENS } from '../constants/screens.constant';
 
 class ScreenManager extends Component {
-
-    constructor(props) {
-        super(props)
-        this.state = {
-            keyPressCode: 0
-        }
-    }
 
     /**
     * Description: handle previous and BackScreen
@@ -61,6 +55,9 @@ class ScreenManager extends Component {
             case SCREENS.relatedtitle:
                 Screen = <RelatedTitleScreen routerData={this.props} />
                 break;
+            case "demo":
+                Screen = <Demo routerData={this.props} />
+                break;    
             default:
                 Screen = <LoadingScreen routerData={this.props} />;
                 break

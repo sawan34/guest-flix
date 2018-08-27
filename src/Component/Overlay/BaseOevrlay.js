@@ -5,10 +5,7 @@
 * @date  16.07.2018
 */
 
-//import React, {Component} from 'react;
 import React, { Component } from 'react';
-import KeyMap from '../../constants/keymap.constant';
-//import { connect } from "react-redux";
 
 export default class BaseOverlay extends Component {
   /**
@@ -17,7 +14,7 @@ export default class BaseOverlay extends Component {
      */
     render() {
         return (
-            <div className="sub-menu" style={this.props.show} className={this.props.myClass}>
+            <div  style={this.props.show} className={this.props.myClass || "sub-menu" }>
                 <div className="movie-list">
                     {this.props.children ?
                         this.props.children:""
