@@ -63,9 +63,9 @@ class Demo extends Component {
 
   renderItem = (index, key) => {
     return (
-      <div key={key} style={{ ...styles.item, backgroundColor: randomColor() }}>
+      <li  style={{ ...styles.item, backgroundColor: "red",border:"1px solid #000" }}>
         {index}
-      </div>
+      </li>
     )
   }
 
@@ -96,7 +96,7 @@ class Demo extends Component {
   }
 
   render() {
-    const itemN = 300;
+    const itemN = 50;
     return (
       
       <div>

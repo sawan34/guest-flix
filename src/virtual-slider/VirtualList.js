@@ -14,6 +14,7 @@ class VirtualList extends PureComponent {
     this.c = 1;
   }
 
+  
   scrollTo = index => {
     const { startAction, endAction, length}  = this.props
     const { itemPerPage } = this.state
@@ -28,6 +29,8 @@ class VirtualList extends PureComponent {
 
     if (index === this.state.from) return
 
+    console.log(index);
+
     this.setState({
       from: index
     })
@@ -39,17 +42,17 @@ class VirtualList extends PureComponent {
     this.container = findDOMNode(this)
     this.calculateItemPerPage(this.props, this.container)
 
-    window.addEventListener(
-      'resize',
-      this.calculateItemPerPage.bind(null, this.props, this.container)
-    )
+    // window.addEventListener(
+    //   'resize',
+    //   this.calculateItemPerPage.bind(null, this.props, this.container)
+    // )
   }
 
   componentWillUnmount() {
-    window.removeEventListener(
-      'resize',
-      this.calculateItemPerPage.bind(null, this.props, this.container)
-    )
+    // window.removeEventListener(
+    //   'resize',
+    //   this.calculateItemPerPage.bind(null, this.props, this.container)
+    // )
   }
 
   calculateItemPerPage = (props, container) => {
@@ -65,29 +68,43 @@ class VirtualList extends PureComponent {
 
   goBack = () => {
     const { length, itemSize } = this.props
-    const { itemPerPage, from, viewportWidth } = this.state
-    const prevValue = Math.max(from - itemPerPage, 0)
-    const nextStyle = getSizes(itemSize, itemPerPage, prevValue, length, viewportWidth)
-
-    this.list.style.transform = `translateX(0px)`
-    this.list.style.transition = 'transform 0.5s ease'
+    const { itemPerPage, from, viewportWidth } = this.state;
+    if(from <=0){
+      return;
+    }
+    
+    const prevValue = Math.max(from - 1, 0)
+    //Math.max(from - itemPerPage, 0)
+    const nextStyle = getSizes(itemSize, itemPerPage, prevValue, length, viewportWidth,true)
+    if(!nextStyle.lastPage){
+       this.list.style.WebkitTransform = `translate3d(-${ nextStyle.offsetLeft <=0  ? nextStyle.offsetLeft: nextStyle.offsetLeft - 151}px,0,0)`;
+    }else{
+       this.list.style.WebkitTransform = `translate3d(-${nextStyle.offsetLeft}px,0,0)`
+    } 
+    this.list.style.transition = 'all 300ms ease-in-out'
     const doSetState = () => {
       this.list.style.transition = 'none'
-      this.list.style.transform = `translateX(-${nextStyle.offsetLeft}px)`
+      this.list.style.WebkitTransform = `translate3d(-${nextStyle.offsetLeft}px,0,0)`
       this.scrollTo(prevValue)
     }
 
     if (this.lastTransitionendAction) {
       this.list.removeEventListener("transitionend", this.lastTransitionendAction)
     }
-    this.list.addEventListener('transitionend', doSetState)
+    
+    this.list.addEventListener('transitionend', doSetState);
     this.lastTransitionendAction = doSetState
   }
 
   goNext = () => {
     const { length, itemSize } = this.props
     const { itemPerPage, from, viewportWidth } = this.state
-    const nextStart = Math.min(from + itemPerPage, length - itemPerPage)
+    if(from +1  >= length ){
+      return;
+    }
+    const nextStart = Math.max(from + 1, 0);
+    //this.c++;
+    //Math.min(from + itemPerPage, length - itemPerPage)
     // /this.c++;
 
     const nextStyle = getSizes(itemSize, itemPerPage, nextStart, length, viewportWidth)
@@ -107,11 +124,11 @@ class VirtualList extends PureComponent {
 
 
 
-    this.list.style.transform = `translateX(-${animatingOffset}px)`
-    this.list.style.transition = 'transform 0.5s ease'
+    this.list.style.WebkitTransform = `translate3d(-${animatingOffset}px,0,0)`
+    this.list.style.transition = 'all 500ms ease-in-out'
     const doSetState = () => {
       this.list.style.transition = 'none'
-      this.list.style.transform = `translateX(-${nextStyle.offsetLeft}px)`
+      this.list.style.WebkitTransform = `translate3d(-${nextStyle.offsetLeft}px,0,0)`
       this.scrollTo(nextStart)
     }
 
@@ -136,8 +153,8 @@ class VirtualList extends PureComponent {
     )
 
     const style = {
-      width: itemSize * length,
-      transform: `translateX(-${offsetLeft}px)`,
+      width: 151 * 50,
+      WebkitTransform: `translate3d(-${offsetLeft}px,0,0)`,
       willChange: 'transform'
     }
 
@@ -148,9 +165,9 @@ class VirtualList extends PureComponent {
 
     return (
       <div className="slider-container" style={containerStyle}>
-        <div style={style} ref={node => (this.list = node)}>
+        <ul style={style} ref={node => (this.list = node)}>
           {items}
-        </div>
+        </ul>
       </div>
     )
   }
