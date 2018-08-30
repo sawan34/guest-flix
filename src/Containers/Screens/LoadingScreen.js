@@ -62,7 +62,7 @@ class LoadingScreen extends BaseScreen {
                     if(!utility.isEmpty(this.props.uiConfigReducer.message.data.defaultPreferences.uiLanguage)){
                             this.props.i18n.changeLanguage(this.props.uiConfigReducer.message.data.defaultPreferences.uiLanguage);                        
                     }
-                    this.goToScreen("demo")
+                    this.goToScreen("home")
                 }
             }
         }

@@ -50,11 +50,6 @@ export const getAnimatingOffset = (
     viewportWidth
   )
 
-  // if (length - nextPosition <= itemPerPage) {
-  //   const totalSize = (end - start) * itemSize
-  //   return totalSize - viewportWidth
-  // }
-
   let offsetIndex = 0
   for (let i = start; i < end; i++) {
     if (nextPosition === i) {

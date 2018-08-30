@@ -46,7 +46,7 @@ class GroupingGrid extends TvComponent {
         }
         this.scrollSpeed = 200;
         this.topPosition = 0;
-        this.numberTofetchSeletables = 10; //number of seletables to fetch at time
+        this.numberTofetchSeletables = 20; //number of seletables to fetch at time
         this.gridrowLoad = 4;
         this.groupingHeight = Utilities.getHorizontalHeight();
         this.isFilterValueChange = false;
@@ -296,8 +296,7 @@ class GroupingGrid extends TvComponent {
                 });
                 break
             case KeyMap.VK_LEFT:
-                if (this.state.gridPositionColumn[this.state.gridPositionRow] === 0 ||
-                    this.state.gridPositionColumn[this.state.gridPositionRow] === undefined) {
+                if (this.state.gridPositionColumn[this.state.gridPositionRow] === 0 ) {
                     this.props.changeMenuStatus();
                     this.deFocus();
                 } else {
@@ -318,7 +317,6 @@ class GroupingGrid extends TvComponent {
      * @return {null}
      */
     handleFocusChange(focusLostPosition, currentItemFocus) {
-
         this.setState((prevState) => {
             prevState.gridPositionColumn[prevState.gridPositionRow] = currentItemFocus;
             return {

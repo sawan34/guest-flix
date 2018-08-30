@@ -4,20 +4,6 @@ import KeyMap from '../constants/keymap.constant';
 
 import VirtualSlider from "./VirtualList"
 
-function getRandomIntInclusive(min, max) {
-  min = Math.ceil(min)
-  max = Math.floor(max)
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
-
-function randomColor() {
-  const red = getRandomIntInclusive(0, 255)
-  const green = getRandomIntInclusive(0, 255)
-  const blue = getRandomIntInclusive(0, 255)
-
-  return `rgb(${red}, ${green}, ${blue})`
-}
-
 const styles = {
   item: {
     width: 151,
@@ -96,7 +82,7 @@ class Demo extends Component {
   }
 
   render() {
-    const itemN = 50;
+    const itemN = 14;
     return (
       
       <div>

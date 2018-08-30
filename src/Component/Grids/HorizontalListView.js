@@ -23,32 +23,34 @@ class HorizontalListView extends BaseGrid {
         const keyCode = event.keyCode;
         switch (keyCode) {
             case KeyMap.VK_RIGHT:
-
-                if (this.state.scrollIndex >= this.dataSource.length - 1) {
-                    if (!this.isScrollWrap || this.dataSource.length < 2) {
-                        return;
-                    }
-                    this.state.scrollIndex = -1;
-                }
-                this.scrollX = this.scrollX - (this.itemWidth + this.itemPadding);
-                this.setState((prevState) => {
-                    return { focusLostItemPosition: prevState.scrollIndex, scrollIndex: prevState.scrollIndex + 1, activeIndex: prevState.activeIndex + 1, SCROOL_SPEED: this.SCROLL_SPEED, timeInterval: event.timeStamp }
-                }, () => {
-                    this.scrollDirection = commonConstants.DIRECTION_RIGHT;
-                    this.focusChange();
-                });
+                this.goNext();
+                // if (this.state.scrollIndex >= this.dataSource.length - 1) {
+                //     if (!this.isScrollWrap || this.dataSource.length < 2) {
+                //         return;
+                //     }
+                //     this.state.scrollIndex = -1;
+                // }
+                // this.scrollX = this.scrollX - (this.itemWidth);
+                // this.setState((prevState) => {
+                //     return { focusLostItemPosition: prevState.scrollIndex, scrollIndex: prevState.scrollIndex + 1, activeIndex: prevState.activeIndex + 1, SCROOL_SPEED: this.SCROLL_SPEED, timeInterval: event.timeStamp }
+                // }, () => {
+                //     this.scrollDirection = commonConstants.DIRECTION_RIGHT;
+                //     this.focusChange();
+                // });
                 break;
             case KeyMap.VK_LEFT:
                 if (this.state.activeIndex === 0) {
                     return;
                 }
-                this.scrollX = this.scrollX + (this.itemWidth + this.itemPadding);
-                this.setState((prevState) => {
-                    return { focusLostItemPosition: prevState.scrollIndex, scrollIndex: prevState.scrollIndex - 1, activeIndex: prevState.activeIndex - 1, SCROOL_SPEED: this.SCROLL_SPEED, timeInterval: event.timeStamp }
-                }, () => {
-                    this.scrollDirection = commonConstants.DIRECTION_LEFT;
-                    this.focusChange();
-                });
+                this.goPrevious();
+
+                // this.scrollX = this.scrollX + (this.itemWidth);
+                // this.setState((prevState) => {
+                //     return { focusLostItemPosition: prevState.scrollIndex, scrollIndex: prevState.scrollIndex - 1, activeIndex: prevState.activeIndex - 1, SCROOL_SPEED: this.SCROLL_SPEED, timeInterval: event.timeStamp }
+                // }, () => {
+                //     this.scrollDirection = commonConstants.DIRECTION_LEFT;
+                //     this.focusChange();
+                // });
                 break;
             case KeyMap.VK_ENTER:
                 this.itemSelected()
@@ -70,6 +72,8 @@ class HorizontalListView extends BaseGrid {
     onFocusChange = (focusLostPosition, currentItemFocus) => {
         if (!Utility.isEmpty(this.props.onFocusChange))
             this.props.onFocusChange(focusLostPosition, currentItemFocus);
+
+            
     }
 
     /**

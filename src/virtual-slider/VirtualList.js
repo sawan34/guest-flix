@@ -39,26 +39,16 @@ class VirtualList extends PureComponent {
   }
 
   componentDidMount() {
-    this.container = findDOMNode(this)
-    this.calculateItemPerPage(this.props, this.container)
-
-    // window.addEventListener(
-    //   'resize',
-    //   this.calculateItemPerPage.bind(null, this.props, this.container)
-    // )
+    this.container = findDOMNode(this);
+    this.calculateItemPerPage(this.props, this.container);
   }
 
-  componentWillUnmount() {
-    // window.removeEventListener(
-    //   'resize',
-    //   this.calculateItemPerPage.bind(null, this.props, this.container)
-    // )
-  }
 
   calculateItemPerPage = (props, container) => {
     const { itemSize } = props
     const viewportWidth = container.offsetWidth
-    const itemPerPage = getItemPerPage(viewportWidth, itemSize)
+    const itemPerPage = 7
+    //getItemPerPage(viewportWidth, itemSize)
 
     this.setState({
       itemPerPage,
@@ -110,19 +100,16 @@ class VirtualList extends PureComponent {
     const nextStyle = getSizes(itemSize, itemPerPage, nextStart, length, viewportWidth)
     const animatingOffset = getAnimatingOffset(itemSize, itemPerPage, from, length, viewportWidth, nextStart)
    
-     console.log("length",length);
-     console.log("itemSize",itemSize);
-     console.log("from",from);
-     console.log("itemPerPage",itemPerPage);
-     console.log("length - itemPerPage",length - itemPerPage);
-     console.log("from + itemPerPage", from + itemPerPage);
-     console.log("nextStart",nextStart);
-     console.log("nextStyle",nextStyle);
-     console.log("animatingOffset",animatingOffset);
-     console.log("viewportWidth",viewportWidth);
-     
-
-
+    //  console.log("length",length);
+    //  console.log("itemSize",itemSize);
+    //  console.log("from",from);
+    //  console.log("itemPerPage",itemPerPage);
+    //  console.log("length - itemPerPage",length - itemPerPage);
+    //  console.log("from + itemPerPage", from + itemPerPage);
+    //  console.log("nextStart",nextStart);
+    //  console.log("nextStyle",nextStyle);
+    //  console.log("animatingOffset",animatingOffset);
+    //  console.log("viewportWidth",viewportWidth);
 
     this.list.style.WebkitTransform = `translate3d(-${animatingOffset}px,0,0)`
     this.list.style.transition = 'all 500ms ease-in-out'
@@ -151,9 +138,12 @@ class VirtualList extends PureComponent {
       length,
       viewportWidth
     )
+  console.log("from",from)
+  console.log("start",start)
+  console.log("end",end)
 
     const style = {
-      width: 151 * 50,
+      width: (itemSize * length)+20,
       WebkitTransform: `translate3d(-${offsetLeft}px,0,0)`,
       willChange: 'transform'
     }
