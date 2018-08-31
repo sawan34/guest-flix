@@ -20,7 +20,7 @@ class BaseGrid extends Component {
         this.itemHeight = 0; //not to used
         this.itemPadding = 20;
         this.scrollIndex = 0; //not to used
-        this.SCROLL_SPEED = 300; //not to used
+        this.SCROLL_SPEED = 400; //not to used
         this.scrollDirection=""; //not to used
         this.timeStamp = 0; 
         this.keyStopper = false; //not to used
@@ -145,17 +145,6 @@ class BaseGrid extends Component {
         }
         this.totalItems = this.dataSource.length;
         return scrollPosition;
-        //     console.log("before circular:",array[0].title);
-        //     array = array.slice();
-        //     while (times--) {
-        //         var temp = array.shift();
-        //         array.push(temp)
-        //     }
-        //     this.dataSource = array;
-        //     console.log("after circular:",array[0].title)
-
-        //    // this.listedData[this.getMaxVisibleItem() - 1] = this.dataSource[this.circulateCount]
-        //     this.circulateCount++;
     }
 
     changeCirculationStatus(){
@@ -290,8 +279,10 @@ class BaseGrid extends Component {
      * Key event up
      */
     keyEventUp = (event) => {
-        this.keyStopper = false;
-        this.SCROLL_SPEED = 300;
+        if(this.keyStopper){
+            this.keyStopper = false;
+            this.SCROLL_SPEED = 400;
+        }
     }
 
     /**
@@ -303,34 +294,17 @@ class BaseGrid extends Component {
         if (Utility.isEmpty(event)) {
             return;
         }
-        if (this.props.activeEvent) { 
-        if(!this.timeStamp){
-            this.timeStamp = parseInt(event.timeStamp,10);
-        }
-        console.log("Norma key Press",event.timeStamp - this.timeStamp )
-        console.log("time stamp", this.timeStamp )
-        
-        
-        if (event.timeStamp - this.timeStamp < 150) {
-            console.log("Long key Press",event.timeStamp - this.timeStamp )
-            this.timeStamp = event.timeStamp;
-            this.SCROLL_SPEED = 100;
-        }
-         
-    }
-
-        // if (this.keyStopper) {
-        //     if (event.timeStamp - this.timeStamp > 210) {
-        //         this.timeStamp = event.timeStamp;
-        //         this.SCROLL_SPEED = 200;
-        //         if (this.props.activeEvent) {
-        //            // this.handleKeyPress(event);
-        //         }
-        //     }
-        //     return event.keyCode;
-        // }
-        //this.keyStopper = true;
         if (this.props.activeEvent) {
+            if (this.keyStopper && this.state.activeIndex > 0) {
+                if (event.timeStamp - this.timeStamp > 210) {
+                    this.timeStamp = event.timeStamp;
+                    console.log("Long Key Press");
+                   this.SCROLL_SPEED = 200;
+                    this.handleKeyPress(event);
+                }
+                return event.keyCode;
+            }
+            this.keyStopper = true;
             this.handleKeyPress(event);
         }
     }
@@ -399,30 +373,18 @@ class BaseGrid extends Component {
      */
     render() {
         
-      const itemSize = this.itemWidth ;
-       const length = this.totalItems;
-       const itemPerPage = this.getItemPerPage();
-       const {from} = this.state;
-       const { end, offsetLeft, start, visibleStartIndex } = this.getSizes(itemSize,itemPerPage,from,length);
-       if(this.props.activeEvent){
-    //    console.log("length",length);
-    //    console.log("itemSize",itemSize);
-    //   console.log("from",from);
-    //    console.log("itemPerPage",itemPerPage);
-    //    console.log("length - itemPerPage",length - itemPerPage);
-    //    console.log("from + itemPerPage", from + itemPerPage);
+        const itemSize = this.itemWidth;
+        const length = this.totalItems;
+        const itemPerPage = this.getItemPerPage();
+        const { from } = this.state;
+        const { end, offsetLeft, start, visibleStartIndex } = this.getSizes(itemSize, itemPerPage, from, length);
 
-    //     console.log("start", start);
-    //    console.log("end", end);
-       }
-
-        this.loadData(start, end) ;
-        
+        this.loadData(start, end);
         const style = {
             width: (itemSize * length),
             WebkitTransform: `translate3d(-${offsetLeft}px,0,0)`,
             willChange: 'transform'
-          };
+        };
 
         const movieDetails = this.dataSource[this.state.from];
         return (
@@ -549,16 +511,11 @@ class BaseGrid extends Component {
         }
         },() => {
                this.focusChange();
-               // this.nextIndexDataLoad(this.state.from);
-               // this.circulateListedData(this.listedData, 1);
-                //this.onTransitionEnd();
                if(direction){
-                this.nextIndexDataLoad(direction);
+                 this.nextIndexDataLoad(direction);
                } 
-                
             }
         );
-
         this.list.removeEventListener('transitionend', this.lastTransitionendAction)
         this.lastTransitionendAction = null
       }
@@ -597,7 +554,7 @@ class BaseGrid extends Component {
         } else {
             this.list.style.WebkitTransform = `translate3d(-${nextStyle.offsetLeft}px,0,0)`
         }
-        this.list.style.transition = 'all 300ms ease-in-out'
+        this.list.style.transition = 'all '+this.SCROLL_SPEED+'ms ease-in-out'
         const doSetState = () => {
             this.list.style.transition = 'none';
             this.list.style.WebkitTransform = `translate3d(-${nextStyle.offsetLeft}px,0,0)`;
@@ -645,7 +602,8 @@ class BaseGrid extends Component {
      * Life cycle method of component class
      */
     componentDidMount() {
-         this.scrollTo(this.getScrollIndex());
+        this.setState({activeIndex:this.getScrollIndex()})
+        this.scrollTo(this.getScrollIndex());
          document.addEventListener('keyup', this.keyEventUp)
     }
 
@@ -656,8 +614,6 @@ class BaseGrid extends Component {
      */
     componentWillUnmount() {
        document.removeEventListener('keyup', this.keyEventUp);
-       //document.removeEventListener("keydown", this.keyEvent);
-        
     }
 }
 const Hoc = (props) => props.children;

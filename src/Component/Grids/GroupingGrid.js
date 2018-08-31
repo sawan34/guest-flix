@@ -286,7 +286,7 @@ class GroupingGrid extends TvComponent {
                 break;
             case KeyMap.VK_ENTER:
                 this.setState({
-                    keyEvent: {}
+                    keyEvent:event
                 })
                 this.props.onEnterPress(this.state.activeProgramId);
                 break;
@@ -395,8 +395,12 @@ class GroupingGrid extends TvComponent {
     }
 
     /**
-     * Description: Prepare Data for Grid
+     * Description: Invoke when item movie get seleted
      */
+    itemSelected(){
+
+    }
+    
     /**
      * Description :  Prepare Data for Grid.
      * @param {array} selectables

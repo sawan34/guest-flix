@@ -53,6 +53,7 @@ class HorizontalListView extends BaseGrid {
                 // });
                 break;
             case KeyMap.VK_ENTER:
+                console.log("eneter")
                 this.itemSelected()
                 break;
             case KeyMap.VK_UP:
@@ -81,6 +82,7 @@ class HorizontalListView extends BaseGrid {
       * Get props function call back
       */
     onItemSelected = (position) => {
+        console.log("On Selected");
         if (!Utility.isEmpty(this.props.onItemSelected))
             this.props.onItemSelected(this.state.scrollIndex);
     }
