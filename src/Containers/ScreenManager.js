@@ -12,7 +12,6 @@ import ProgramDetails from './Screens/ProgramDetails';
 import Player from '../Component/Player/Player'
 import DataLoadingScreen from './Screens/DataLoadingScreen';
 import RelatedTitleScreen from './Screens/RelatedTitleScreeen';
-import Demo from '../virtual-slider/demo';
 import { withRouter } from "react-router-dom";
 import { SCREENS } from '../constants/screens.constant';
 
@@ -37,6 +36,7 @@ class ScreenManager extends Component {
      * @return {object}
      */
     render() {
+        console.log("screen Render")
         let Screen = "";
         const ScreenName = this.props.match.params.screenName;
         switch (ScreenName) {
@@ -54,10 +54,7 @@ class ScreenManager extends Component {
                 break;
             case SCREENS.relatedtitle:
                 Screen = <RelatedTitleScreen routerData={this.props} />
-                break;
-            case "demo":
-                Screen = <Demo routerData={this.props} />
-                break;    
+                break;   
             default:
                 Screen = <LoadingScreen routerData={this.props} />;
                 break

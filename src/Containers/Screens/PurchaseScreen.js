@@ -308,7 +308,7 @@ class PurchaseScreen extends React.Component {
         <h3>{this.props.data.title}</h3>
         <div className="col-container">
           <div className="col-left">
-            <div className="poster"><img alt="" src={this.props.data.preferredImage.uri} onError={commonUtility.onImageErrorHandler} /></div>
+            <div className="poster"><img alt="" src={this.props.data.preferredImage ? this.props.data.preferredImage.uri || "" : ""} onError={commonUtility.onImageErrorHandler} /></div>
             <div className="price">${this.props.data.price} {this.props.data.isTaxIncluded ? <span>+ <Trans i18nKey="tax">Tax</Trans></span> : ""}</div>
           </div>
           <div className="col-right">

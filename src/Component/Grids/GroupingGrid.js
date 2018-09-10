@@ -12,7 +12,6 @@ import KeyMap from '../../constants/keymap.constant';
 //common uitilities
 import Utilities from '../../commonUtilities';
 
-
 //declaring currency symbol below so that no iteration of function done each time;
 const CURRENCY = Utilities.getCurrencySymbol();
 
@@ -46,7 +45,7 @@ class GroupingGrid extends TvComponent {
         }
         this.scrollSpeed = 200;
         this.topPosition = 0;
-        this.numberTofetchSeletables = 20; //number of seletables to fetch at time
+        this.numberTofetchSeletables = 30; //number of seletables to fetch at time
         this.gridrowLoad = 4;
         this.groupingHeight = Utilities.getHorizontalHeight();
         this.isFilterValueChange = false;
@@ -58,6 +57,7 @@ class GroupingGrid extends TvComponent {
         this.handleFocusChange = this.handleFocusChange.bind(this);
         this.getSelectablesOnLoad = this.getSelectablesOnLoad.bind(this);
         this.findGroupingById = this.findGroupingById.bind(this);
+        this.rearrangeMethod = this.rearrangeMethod.bind(this);
 
     }
 
@@ -69,7 +69,6 @@ class GroupingGrid extends TvComponent {
         if (!Utilities.isEmptyObject(this.props.stateObj)) {
             this.stateObjAssignment(this.props.stateObj);
         }
-
         if (this.state.groupWiseSelectables.length > 0) {
             return true;
         }
@@ -82,13 +81,15 @@ class GroupingGrid extends TvComponent {
             HOME_GROUPING_IDS.forEach((item, i) => {
                 if (this.findGroupingById(item).length > 0) {
                     homeGroupingDetails[counter] = this.findGroupingById(item)[0];
+                    //remove duplicate selectables
+                    const uniqueSelectable = homeGroupingDetails[counter].selectables.filter((item, pos)=>homeGroupingDetails[counter].selectables.indexOf(item) === pos)
                     // adding seletables page wise 
-                    const PAGEWISE_SELECTABLE = _.chunk(homeGroupingDetails[counter].selectables, this.numberTofetchSeletables);
+                    const PAGEWISE_SELECTABLE = _.chunk(uniqueSelectable, this.numberTofetchSeletables);
                     const TOTAL_PAGES = PAGEWISE_SELECTABLE.length
                     groupWiseSelectablePage[item] = {
                         seletablesPageWise: PAGEWISE_SELECTABLE,
                         TOTAL_PAGES: TOTAL_PAGES,
-                        currentPage: 0
+                        currentPage: 0                    
                     };
                     counter++;
                 }
@@ -104,11 +105,18 @@ class GroupingGrid extends TvComponent {
         this.focus();
     }
 
+     /**
+     *  Description:Save state when go back
+     */
     componentWillUnmount() {
         super.componentWillUnmount();
         this.props.saveState(this.state);
     }
 
+     /**
+     *  Description:Assigning state
+     * @param {Object} stateObj
+     */
 
     stateObjAssignment = (stateObj) => {
         this.state.reload = stateObj.reload;
@@ -227,7 +235,7 @@ class GroupingGrid extends TvComponent {
                         this.setState((prevState) => {
                             const NEW_GROUPWISE_SELECTABLE = prevState.groupWiseSelectables.map((item) => {
                                 if (item.groupId === this.props.reducerRetSelectables.groupId) {
-                                    callBack(this.prepareDataForGrid(this.props.reducerRetSelectables.data, groupId));
+                                    callBack(this.prepareDataForGrid(this.props.reducerRetSelectables.data, groupId,true));
                                     item.data = [...item.data, ...this.props.reducerRetSelectables.data];
                                     return item;
                                 }
@@ -274,7 +282,11 @@ class GroupingGrid extends TvComponent {
             }
         }
     }
-
+      /**
+    * Description: Handle key event
+    * @param {Object}  event 
+    * @return {null}
+    */
     handleKeyPress(event) {
         var keyCode = event.keyCode;
         switch (keyCode) {
@@ -287,7 +299,7 @@ class GroupingGrid extends TvComponent {
             case KeyMap.VK_ENTER:
                 this.setState({
                     keyEvent:event
-                })
+                });
                 this.props.onEnterPress(this.state.activeProgramId);
                 break;
             case KeyMap.VK_RIGHT:
@@ -296,7 +308,7 @@ class GroupingGrid extends TvComponent {
                 });
                 break
             case KeyMap.VK_LEFT:
-                if (this.state.gridPositionColumn[this.state.gridPositionRow] === 0 ) {
+                if (this.state.gridPositionColumn[this.state.gridPositionRow] === 0 || this.state.gridPositionColumn.length ===0 ) {
                     this.props.changeMenuStatus();
                     this.deFocus();
                 } else {
@@ -347,13 +359,14 @@ class GroupingGrid extends TvComponent {
                 if(item.i8nLabel){
                     groupName = item.i8nLabel;
                 }else{
-                    groupName = item.label;
+                    groupName = "i8nLabel missing";
                 }
                 return true;
             }
             return false;
         });
-       return <Trans i18nKey = {groupName}>{groupName} </Trans>;
+       return "ddd"
+       //<Trans i18nKey = {groupName}>{groupName} </Trans>;
     }
 
     /**
@@ -395,10 +408,23 @@ class GroupingGrid extends TvComponent {
     }
 
     /**
-     * Description: Invoke when item movie get seleted
+     * Description: Rearrange save sequence for cicular data
+     * @param {Object} newdata
+     * @param {number} activeIndex
+     * @param {number} index 
+     * @return {null}
      */
-    itemSelected(){
-
+    rearrangeMethod(newdata,activeIndex,index){
+        const initialIndex = newdata[0].index;
+        const lastIndex = newdata[newdata.length - 1].index;
+       
+        if(initialIndex === 0 && initialIndex !==lastIndex){
+            this.state.groupWiseSelectables[index].rearrangeIndex = 0; 
+           return;
+        }
+        const rearrangeIndex = newdata.map(item=>item.index);
+        this.state.groupWiseSelectables[index].rearrangeIndex = rearrangeIndex;
+        this.state.gridPositionColumn[index] = activeIndex;
     }
     
     /**
@@ -407,11 +433,15 @@ class GroupingGrid extends TvComponent {
      * @param {number} id
      *  @returns {Object}
      */
-    prepareDataForGrid(selectables, id) {
-        let data = "";
+    prepareDataForGrid(selectables, id,calculateLastIndex = false) {
+        let data = "",lastIndex=0;
         let imageType = this.getGroupImageType(id);
+        if(calculateLastIndex){
+            lastIndex = this.state.groupWiseSelectables[this.state.gridPositionRow].data.length; 
+        }
         data = selectables.map((item, index) => {
             let imageUrl = "", dimension = {};
+            let counter = !calculateLastIndex?index:lastIndex+index;
             item.images.some(element => {
                 if (element.type === imageType) {
                     imageUrl = element.url;
@@ -430,7 +460,9 @@ class GroupingGrid extends TvComponent {
                 description: item.shortDescription,
                 rating: item.rating,
                 amount: CURRENCY + item.price,
-                runTime: item.runTime
+                runTime: item.runTime,
+                index:counter,
+				data: item
             }
         });
         return data;
@@ -441,6 +473,8 @@ class GroupingGrid extends TvComponent {
           *  @returns {JSX}
           */
     render() {
+        console.log("Grouping grid Render");
+
         var style = {
             WebkitTransform: "translate3d(0px," + this.state.scrollY + "px,0)",
             transition: 'all 300ms ease-in-out'
@@ -456,7 +490,7 @@ class GroupingGrid extends TvComponent {
                     {
                         this.state.groupWiseSelectables.map((item, index) => {                            //doing windowing
                             if ((index >= this.state.startIndex && index <= this.state.endIndex) || index === this.state.prefixGroup) {
-                                return this.renderGroupingSeletables.call(this, item.data, item.groupId, index);
+                                return this.renderGroupingSeletables.call(this, item, item.groupId, index);
                             }else{
                                 return "";
                             }
@@ -465,10 +499,8 @@ class GroupingGrid extends TvComponent {
                 </div>
             </div>
         </div>
-            <div className="home-right-poster"></div>
-            <div className="home-bottom-poster"></div></div>);
+           </div>);
     }
-
 
     /**
     * Description: This method is used for populating grids
@@ -478,7 +510,7 @@ class GroupingGrid extends TvComponent {
     * @return {JSX}
     */
     renderGroupingSeletables(selectables, id, index) {
-        let selectablesData = this.prepareDataForGrid(selectables, id);
+        let selectablesData = this.prepareDataForGrid(selectables.data, id);
 
         const ACTIVE_GRID = this.state.gridPositionColumn[index] ? this.state.gridPositionColumn[index] : 0;
         if (selectablesData.length < 1) {
@@ -486,7 +518,7 @@ class GroupingGrid extends TvComponent {
         }
         let wrapperActive = index === this.state.gridPositionRow ? "slider-wrapper active" : "slider-wrapper";
         let top = { top: 0 };   
-		//setting grid heights
+        //setting grid heights
         this.prevGridHeight = index < 1 ? 0:this.state.groupWiseSelectables[index-1].scrollHeight ;
         if(index > 0){
             top = { top: this.prevGridHeight + 'px' };
@@ -499,9 +531,11 @@ class GroupingGrid extends TvComponent {
                 this.scrollHeightUp = 0;
             }
         }
-
+        const currentPage = this.state.groupWiseSelectablePage[id].currentPage;
+        const totalPage = this.state.groupWiseSelectablePage[id].TOTAL_PAGES;
+        const rearrangeData = selectables.rearrangeIndex ? selectables.rearrangeIndex : 0;
         return (<div key={index} className="slider-row" style={top} > <h2>{this.getGroupNameById(id)}</h2>
-            <div className={wrapperActive}  ><HomeHorizontalView dataSource={selectablesData} key={"hori" + index} defaultSelectedPosition={ACTIVE_GRID} onItemSelected={this.itemSelected} maxVisibleItem={this.numberTofetchSeletables} keyEvent={this.state.keyEvent} onFocusChange={this.handleFocusChange} activeEvent={index === this.state.gridPositionRow} loadNextData={this.loadNextData} id={id} isScrollWrap={this.getGroupScrollWrap(id)} />
+            <div className={wrapperActive}  ><HomeHorizontalView dataSource={selectablesData} key={"horizontal-" + index} defaultSelectedPosition={ACTIVE_GRID} onUnmount={this.rearrangeMethod} maxVisibleItem={this.numberTofetchSeletables} keyEvent={this.state.keyEvent} onFocusChange={this.handleFocusChange} activeEvent={index === this.state.gridPositionRow} loadNextData={this.loadNextData} id={id} isScrollWrap={this.getGroupScrollWrap(id)} currentPage ={currentPage} totalPage={totalPage} rearrangeData = {rearrangeData} gridIndex = {index} />
             </div></div>);
     }
 
@@ -514,4 +548,3 @@ class GroupingGrid extends TvComponent {
         reducerUiConfig: 'getUiConfig',
         reducerGetUserPreferences: 'userPreferences'
     });
-

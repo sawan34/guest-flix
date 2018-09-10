@@ -622,7 +622,7 @@ componentDidMount() {
            </Hoc>:<Trans i18nKey="no_language_available">No language available</Trans>}
         </div>
       </div>
-    )
+    );
   }
 }
 

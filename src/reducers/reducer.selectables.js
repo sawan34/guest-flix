@@ -51,6 +51,8 @@ export default function (state = [], action) {
                             titleLang:action.payload.message.data[i].titleLang,
                             topCast:action.payload.message.data[i].topCast,
                             type:action.payload.message.data[i].type,
+                            langMetadata:action.payload.message.data[i].langMetadata,
+                            langMetadataDefault:action.payload.message.data[i].langMetadataDefault,
                         }
                     } // loop ends
                     fecthedData.type = alertConstants.SUCCESS;
@@ -67,6 +69,5 @@ export default function (state = [], action) {
             default:
             break;
     }
-
     return state;
 }

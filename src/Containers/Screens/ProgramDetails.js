@@ -20,7 +20,7 @@ import {commonConstants} from '../../constants/common.constants';
 /** 
     * Description:This is constant object to define the Keyname
  */
-const OPEN_SCREEN = {"PURCHASE":"purchase","RELATED_TITLE":"relatedTitles","RESUME":"resume"};
+const OPEN_SCREEN = {"PURCHASE":"purchase","RELATED_TITLE":"relatedTitles","RESUME":"resume", "GO_BACK":"goBack"};
 const MAX_ACTOR_LENGTH = 6;
 const MAX_DIRECTOR_LENGTH = 3;
 const CAST_NAME = {"Actor":"Actor"}
@@ -80,6 +80,8 @@ class ProgramDetails extends BaseScreen {
             return;
         }else if(this.buttonList[this.state.active-1].id === OPEN_SCREEN.RESUME){
             this.goToScreen(SCREENS.player+"/"+this.state.data.data.id, null);
+        } if(this.buttonList[this.state.active-1].id === OPEN_SCREEN.GO_BACK){
+            this.handleBack();
         }
     }
     
@@ -180,9 +182,13 @@ class ProgramDetails extends BaseScreen {
      * @return {string}
      */
     timeFormat(time){
-        const HR = time[2] + time[3];
-        const MIN = time[5] + time[6] ;
-        return (HR*1) + 'h ' + (MIN*1) + 'm';
+        let duration = "";
+        if(time){
+            const HR = time[2] + time[3];
+            const MIN = time[5] + time[6] ;
+            duration = (HR*1) + 'h ' + (MIN*1) + 'm';
+        }
+        return duration;
     }
 
     /**
@@ -218,12 +224,12 @@ class ProgramDetails extends BaseScreen {
                 }
                 <div className={this.state.overlay ? "bluureffects-overlay" : ""}>
                 <div className="home-top-poster-details">
-                    <img src={this.state.data.data.preferredImage.uri} onError={Utilities.onImageErrorHandler} alt="" />
+                    <img src={this.state.data.data.preferredImage ? this.state.data.data.preferredImage.uri || "" : ""} onError={Utilities.onImageErrorHandler} alt="" />
                 </div>
                 <div className="product-details-wrapper">
                     <div className="left-col">
                         <div className="poster">
-                            <img src={this.state.data.data.preferredImage.uri} onError={Utilities.onImageErrorHandler} alt="" />
+                            <img src={this.state.data.data.preferredImage ? this.state.data.data.preferredImage.uri || "" : ""} onError={Utilities.onImageErrorHandler} alt="" />
                         </div>
                         <div id="left-button">
                             {!this.state.data.data.isPurchased ? <button id="purchase" className={this.getActiveClass(1)} ><span><Trans i18nKey="purchase">Purchase</Trans><br /> ${this.state.data.data.price}</span></button>:""}
@@ -231,6 +237,8 @@ class ProgramDetails extends BaseScreen {
                             {this.state.data.data.isPurchased ? <button id="resume" className={this.getActiveClass(1)} ><span><Trans i18nKey="resume">Resume</Trans></span></button>:""}
 
                             <button id="relatedTitles" className={this.getActiveClass(2)} ><span><Trans i18nKey="related_titles">Related <br />Titles</Trans></span></button>
+
+                            <button id="goBack" className={this.getActiveClass(3)} ><span><Trans i18nKey="go_back">Go Back</Trans></span></button>
 
                         </div>
                     </div>

@@ -9,9 +9,10 @@ import PropTypes from 'prop-types';
 import VerticalGridItem from './VerticalGriditem';
 import KeyMap from '../../constants/keymap.constant';
 import TvComponenet from '../TvComponent';
+import Utility from '../../commonUtilities';
+import { commonConstants } from '../../constants/common.constants';
 
 // Focus direction Constant
-const FOCUS_DIRECTION = { "UP": "UP", "DOWN": "DOWN", "LEFT": "LEFT", "RIGHT": "RIGHT" }
 const ANIM_TIME = 150
 
 export default class VerticalGrid extends TvComponenet {
@@ -81,7 +82,6 @@ export default class VerticalGrid extends TvComponenet {
 		this.scrollAfterIndex = 0;
 		this.dateObj = new Date();
 		this.keyPressTime = this.dateObj.getTime();
-
 	}
 
 	/**
@@ -277,7 +277,7 @@ export default class VerticalGrid extends TvComponenet {
 		super.componentDidMount();
 		this._updateItemDimensions();
 		this._visibleIndexes();
-		this.componentLoaded =true;
+		this.componentLoaded = true;
 	}
 
 	componentWillReceiveProps(nextProps) {
@@ -335,7 +335,7 @@ export default class VerticalGrid extends TvComponenet {
 							});
 						}
 					} else {
-						this.props.data.FocusCallback(FOCUS_DIRECTION.UP);
+						this.props.data.FocusCallback(commonConstants.DIRECTION_UP);
 					}
 					break;
 				case KeyMap.VK_LEFT:
@@ -346,20 +346,24 @@ export default class VerticalGrid extends TvComponenet {
 					} else {
 						this.scrollAfterIndex = this._itemsPerRow() * (this._numVisibleRows() - 1);
 						isFirstElementofRow = (((currentIndex + 1) % (this._itemsPerRow())) === 1) ? true : false;
-					} 
+					}
 					currentIndex = currentIndex - 1;
 					if (currentIndex >= 0) {
 						if (isFirstElementofRow) {
-							if ((currentIndex + 1) > this.scrollAfterIndex) {
-								currentScroll = this.state.scrollY + this._itemHeight();
-								this.setState((prevState) => {
-									return { activeIndex: currentIndex, scrollY: currentScroll }
-								});
-								this._scrollListener();
+							if (Utility.isEmpty(this.props.data.isLeftMovementAllowed) || this.props.data.isLeftMovementAllowed) {
+								if ((currentIndex + 1) > this.scrollAfterIndex) {
+									currentScroll = this.state.scrollY + this._itemHeight();
+									this.setState((prevState) => {
+										return { activeIndex: currentIndex, scrollY: currentScroll }
+									});
+									this._scrollListener();
+								} else {
+									this.setState((prevState) => {
+										return { activeIndex: currentIndex, scrollY: currentScroll }
+									});
+								}
 							} else {
-								this.setState((prevState) => {
-									return { activeIndex: currentIndex, scrollY: currentScroll }
-								});
+								this.props.data.FocusCallback(commonConstants.DIRECTION_LEFT);
 							}
 
 						} else {
@@ -368,7 +372,7 @@ export default class VerticalGrid extends TvComponenet {
 							});
 						}
 					} else {
-						this.props.data.FocusCallback(FOCUS_DIRECTION.LEFT);
+						this.props.data.FocusCallback(commonConstants.DIRECTION_LEFT);
 					}
 					break;
 				case KeyMap.VK_RIGHT:
@@ -377,16 +381,20 @@ export default class VerticalGrid extends TvComponenet {
 					currentIndex = currentIndex + 1;
 					if (currentIndex >= 0 && currentIndex < this.props.data.entries.length) {
 						if (isLastElementofRow) {
-							if ((currentIndex + 1) > this.scrollAfterIndex) {
-								currentScroll = this.state.scrollY - this._itemHeight();
-								this.setState((prevState) => {
-									return { activeIndex: currentIndex, scrollY: currentScroll }
-								});
-								this._scrollListener();
+							if (Utility.isEmpty(this.props.data.isRightMovementAllowed) || this.props.data.isRightMovementAllowed) {
+								if ((currentIndex + 1) > this.scrollAfterIndex) {
+									currentScroll = this.state.scrollY - this._itemHeight();
+									this.setState((prevState) => {
+										return { activeIndex: currentIndex, scrollY: currentScroll }
+									});
+									this._scrollListener();
+								} else {
+									this.setState((prevState) => {
+										return { activeIndex: currentIndex }
+									});
+								}
 							} else {
-								this.setState((prevState) => {
-									return { activeIndex: currentIndex }
-								});
+								this.props.data.FocusCallback(commonConstants.DIRECTION_RIGHT);
 							}
 						} else {
 							this.setState((prevState) => {
@@ -394,7 +402,7 @@ export default class VerticalGrid extends TvComponenet {
 							});
 						}
 					} else {
-						this.props.data.FocusCallback(FOCUS_DIRECTION.RIGHT);
+						this.props.data.FocusCallback(commonConstants.DIRECTION_RIGHT);
 					}
 					break;
 				case KeyMap.VK_DOWN:
@@ -436,7 +444,7 @@ export default class VerticalGrid extends TvComponenet {
 								});
 							}
 						} else {
-							this.props.data.FocusCallback(FOCUS_DIRECTION.DOWN);
+							this.props.data.FocusCallback(commonConstants.DIRECTION_DOWN);
 						}
 					}
 					break;

@@ -18,7 +18,7 @@
   "exit_and_bookmark":"Exit and Bookmark",
   "kids_mode_description":"Kid-Friendly browsing with movies suitable for families with children aged 13 and below.",
   "adult_mode_description":"The adult content section of GuestFlix is intended for adults only and may include content that some viewers may find offensive. If you are under the age of 18 (or majority in your area), or if you find this material offensive, please return to the main menu.",
-
+  "go_back":"Go Back",
   "exit_menu":"Exit Menu",
   "language":"Language",
   "filter":"Filter",
@@ -41,5 +41,12 @@
   "storyline":"Storyline",
   "gay": "Gay",
   "no_rating_available":"No rating available",
-  "no_language_available":"No language available"
+  "no_language_available":"No language available",
+  "player_loading_message":"Loading, Please Wait... ",
+  "player_error_message":"Sorry, but an unknown error occurred while trying to play this video.",
+  "player_buffering":"Buffering ...",
+  "token_not_found":"Token not found",
+  "url_not_found":"Url not found",
+  "server_not_found":"Server not found",
+  "invalid_authentication":"Invalid Authentication"
 }

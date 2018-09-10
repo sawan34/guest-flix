@@ -25,6 +25,8 @@
 	"zu":"Zulu",
 	"gd":"Gàidhlig",
 	"tr":"Türkçe",
-	"kn":"ಕನ್ನಡ"
+	"kn":"ಕನ್ನಡ",
+	"ru":"Русский язык",
+	"ar":"العربية"
 };
 export default languageName;

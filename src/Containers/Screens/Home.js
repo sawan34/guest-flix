@@ -44,8 +44,12 @@ class Home extends BaseScreen {
             isSubMenuActive: false, //true when menu got selected
             isMenuFilterOn: false, //true when menu filter got focus
             modeOverLayActive: false,
-            homeGridObj: {}
+            homeGridObj: {},
+            menuCurrentPos: 0,
+            menuStyle: ""
         }
+        this.menuCurrentPosVar = 0;
+        this.menuStyleVar = "";
         this.stayId = "";
         this.isFilterValueChange = false;
         this.renderHome = this.renderHome.bind(this);
@@ -60,6 +64,9 @@ class Home extends BaseScreen {
         this.changeMenuStatus = this.changeMenuStatus.bind(this);
         this.getHomeGroupingData = this.getHomeGroupingData.bind(this);
         this.onEnterPress = this.onEnterPress.bind(this);
+        this.selectableMenuCallback = this.selectableMenuCallback.bind(this);
+        this.closeMenu = this.closeMenu.bind(this);
+        this.menuLeftKeyPressed = this.menuLeftKeyPressed.bind(this);
     }
 
     componentDidMount() {
@@ -68,6 +75,8 @@ class Home extends BaseScreen {
         this.props.actionGetBoookmarks(this.stayId);
         //call User Preferences
         this.props.actionGetUserPreferences(this.stayId);
+        this.menuCurrentPosVar =this.state.menuCurrentPos;
+        this.menuStyleVar =this.state.menuStyle;
 
     }
 
@@ -83,7 +92,7 @@ class Home extends BaseScreen {
             }
         }
         this.setState(prevState => {
-            return { menuOn: !prevState.menuOn }
+            return { menuOn: !prevState.menuOn, menuStyle: this.menuStyleVar, menuCurrentPos: this.menuCurrentPosVar }
         }, () => { //reload if change in filter
             if (!this.state.menuOn && this.isFilterValueChange) {
                 this.isFilterValueChange = false;
@@ -142,7 +151,7 @@ class Home extends BaseScreen {
         if (this.state.selectableOn) {
             return (<this.renderSeletable />);
         } else {
-            return <this.renderHome />;
+            return <this.renderHome key="group1" />;
         }
     }
 
@@ -178,6 +187,52 @@ class Home extends BaseScreen {
 
 
     /****************** MENU HANDLING***************************/
+
+
+    /**
+    * Description: This method is callback from selectable grid to oepn the menu
+    * @param {null}  
+    * @return {null}
+    */
+    selectableMenuCallback() {
+        this.changeMenuStatus();
+        this.menuCurrentPosVar = 0;
+        this.menuStyleVar = "";
+    }
+
+    /**
+    * Description: This method is callback from menu when left key is press
+    * @param {null}  
+    * @return {null}
+    */
+    menuLeftKeyPressed() {
+        this.closeMenu();
+    }
+
+    /**
+    * Description: This method the menu and open home page
+    * @param {null}  
+    * @return {null}
+    */
+    closeMenu() {
+        if (!Utilities.isEmptyObject(this.menuComponent)) {
+            if (this.menuComponent.isFocused()) {
+                if (!this.state.selectableOn) {
+                    this.groupingGrid.focus();
+                }
+            }
+        }
+        this.setState(prevState => {
+            return {
+                menuOn: !prevState.menuOn,
+                modeOverLayActive: false,
+                selectableOn: false,
+                isMenuLanguageOn: false,
+                isMenuFilterOn: false
+            }
+        });
+    }
+
 
     /**
      * Description: This method call on menu Item Focus
@@ -225,6 +280,8 @@ class Home extends BaseScreen {
     onSelectMenuGrouping(menuObj) { // on menu enter or right
         if (menuObj.isGrouping && !Utilities.isEmptyObject(this.gridSelectables) && this.gridSelectables.isComponentLoaded()) {
             // this.menuComponent.deFocus();
+            this.menuCurrentPosVar = this.menuComponent.state.currIndex;
+            this.menuStyleVar = this.menuComponent.state.scrollStyle;
             this.gridSelectables.focus();
             this.changeMenuStatus();
         } else {
@@ -298,7 +355,9 @@ class Home extends BaseScreen {
     */
     onBackKeyPressed = () => {
         this.gridSelectables.deFocus();
-        this.setState({ selectableOn: false, selectableActive: false });
+        this.menuStyleVar = "";
+        this.menuCurrentPosVar = 0;
+        this.setState({ selectableOn: false, selectableActive: false, menuStyle: "", menuCurrentPos: 0 });
     }
 
     /**
@@ -329,7 +388,7 @@ class Home extends BaseScreen {
                 selectableStyle.left = '0px';
             }
         }
-        return (<div style={selectableStyle}><Selectables onRef={instance => (this.gridSelectables = instance)} groupingID={this.state.groupingID} selectableItemClicked={this.selectableItemClicked} isFocus={isFocusNeeded} onBackKeyPressed={this.onBackKeyPressed}></Selectables></div>);
+        return (<div style={selectableStyle}><Selectables onRef={instance => (this.gridSelectables = instance)} groupingID={this.state.groupingID} selectableItemClicked={this.selectableItemClicked} isFocus={isFocusNeeded} onBackKeyPressed={this.onBackKeyPressed} selectableMenuCallback={this.selectableMenuCallback}></Selectables></div>);
     }
 
     /**
@@ -345,6 +404,7 @@ class Home extends BaseScreen {
     * @return {JSX}
     */
     render() {
+        console.log("Home Render");
         const showMenuLanguage = this.state.menuOn && this.state.isMenuLanguageOn && !this.state.selectableOn;
         const showMenuFilter = this.state.menuOn && this.state.isMenuFilterOn && !this.state.selectableOn;
         if (this.state.data.type === alertConstants.ERROR) {
@@ -353,14 +413,15 @@ class Home extends BaseScreen {
         return (
             <div key={this.state.reload}>
                 <div className="container" >
-                    {this.state.menuOn ? <Menu onRef={instance => (this.menuComponent = instance)} openMenu={this.state.menuOn} changeMenuStatus={this.changeMenuStatus.bind(this)} onFocus={this.showSelectable} onItemSelect={this.onSelectMenuGrouping} changeSubMenuActiveStatus={this.changeSubMenuActiveStatus} subMenuActiveStatus={this.state.isSubMenuActive} /> : ""}
+                    {this.state.menuOn ? <Menu onRef={instance => (this.menuComponent = instance)} openMenu={this.state.menuOn} changeMenuStatus={this.changeMenuStatus.bind(this)} onFocus={this.showSelectable} onItemSelect={this.onSelectMenuGrouping} changeSubMenuActiveStatus={this.changeSubMenuActiveStatus} subMenuActiveStatus={this.state.isSubMenuActive} menuCurrentPos={this.state.menuCurrentPos} menuStyle={this.state.menuStyle} menuLeftKeyPressed={this.menuLeftKeyPressed} /> : ""}
 
                     {showMenuLanguage ? <MenuLanguage onRef={instance => (this.menuLangGrid = instance)} removeSubMenu={this.deactivateSubMenu} actionSaveUserPreferences={this.props.actionSaveUserPreferences} getUserPreferences={this.props.reducerGetUserPreferences} stayId={this.stayId} changeLanguage={this.changeLanguage} /> : ""}
 
                     {showMenuFilter ? <MenuFilter onRef={instance => (this.menuFilterGrid = instance)} removeSubMenu={this.deactivateSubMenu} actionSaveUserPreferences={this.props.actionSaveUserPreferences} getUserPreferences={this.props.reducerGetUserPreferences} configUserPreference={this.props.reducerUiConfig.message.data.programFilters} filterChangeStatus={this.filterChangeStatus} stayId={this.stayId} /> : ""}
-                    {this.renderModeMenu(this.modeID)}
                     {this.toggleHomeSelectable()}
                 </div>
+                <div className="home-right-poster"></div>
+                <div className="home-bottom-poster"></div>
             </div>
         )
     }

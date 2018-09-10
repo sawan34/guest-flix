@@ -4,6 +4,7 @@
  * @author Vikash Kumar
  * @date  03.07.2018
  */
+import i18next from 'i18next';
 export class PlayerService {
     /**
     * Description: class initialization, set initial properties while instanciating
@@ -179,11 +180,8 @@ export class PlayerService {
         }
         else {
             if (this.state === -1) {
-                // this.plugin.src = this.url;
-                //this.plugin.style.src = this.url;
                 this.plugin.setAttribute('autoplay', true);
                 this.source.setAttribute('src', this.url);
-                this.playStream();
             } else if (!this.plugin.paused) {
                 this.pauseVideo();
             }
@@ -204,15 +202,14 @@ export class PlayerService {
   */
     playStream() {
         this.plugin.play();
-
         this.onplayFinish();
     }
 
     /**
-   * Description: pause video
-   * @param {null} 
-   * @return {null}
-   */
+    * Description: pause video
+    * @param {null} 
+    * @return {null}
+    */
     pauseVideo = function () {
         if (this.state !== this.PAUSED) {
             if ((this.stateForwardOrRewind === this.FORWARD) || (this.stateForwardOrRewind === this.REWIND)) {
@@ -468,7 +465,7 @@ export class PlayerService {
    */
     onComplete = function () {
         this.onFinish();
-        //this.onplayFinish();
+        this.onplayFinish();
     }
 
     /**
@@ -550,33 +547,38 @@ export class PlayerService {
     }
 
     /**
-   * Description: register player listeners
-   * @param {null} 
-   * @return {null}
-   */
+    * Description: register player listeners
+    * @param {null} 
+    * @return {null}
+    */
     registerListeners = function () {
         this.manualProgressUpdate();
-
-        this.plugin.onloadstart = this.onLoadStart.bind(this);
-        this.plugin.onended = this.onComplete.bind(this);
-        //this.plugin.ontimeupdate=Player.onTimeChange;
-        this.plugin.onerror = this.onError.bind(this);
-        this.plugin.onloadedmetadata = this.onMetaData.bind(this);
-        this.plugin.onplaying = function () {
+        this.plugin.addEventListener("loadstart", (event) => {
+            this.showMessage('player_loading_message');
+        });
+        this.plugin.addEventListener("ended", (event) => {
+            this.onFinish();
+        });
+        this.source.addEventListener("error", (event) => {
+            this.state = this.Error;
+            this.showMessage('player_error_message');
+        });
+        this.source.addEventListener("playing", (event) => {
             this.state = this.PLAYING;
+            this.isBuffering = false;
+        });
+        this.plugin.addEventListener("play", (event) => {
+            this.state = this.PLAYING;
+            this.onplayFinish();
+        });
+        this.plugin.addEventListener("loadeddata", (event) => {
             this.showMessage('');
             this.isBuffering = false;
-        }.bind(this);
-        this.plugin.onloadeddata = function () {
-            this.showMessage('');
-        this.showMessage('');
-            this.isBuffering = false;
-        }.bind(this);
-        this.plugin.onloadeddata = function () {
-             this.showMessage('');
-            this.isBuffering = false;
-        }.bind(this);
-        this.plugin.onwaiting = this.onWaiting.bind(this);
+        });
+        this.plugin.addEventListener("waiting", (event) => {
+            this.showMessage('player_buffering');
+            this.onplayFinish();
+        });
     };
 
     /**
@@ -605,8 +607,8 @@ export class PlayerService {
         var currentDuration = hh !== 0 ? (pad(hh, 2) + ":" + pad(mm, 2) + ":" + pad(ss, 2)) : pad(mm, 2) + ":" + pad(ss, 2);
         this.timeView.innerHTML = currentDuration + '/' + totalDuration;
     };
-    showMessage = function (_message) {
-        this.messageView.innerHTML = _message;
+    showMessage = function (_translateMessageKey) {
+        this.messageView.innerHTML = i18next.t(_translateMessageKey) || _translateMessageKey;
     };
     getMessage = function () {
         return this.message;

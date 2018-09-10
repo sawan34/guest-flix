@@ -4,7 +4,7 @@
 * @author Sawan Kumar
 * @date  31.07.2018
 */
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import CommonUtility from '../../../commonUtilities';
 
 import { alertConstants } from '../../../constants/alert.constant';
@@ -31,7 +31,7 @@ const KEY = {
   "UP": commonConstants.DIRECTION_UP,
   "DOWN": commonConstants.DIRECTION_DOWN
 }
-class Language extends Component {
+class Language extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -193,7 +193,7 @@ class Language extends Component {
     return (
       <div className="sub-menu language">
         {<div>{this.state.error ? this.state.errorMessage : ""}</div>}
-        <div className="heading"><h3><Trans i18nKey="choose_your_lang">Choose Your Language</Trans></h3></div>
+        <div className="heading"><h3><Trans parent="span" i18nKey="choose_your_lang">Choose Your Language</Trans></h3></div>
         <div className="checkbox-lists">
           <div className="col-2">
             <RadioGrid

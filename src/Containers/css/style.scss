@@ -79,7 +79,7 @@ html,body{
   @include linear-gradient-b(left, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%);
 }
 .modeGrey{
-  background: $btn-active-gray;
+  background: $menu-mode-bg;
 }
 #playerMessageView{
   position: absolute;
@@ -95,6 +95,34 @@ html,body{
     opacity:0.2
   }
 }
+.loading-error-message{
+  background:rgba(59,59,59,.6);
+  padding:20px;
+  @include box-sizing(border-box);
+  text-align:center;
+  color:$red;
+  font-size:1.2em;
+  position:absolute;
+  top:0px;
+  width:100%;
+  animation:loadingErrorMsgAni 500ms;
+  }
+  @-webkit-keyframes loadingErrorMsgAni{
+    0%{
+      top:-38px;
+    }
+    100%{
+      top:0px;
+    }
+  }
+  @keyframes loadingErrorMsgAni{
+    0%{
+    top:-38px;
+    }
+    100%{
+        top:0px;
+    }
+  }
 
 /* media queries */
 @media (min-width: 1280px) {
@@ -139,15 +167,15 @@ html,body{
         .loader-text {
           position: absolute;
           top: 77px;
-          left: -18px;
+          left: -10px;
           right: 0;
           width: 75px;
           margin: auto;
           color: $white;
-          font-size: 1em;
+          font-size: 1.2em;
         }
         .loader-text:after {
-          content:"Loading";
+          content:"Loading...";
           -webkit-animation: loading-text 3s infinite;
           animation: loading-text 3s infinite;
         }
@@ -244,6 +272,7 @@ html,body{
         text-overflow: ellipsis;
         white-space: nowrap;
         vertical-align: bottom;
+        word-wrap: break-word;
       }
       .slider-wrapper{
         height:260px;
@@ -359,6 +388,7 @@ html,body{
               -moz-box-orient: vertical;
               -webkit-box-orient: vertical;
               box-orient: vertical;
+              word-wrap: break-word;
             }
             .heading-row{
               font-weight:bold;
@@ -386,7 +416,8 @@ html,body{
                 height:40px;
                 white-space: nowrap;
                 overflow: hidden;
-                text-overflow: ellipsis;                
+                text-overflow: ellipsis;
+                word-wrap: break-word;
               }
               .price{
                 font-size: 2em;
@@ -473,6 +504,7 @@ html,body{
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          word-wrap: break-word;
         }
         .heading-row{
             font-weight:bold;
@@ -509,6 +541,7 @@ html,body{
             -moz-box-orient: vertical;
             -webkit-box-orient: vertical;
             box-orient: vertical;
+            word-wrap: break-word;
           }
         }
         .director-actors{
@@ -540,6 +573,7 @@ html,body{
             -moz-box-orient: vertical;
             -webkit-box-orient: vertical;
             box-orient: vertical;
+            word-wrap: break-word;
             }
           }
         }
@@ -617,6 +651,16 @@ html,body{
               i{
                 display: block;
               }
+            }
+          }
+          &.deactive{
+            a{
+              color: rgb(92, 92, 96);;
+            }
+          }
+          &.deactive-last-item{
+            i{
+              display: block;
             }
           }
         }
@@ -1061,8 +1105,9 @@ html,body{
       height:35px;
       margin-bottom:10px;
       overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      word-wrap: break-word;
     }
   }
   .col-container{
@@ -1111,8 +1156,20 @@ html,body{
         margin-bottom: 20px;
         padding-bottom: 0;
         p{
+          /* autoprefixer: off */
           font-size: 1.2em;
           line-height: 1.3;
+          display: block;
+          display: -webkit-box;
+          max-height: 72px;
+          min-height: 30px;
+          overflow: hidden;
+          -webkit-line-clamp: 3;
+          text-overflow: ellipsis;
+          -moz-box-orient: vertical;
+          -webkit-box-orient: vertical;
+          box-orient: vertical;
+          word-wrap: break-word;
         }
       }
     }
@@ -1234,6 +1291,7 @@ html,body{
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
+        word-wrap: break-word;
       }
     }
     .audio-language{
@@ -1681,6 +1739,17 @@ html,body{
               }
             }
           }
+
+          &.deactive{
+            a{
+              color: rgb(92, 92, 96);
+            }
+          }
+          &.deactive-last-item{
+            i{
+              display: block;
+            }
+          }
         }
       }
     }
@@ -2076,6 +2145,7 @@ html,body{
           -moz-box-orient: vertical;
           -webkit-box-orient: vertical;
           box-orient: vertical;
+          word-wrap: break-word;
         }
       }
     }
@@ -2090,7 +2160,7 @@ html,body{
     border:solid 6px $white;
   }
   .selectable-related-title {
-    padding: 50px 282px;
+    padding: 50px 270px;
     @include box-sizing(border-box);
   }
   .selectable-related-title .title-related-top {

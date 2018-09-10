@@ -28,12 +28,13 @@ i18n
       // returning a path:
       // function(lngs, namespaces) { return customPath; }
       // the returned path will interpolate lng, ns if provided like giving a static path
-      loadPath: './locales/{{lng}}/{{ns}}.json',
+      loadPath: 'locales/{{lng}}/{{ns}}.json',
       // path to post missing resources
-      addPath: './locales/add/{{lng}}/{{ns}}'
+      addPath: 'locales/add/{{lng}}/{{ns}}'
     },
     react: {
-      wait: true
+      wait: true,
+      defaultTransParent: true
     }
   });
 

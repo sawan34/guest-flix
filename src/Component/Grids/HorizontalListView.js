@@ -23,38 +23,16 @@ class HorizontalListView extends BaseGrid {
         const keyCode = event.keyCode;
         switch (keyCode) {
             case KeyMap.VK_RIGHT:
-                this.goNext();
-                // if (this.state.scrollIndex >= this.dataSource.length - 1) {
-                //     if (!this.isScrollWrap || this.dataSource.length < 2) {
-                //         return;
-                //     }
-                //     this.state.scrollIndex = -1;
-                // }
-                // this.scrollX = this.scrollX - (this.itemWidth);
-                // this.setState((prevState) => {
-                //     return { focusLostItemPosition: prevState.scrollIndex, scrollIndex: prevState.scrollIndex + 1, activeIndex: prevState.activeIndex + 1, SCROOL_SPEED: this.SCROLL_SPEED, timeInterval: event.timeStamp }
-                // }, () => {
-                //     this.scrollDirection = commonConstants.DIRECTION_RIGHT;
-                //     this.focusChange();
-                // });
+                this.goNext(event);
                 break;
             case KeyMap.VK_LEFT:
                 if (this.state.activeIndex === 0) {
                     return;
                 }
-                this.goPrevious();
-
-                // this.scrollX = this.scrollX + (this.itemWidth);
-                // this.setState((prevState) => {
-                //     return { focusLostItemPosition: prevState.scrollIndex, scrollIndex: prevState.scrollIndex - 1, activeIndex: prevState.activeIndex - 1, SCROOL_SPEED: this.SCROLL_SPEED, timeInterval: event.timeStamp }
-                // }, () => {
-                //     this.scrollDirection = commonConstants.DIRECTION_LEFT;
-                //     this.focusChange();
-                // });
+                this.goPrevious(event);
                 break;
             case KeyMap.VK_ENTER:
-                console.log("eneter")
-                this.itemSelected()
+                this.onItemSelected()
                 break;
             case KeyMap.VK_UP:
             case KeyMap.VK_DOWN:
@@ -65,7 +43,6 @@ class HorizontalListView extends BaseGrid {
         }
     }
 
-
     /**
     * @override BaseGrid
     * Get props function call back
@@ -73,8 +50,6 @@ class HorizontalListView extends BaseGrid {
     onFocusChange = (focusLostPosition, currentItemFocus) => {
         if (!Utility.isEmpty(this.props.onFocusChange))
             this.props.onFocusChange(focusLostPosition, currentItemFocus);
-
-            
     }
 
     /**
@@ -82,9 +57,6 @@ class HorizontalListView extends BaseGrid {
       * Get props function call back
       */
     onItemSelected = (position) => {
-        console.log("On Selected");
-        if (!Utility.isEmpty(this.props.onItemSelected))
-            this.props.onItemSelected(this.state.scrollIndex);
     }
 
     /**
@@ -96,7 +68,7 @@ class HorizontalListView extends BaseGrid {
      */
     getView = (position, activeIndex, dataObject) => {
         if (!Utility.isEmpty(dataObject))
-            return (<VerticalItem key={position} i={position} active={activeIndex} data={dataObject} />)
+            return (<VerticalItem key={dataObject.index+"vert"} i={position} active={activeIndex} data={dataObject} />);
     }
 }
 export default HorizontalListView;

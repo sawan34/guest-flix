@@ -82,7 +82,7 @@ html, body {
   background-image: -webkit-linear-gradient(left, rgba(0, 0, 0, 0) 0%, black 100%); }
 
 .modeGrey {
-  background: #808080; }
+  background: #888b8d; }
 
 #playerMessageView {
   position: absolute;
@@ -95,6 +95,32 @@ html, body {
 
 .bluureffects .active-details {
   opacity: 0.2; }
+
+.loading-error-message {
+  background: rgba(59, 59, 59, 0.6);
+  padding: 20px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  text-align: center;
+  color: #ff0000;
+  font-size: 1.2em;
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  animation: loadingErrorMsgAni 500ms; }
+
+@-webkit-keyframes loadingErrorMsgAni {
+  0% {
+    top: -38px; }
+  100% {
+    top: 0px; } }
+
+@keyframes loadingErrorMsgAni {
+  0% {
+    top: -38px; }
+  100% {
+    top: 0px; } }
 
 /* media queries */
 @media (min-width: 1280px) {
@@ -132,14 +158,14 @@ html, body {
         .loading-container .loading .loading-wrapper .loader-text {
           position: absolute;
           top: 77px;
-          left: -18px;
+          left: -10px;
           right: 0;
           width: 75px;
           margin: auto;
           color: #ffffff;
-          font-size: 1em; }
+          font-size: 1.2em; }
         .loading-container .loading .loading-wrapper .loader-text:after {
-          content: "Loading";
+          content: "Loading...";
           -webkit-animation: loading-text 3s infinite;
           animation: loading-text 3s infinite; }
         .loading-container .loading .loading-wrapper .loading-circle {
@@ -221,7 +247,8 @@ html, body {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        vertical-align: bottom; }
+        vertical-align: bottom;
+        word-wrap: break-word; }
       .sliders-list .slider-row .slider-wrapper {
         height: 260px;
         position: absolute;
@@ -322,7 +349,8 @@ html, body {
               text-overflow: ellipsis;
               -moz-box-orient: vertical;
               -webkit-box-orient: vertical;
-              box-orient: vertical; }
+              box-orient: vertical;
+              word-wrap: break-word; }
             .sliders-list .slider-row .slider-wrapper .active-details .left-col .heading-row {
               font-weight: bold;
               overflow: hidden; }
@@ -349,7 +377,8 @@ html, body {
                 height: 40px;
                 white-space: nowrap;
                 overflow: hidden;
-                text-overflow: ellipsis; }
+                text-overflow: ellipsis;
+                word-wrap: break-word; }
               .sliders-list .slider-row .slider-wrapper .active-details .left-col .heading-row .price {
                 font-size: 2em; }
           .sliders-list .slider-row .slider-wrapper .active-details .key-action-details {
@@ -421,7 +450,8 @@ html, body {
         margin-bottom: 15px;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap; }
+        white-space: nowrap;
+        word-wrap: break-word; }
       .product-details-wrapper .right-col .content-list .heading-row {
         font-weight: bold;
         padding-bottom: 10px; }
@@ -454,7 +484,8 @@ html, body {
         text-overflow: ellipsis;
         -moz-box-orient: vertical;
         -webkit-box-orient: vertical;
-        box-orient: vertical; }
+        box-orient: vertical;
+        word-wrap: break-word; }
       .product-details-wrapper .right-col .content-list .director-actors {
         padding-top: 15px;
         overflow: hidden; }
@@ -481,7 +512,8 @@ html, body {
             text-overflow: ellipsis;
             -moz-box-orient: vertical;
             -webkit-box-orient: vertical;
-            box-orient: vertical; }
+            box-orient: vertical;
+            word-wrap: break-word; }
   /* Left Menu */
   .bluureffects-overlay {
     opacity: 0.2;
@@ -548,6 +580,10 @@ html, body {
         border-radius: 8px; }
         .menu nav ul li.active a i {
           display: block; }
+      .menu nav ul li.deactive a {
+        color: #5c5c60; }
+      .menu nav ul li.deactive-last-item i {
+        display: block; }
   .scrollMenu {
     height: 913px;
     overflow: hidden; }
@@ -909,7 +945,8 @@ html, body {
       margin-bottom: 10px;
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap; }
+      white-space: nowrap;
+      word-wrap: break-word; }
   .col-container .col-left {
     width: 172px;
     float: left;
@@ -948,8 +985,20 @@ html, body {
       margin-bottom: 20px;
       padding-bottom: 0; }
       .col-container .col-right .content p {
+        /* autoprefixer: off */
         font-size: 1.2em;
-        line-height: 1.3; }
+        line-height: 1.3;
+        display: block;
+        display: -webkit-box;
+        max-height: 72px;
+        min-height: 30px;
+        overflow: hidden;
+        -webkit-line-clamp: 3;
+        text-overflow: ellipsis;
+        -moz-box-orient: vertical;
+        -webkit-box-orient: vertical;
+        box-orient: vertical;
+        word-wrap: break-word; }
   /* Horizontal Grid */
   .Vertical-grid-wrapper .Vertical-grid .item {
     border: solid 4px transparent; }
@@ -1052,7 +1101,8 @@ html, body {
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        text-overflow: ellipsis; }
+        text-overflow: ellipsis;
+        word-wrap: break-word; }
     .player-wrapper .audio-language {
       background: #000000;
       padding: 20px 40px 15px;
@@ -1396,6 +1446,10 @@ html, body {
         border-radius: 12px; }
         .menu nav ul li.active a i {
           display: block; }
+      .menu nav ul li.deactive a {
+        color: #5c5c60; }
+      .menu nav ul li.deactive-last-item i {
+        display: block; }
   .scrollMenu {
     height: 913px; }
   .sub-menu {
@@ -1703,14 +1757,15 @@ html, body {
         text-overflow: ellipsis;
         -moz-box-orient: vertical;
         -webkit-box-orient: vertical;
-        box-orient: vertical; }
+        box-orient: vertical;
+        word-wrap: break-word; }
   /* Horizontal Grid */
   .Vertical-grid-wrapper .Vertical-grid .item {
     border: solid 6px transparent; }
   .Vertical-grid-wrapper .Vertical-grid .item.active {
     border: solid 6px #ffffff; }
   .selectable-related-title {
-    padding: 50px 282px;
+    padding: 50px 270px;
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box; }

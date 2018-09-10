@@ -21,7 +21,7 @@ class Menu extends TvComponent {
 		//initial setup of props and state
 		this.state = {
 			menuItems: [],
-			scrollStyle: { transform: 'translate3d(0,0,0)' },
+			scrollStyle: { WebkitTransform: 'translate3d(0,0,0)' },
 			currIndex: 0,
 		}
 		this.exitPos = 0;
@@ -70,6 +70,11 @@ class Menu extends TvComponent {
 						if (this.props.getGroupings.message.data[total_Group_Id].id === metaData.groupings[group_Id]) {
 							if (!COMMON_UTILITIES.isEmptyObject(this.props.getGroupings.message.data[total_Group_Id])) {
 								var tempOBJ = Object.assign({}, this.props.getGroupings.message.data[total_Group_Id]);
+								if(tempOBJ.i8nLabel){
+									tempOBJ.label = tempOBJ.i8nLabel;
+								}else{
+									tempOBJ.label = "i8nLabel missing";
+								}
 								this.defineMenuType(MENU_TYPE.GROUPING, tempOBJ);
 								this.state.menuItems.push(tempOBJ);
 								break;
@@ -133,7 +138,13 @@ class Menu extends TvComponent {
 	 */
 	focusDefaultMenu = () => {
 		try {
-			this.state.currIndex = this.exitPos;
+			if (this.props.menuCurrentPos !== 0) {
+				this.state.currIndex = this.props.menuCurrentPos;
+				this.state.scrollStyle = this.props.menuStyle;
+			}
+			else {
+				this.state.currIndex = this.exitPos;
+			}
 			this.focus();
 		} catch (error) {
 
@@ -248,10 +259,12 @@ class Menu extends TvComponent {
 		let dirVal = 1;
 		const CURRENT_NODE = ReactDOM.findDOMNode(this);
 		if (isDown) {
-			currentPos = currentPos + 1;
+			this.prevPos = (this.state.currIndex === currentPos) ? currentPos : this.state.currIndex ;
+			currentPos = this.prevPos + 1;
 			dirVal = -1;
 		} else {
-			currentPos = currentPos - 1
+			this.prevPos = (this.state.currIndex === currentPos) ? currentPos : this.state.currIndex ;
+			currentPos = this.prevPos - 1
 		}
 		let activeElem = null,
 			itemHeight = 0;
@@ -266,27 +279,28 @@ class Menu extends TvComponent {
 		var menuElem = activeElem.parentElement;
 		if (nextIndex > lastIndex && isDown) {
 			scrollNum = nextIndex - lastIndex;
-			scrollStyle.transform = `translate3d(0,${itemHeight * dirVal * scrollNum}px,0)`;
-		} else if (!isDown && menuElem && menuElem.style && menuElem.style.transform && this.prevPos > lastIndex - 1) {
-			var checkForPos = parseInt(activeElem.parentElement.style.transform.split(",")[1],10);
+			scrollStyle.WebkitTransform = `translate3d(0,${itemHeight * dirVal * scrollNum}px,0)`;
+		} else if (!isDown && menuElem && menuElem.style && menuElem.style.webkitTransform && this.prevPos > lastIndex - 1) {
+			var checkForPos = parseInt(activeElem.parentElement.style.webkitTransform.split(",")[1], 10);
 			if (checkForPos < 0) {
 				checkForPos = checkForPos + itemHeight;
-				scrollStyle.transform = `translate3d(0,${checkForPos}px,0)`;
+				scrollStyle.WebkitTransform = `translate3d(0,${checkForPos}px,0)`;
 			}
 		} else {
-			scrollStyle.transform = `translate3d(0,0,0)`;
+			scrollStyle.WebkitTransform = `translate3d(0,0,0)`;
 		}
+
 		this.setState({
 			currIndex: currentPos,
 			scrollStyle: scrollStyle
 		});
 		if (upDownKeyTimeOut) {
-				clearTimeout(upDownKeyTimeOut)
-			}
-			upDownKeyTimeOut = setTimeout(function () {
-				this.onItemActive(true);
-			}.bind(this), 100);
-		
+			clearTimeout(upDownKeyTimeOut)
+		}
+		upDownKeyTimeOut = setTimeout(function () {
+			this.onItemActive(true);
+		}.bind(this), 100);
+
 	}
 
 	/**
@@ -319,6 +333,9 @@ class Menu extends TvComponent {
 					}
 					this.handleUpDown(true, currentPos);
 					break;
+				case KeyMap.VK_LEFT:
+					this.props.menuLeftKeyPressed();
+					break;
 				default:
 					break;
 			}
@@ -345,10 +362,11 @@ class Menu extends TvComponent {
 		return (
 			<div className={leftMenu} >
 				<div className="menu">
-					<div className="logo"><img src={"images/logo-menu.jpg"} alt = ""/></div>
+					<div className="logo"><img src={"images/logo-menu.jpg"} alt="" /></div>
 					<nav className="scrollMenu">
 						<ul style={this.state.scrollStyle}>
 							{this.state.menuItems.map((item, i) => {
+								var indexP = item.id ? item.id:item.label;
 								var listClassName = "";
 								var modeStyle = "";
 								if (item.isMode) {
@@ -359,9 +377,17 @@ class Menu extends TvComponent {
 								if (i === this.state.currIndex) {
 									listClassName = "active ";
 								}
-								return (<li key={i + "id"} className={listClassName + modeStyle}><a href="#menu-item">
-									<Trans i18nKey={item.label.toLowerCase()}>{item.label}</Trans>
-									<i className={(item.label && item.isExit) ? "fa fa-caret-left" : "fa fa-caret-right"} aria-hidden="true"></i></a></li>)
+
+								if(this.state.currIndex === null && (this.state.menuItems[this.lastActiveItemIndex].label === commonConstants.MENU_LANGUAGE || this.state.menuItems[this.lastActiveItemIndex].label === commonConstants.MENU_FILTER)&& i !== this.lastActiveItemIndex){
+									listClassName = "deactive ";
+								}
+
+								if(this.state.currIndex === null && (this.state.menuItems[this.lastActiveItemIndex].label === commonConstants.MENU_LANGUAGE || this.state.menuItems[this.lastActiveItemIndex].label === commonConstants.MENU_FILTER)&& i === this.lastActiveItemIndex){
+									listClassName = "deactive-last-item ";
+								}
+								return (<li key={indexP + "id"} className={listClassName + modeStyle}><a key={indexP + "a"} href="#menu-item">
+									<Trans parent="span" i18nKey={item.label.toLowerCase()}>{item.label}</Trans>
+									<i key={indexP + "i"} className={(item.label && item.isExit) ? "fa fa-caret-left" : "fa fa-caret-right"} aria-hidden="true"></i></a></li>)
 							})}
 						</ul>
 					</nav>

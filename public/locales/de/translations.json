@@ -18,7 +18,7 @@
   "exit_and_bookmark":"Exit en Bookmark",
   "kids_mode_description":"Kindvriendelijk browsen met films die geschikt zijn voor gezinnen met kinderen van 13 jaar en jonger.",
   "adult_mode_description":"Het inhoudgedeelte voor volwassenen van GuestFlix is ​​alleen bedoeld voor volwassenen en bevat mogelijk inhoud die sommige kijkers aanstootgevend vinden. Als je jonger bent dan 18 (of de meerderheid in jouw regio), of als je dit materiaal aanstootgevend vindt, ga dan terug naar het hoofdmenu.",
-   
+   "go_back":"Ga terug",
   "exit_menu":"Sluit Menu",
   "language":"Taal",
   "filter":"Filter",
@@ -41,6 +41,12 @@
   "storyline":"Verhaallijn",
   "gay": "homoseksueel",
   "no_rating_available":"Geen beoordeling beschikbaar",
-  "no_language_available":"Geen taal beschikbaar"
-
+  "no_language_available":"Geen taal beschikbaar",
+  "player_loading_message":"Laden even geduld aub...",
+  "player_error_message":"Sorry, maar er is een onbekende fout opgetreden bij het afspelen van deze video.",
+  "player_buffering":"Buffering ...",
+  "token_not_found":"Token niet gevonden",
+  "url_not_found":"URL niet gevonden",
+  "server_not_found":"Server niet gevonden",
+  "invalid_authentication":"Ongeldige verificatie"
 }

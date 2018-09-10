@@ -6,14 +6,14 @@
 * @author Sawan Kumar
 * @date  22.06.2018
 */
-import { Component } from 'react';
+import { PureComponent } from 'react';
 import {connect} from 'react-redux';
 import { translate } from 'react-i18next';
 import {saveStateOnExitScreen} from '../../actions';
 import {bindActionCreators} from 'redux';
 import _ from 'lodash';
 
-class BaseScreen extends Component {
+class BaseScreen extends PureComponent {
     constructor(props) {
         super(props);
         this.state = {

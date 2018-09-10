@@ -13,7 +13,8 @@ import Method from '../../../services/services';
 import API_INTERFACE from '../../../constants/uri.constant';
 import { responseActions } from '../../../actions/action.response';
 import Utility from '../../../commonUtilities';
-const SELECTABLE_TYPE = { "BUTTON": "button", "PROGRAM": "program" , "MOVIE" : "movie"}
+import { commonConstants } from '../../../constants/common.constants';
+const SELECTABLE_TYPE = { "BUTTON": "button", "PROGRAM": "program", "MOVIE": "movie" }
 
 class Selectables extends React.Component {
   /**
@@ -33,6 +34,7 @@ class Selectables extends React.Component {
     }
     this.gridItemSelected = this.gridItemSelected.bind(this);
     this.isComponentLoaded = this.isComponentLoaded.bind(this);
+    this.gridFocusCallback = this.gridFocusCallback.bind(this);
     this.selectableIds = [];
     this.selectableData = [];
     this.menuName = "";
@@ -47,12 +49,13 @@ class Selectables extends React.Component {
       gridItemClass: 'VerticalGridItem',
       itemHeight: 400,
       itemWidth: 260,
-      FocusCallback: this.FirstGridFocusCallback,
+      FocusCallback: this.gridFocusCallback,
       paddingBottom: 30,
       paddingLeft: 10,
       activeEvent: true,
       keyEvent: {},
       enterPressed: this.gridItemSelected,
+      isLeftMovementAllowed: false
 
     };
 
@@ -140,18 +143,33 @@ class Selectables extends React.Component {
         if (this.props.groupingID === this.props.getGroupings.message.data[groupIndex].id) {
           this.groupID = groupIndex;
           this.groupingID = groupIndex;
-          this.menuName = this.props.getGroupings.message.data[groupIndex].i8nLabel;
-          this.menuLable = this.props.getGroupings.message.data[groupIndex].label;
+          if (this.props.getGroupings.message.data[groupIndex].i8nLabel) {
+            this.menuName = this.props.getGroupings.message.data[groupIndex].i8nLabel;
+          } else {
+            this.menuName = "i8nLabel missing";
+          }
           this.selectableIds = this.props.getGroupings.message.data[groupIndex].selectables;
         }
       }
     }
   }
 
-  isComponentLoaded(){
+  isComponentLoaded() {
     return (this.verticalGrid.isComponentLoaded() && this.dataLoaded);
   }
 
+
+  gridFocusCallback(direction) {
+
+    switch (direction) {
+      case commonConstants.DIRECTION_LEFT:
+        this.deFocus();
+        this.props.selectableMenuCallback();
+        break;
+      default:
+        break;
+    }
+  }
   /**
    * Description: this method fetch selectable data e.g image and id 
    * @param {Array} selectableIdArray
@@ -197,8 +215,8 @@ class Selectables extends React.Component {
               this.gridProps.coloumns = 6;
             }
             this.gridProps.entries = this.state.items;
-            
-            this.setState({ isLoading: false ,noData:false});
+
+            this.setState({ isLoading: false, noData: false });
             this.dataLoaded = true;
           }
         }
@@ -227,7 +245,7 @@ class Selectables extends React.Component {
       this.getGroupingData();
       if (this.selectableIds.length > 0) {
         this.dataForSelctable(this.selectableIds);
-     } else {
+      } else {
         this.setState({ noData: true });
       }
     }
@@ -304,7 +322,7 @@ class Selectables extends React.Component {
     return (
       <div className='slide-container-wrapper selectable-related-title'>
         <div className="title-related-top">
-          <h3><Trans i18nKey={this.menuName}>{this.menuLable}</Trans></h3>
+          <h3><Trans i18nKey={this.menuName}>{this.menuName}</Trans></h3>
         </div>
         <this.renderGrid />
       </div>
